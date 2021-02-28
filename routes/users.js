@@ -17,17 +17,16 @@ router.get('/', async (req, res, next) => {
 });
 
 /* POST user login. */
-router.get('/auth/login', async (req, res, next) => {
-  console.log(req.query.email)
+router.post('/auth/login', async (req, res, next) => {
   const user = await User.findOne({
-    where: { email: req.query.email }
+    where: { email: req.body.email }
   });
   if (!user)
     return res.status(401).json({
       success: false,
       message: 'User doesn\'t exist with this email!'
     });
-  let isPasswordValid = user.comparePassword(req.query.password);
+  let isPasswordValid = user.comparePassword(req.body.password);
   if (isPasswordValid) {
     var token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
       expiresIn: 86400 // expires in 24 hours
