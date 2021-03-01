@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     permission_id: DataTypes.INTEGER
   }, {
     sequelize,
+    paranoid: true,
     modelName: 'PermissionAccess',
   });
   return PermissionAccess;

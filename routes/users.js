@@ -52,6 +52,16 @@ router.post('/', async (req, res, next) => {
   });
 });
 
+/* PUT update existing user. */
+router.put('/', async (req, res, next) => {
+  let user = await User.create(req.body);
+  res.json({
+    success: true,
+    message: 'Created user',
+    data: user
+  });
+});
+
 router.get('/roles', async (req, res, next) => {
   const users = await Role.findAll({
     include: [{ model: PermissionAccess, include: [{ model: Permission }] }]

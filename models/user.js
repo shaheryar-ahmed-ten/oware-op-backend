@@ -29,7 +29,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
-    username: DataTypes.STRING,
+    username: {
+      type: DataTypes.STRING,
+      unique: true
+    },
     phone: DataTypes.STRING,
     password: DataTypes.STRING,
     email: {
@@ -39,6 +42,7 @@ module.exports = (sequelize, DataTypes) => {
     isActive: DataTypes.BOOLEAN,
   }, {
     sequelize,
+    paranoid: true,
     modelName: 'User',
   });
   User.beforeCreate((user, options) => {
