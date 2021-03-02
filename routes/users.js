@@ -3,9 +3,10 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const { User, Role, PermissionAccess, Permission } = require('../models')
 const config = require('../config');
+const authService = require('../services/auth.service');
 
 /* GET users listing. */
-router.get('/', async (req, res, next) => {
+router.get('/', authService.isLoggedIn, async (req, res, next) => {
   const users = await User.findAll({
     include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }]
   });
@@ -28,7 +29,7 @@ router.post('/auth/login', async (req, res, next) => {
     });
   let isPasswordValid = user.comparePassword(req.body.password);
   if (isPasswordValid) {
-    var token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
+    var token = jwt.sign({ id: user.id }, config.JWT_SECRET, {
       expiresIn: 86400 // expires in 24 hours
     });
     res.json({
@@ -43,11 +44,22 @@ router.post('/auth/login', async (req, res, next) => {
 });
 
 /* POST create new user. */
-router.post('/', async (req, res, next) => {
-  let user = await User.create(req.body);
+router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+  let adminRole = await Role.findOne({ where: { type: 'admin' } });
+  let message = 'New user registered';
+  let user;
+  try {
+    user = await User.create({
+      roleId: adminRole.id,
+      ...req.body
+    });
+    delete user.password;
+  } catch (err) {
+    message = err.errors.pop().message;
+  }
   res.json({
     success: true,
-    message: 'Created user',
+    message,
     data: user
   });
 });

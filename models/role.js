@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Role.hasMany(models.PermissionAccess, {
         sourceKey: 'id',
-        foreignKey: 'role_id'
+        foreignKey: 'roleId'
       });
     }
   };

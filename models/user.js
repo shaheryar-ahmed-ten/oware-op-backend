@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       User.belongsTo(models.Role, {
-        foreignKey: 'role_id'
+        foreignKey: 'roleId'
       });
     };
     generateHash(password) {
@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     };
   };
   User.init({
-    role_id: {
+    roleId: {
       type: DataTypes.INTEGER,
       allowNull: true
     },
@@ -31,7 +31,8 @@ module.exports = (sequelize, DataTypes) => {
     lastName: DataTypes.STRING,
     username: {
       type: DataTypes.STRING,
-      unique: true
+      unique: true,
+      allowNull: false
     },
     phone: DataTypes.STRING,
     password: DataTypes.STRING,
@@ -39,7 +40,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true
     },
-    isActive: DataTypes.BOOLEAN,
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
   }, {
     sequelize,
     paranoid: true,

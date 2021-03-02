@@ -21,7 +21,7 @@ module.exports = {
       username: 'yousha',
       isActive: true,
       password: 'yousha',
-      role_id: roles[1].dataValues.id,
+      roleId: roles[1].dataValues.id,
       phone: '03242363523',
       createdAt: new Date(),
       updatedAt: new Date()
@@ -38,13 +38,13 @@ module.exports = {
       updatedAt: new Date()
     }]);
     let permission_accesses = await PermissionAccess.bulkCreate([{
-      role_id: roles[0].dataValues.id,
-      permission_id: permissions[0].dataValues.id,
+      roleId: roles[0].dataValues.id,
+      permissionId: permissions[0].dataValues.id,
       createdAt: new Date(),
       updatedAt: new Date()
     }, {
-      role_id: roles[1].dataValues.id,
-      permission_id: permissions[1].dataValues.id,
+      roleId: roles[1].dataValues.id,
+      permissionId: permissions[1].dataValues.id,
       createdAt: new Date(),
       updatedAt: new Date()
     }]);

@@ -8,7 +8,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      role_id: {
+      roleId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Roles', // name of Target model
@@ -17,7 +17,7 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      permission_id: {
+      permissionId: {
         type: Sequelize.INTEGER,
         references: {
           model: 'Permissions', // name of Target model
