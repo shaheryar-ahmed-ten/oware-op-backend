@@ -17,10 +17,17 @@ router.get('/', authService.isLoggedIn, async (req, res, next) => {
   });
 });
 
+router.get('/me', authService.isLoggedIn, async (req, res, next) => {
+  return res.json({
+    success: true,
+    data: req.user
+  })
+});
 /* POST user login. */
 router.post('/auth/login', async (req, res, next) => {
+  let loginKey = req.body.username.indexOf('@') > -1 ? 'email' : 'username';
   const user = await User.findOne({
-    where: { email: req.body.email }
+    where: { [loginKey]: req.body.username }
   });
   if (!user)
     return res.status(401).json({
@@ -65,13 +72,20 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
 });
 
 /* PUT update existing user. */
-router.put('/', async (req, res, next) => {
-  let user = await User.create(req.body);
-  res.json({
-    success: true,
-    message: 'Created user',
-    data: user
-  });
+router.put('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+  let user = await User.findOne({ where: { id: req.params.id } });
+  if (user) {
+    res.json({
+      success: true,
+      message: 'User updated',
+      data: user
+    });
+  } else {
+    res.status(400).json({
+      success: false,
+      message: 'No user found!'
+    })
+  }
 });
 
 router.get('/roles', async (req, res, next) => {
