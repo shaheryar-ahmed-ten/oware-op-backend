@@ -19,7 +19,6 @@ module.exports.isLoggedIn = (req, res, next) => {
 }
 
 module.exports.isSuperAdmin = (req, res, next) => {
-    console.log('isSuperAdmin', req.user['Role.PermissionAccesses.Permission.type'])
     if (req.user['Role.PermissionAccesses.Permission.type'] === 'superadmin_privileges') next();
     else res.status(401).send({ status: false, message: 'Operation not permitted!' })
 }

@@ -4,11 +4,18 @@ const router = express.Router();
 const { User, Role, PermissionAccess, Permission } = require('../models')
 const config = require('../config');
 const authService = require('../services/auth.service');
+const { Op } = require("sequelize");
 
 /* GET users listing. */
-router.get('/', authService.isLoggedIn, async (req, res, next) => {
+router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+  const limit = req.body.rowsPerPage || config.rowsPerPage
+  const offset = (req.body.page || 0) * limit;
+  let where = {};
+  if (req.body.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.body.search + '%' } }));
   const users = await User.findAll({
-    include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }]
+    include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
+    orderBy: [['createdAt', 'DESC']],
+    limit, offset, where, raw: true
   });
   res.json({
     success: true,

@@ -1,11 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { Brand } = require('../models')
+const { Brand, User } = require('../models')
+const config = require('../config');
+const { Op } = require("sequelize");
 
 /* GET brands listing. */
 router.get('/', async (req, res, next) => {
+  const limit = req.body.rowsPerPage || config.rowsPerPage
+  const offset = (req.body.page || 0) * limit;
+  let where = {};
+  if (req.body.search) where.name = { [Op.like]: '%' + req.body.search + '%' };
   const brands = await Brand.findAll({
-    include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }]
+    include: [{ model: User }],
+    orderBy: [['createdAt', 'DESC']],
+    where, limit, offset, raw: true
   });
   res.json({
     success: true,
