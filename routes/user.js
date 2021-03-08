@@ -42,18 +42,17 @@ router.post('/auth/login', async (req, res, next) => {
       message: 'User doesn\'t exist with this email!'
     });
   let isPasswordValid = user.comparePassword(req.body.password);
-  if (isPasswordValid) {
-    var token = jwt.sign({ id: user.id }, config.JWT_SECRET, {
-      expiresIn: 86400 // expires in 24 hours
-    });
-    res.json({
-      success: isPasswordValid,
-      message: 'Login successful',
-      token
-    });
-  } else res.status(401).json({
+  if (!isPasswordValid) return res.status(401).json({
     success: false,
     message: 'Invalid password!'
+  });
+  var token = jwt.sign({ id: user.id }, config.JWT_SECRET, {
+    expiresIn: 86400 // expires in 24 hours
+  });
+  res.json({
+    success: isPasswordValid,
+    message: 'Login successful',
+    token
   });
 });
 

@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { UOM } = require('../models')
+const { UOM, User } = require('../models')
 const { Op } = require("sequelize");
+const config = require('../config');
+
 
 /* GET uoms listing. */
 router.get('/', async (req, res, next) => {
@@ -10,7 +12,7 @@ router.get('/', async (req, res, next) => {
   let where = {};
   if (req.body.search) where.name = { [Op.like]: '%' + req.body.search + '%' };
   const uoms = await UOM.findAll({
-    include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
+    include: [{ model: User}],
     orderBy: [['createdAt', 'DESC']],
     limit, offset, where, raw: true
   });

@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { Category } = require('../models')
+const { Category, User } = require('../models')
 const { Op } = require("sequelize");
+const config = require('../config');
 
 /* GET categories listing. */
 router.get('/', async (req, res, next) => {
@@ -10,7 +11,7 @@ router.get('/', async (req, res, next) => {
   let where = {};
   if (req.body.search) where.name = { [Op.like]: '%' + req.body.search + '%' };
   const categories = await Category.findAll({
-    include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
+    include: [{ model: User }],
     orderBy: [['createdAt', 'DESC']],
     limit, offset, where, raw: true
   });
