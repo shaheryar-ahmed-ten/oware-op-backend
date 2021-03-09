@@ -6,11 +6,11 @@ const { Op } = require("sequelize");
 
 /* GET brands listing. */
 router.get('/', async (req, res, next) => {
-  const limit = req.body.rowsPerPage || config.rowsPerPage
-  const offset = (req.body.page || 0) * limit;
+  const limit = req.query.rowsPerPage || config.rowsPerPage
+  const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
   if (req.body.search) where.name = { [Op.like]: '%' + req.body.search + '%' };
-  const brands = await Brand.findAll({
+  const brands = await Brand.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['createdAt', 'DESC']],
     where, limit, offset, raw: true
@@ -18,7 +18,8 @@ router.get('/', async (req, res, next) => {
   res.json({
     success: true,
     message: 'respond with a resource',
-    data: brands
+    data: response.rows,
+    pages: Math.ceil(response.count / limit)
   });
 });
 

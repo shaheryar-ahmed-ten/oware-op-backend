@@ -7,7 +7,7 @@ module.exports.isLoggedIn = (req, res, next) => {
     token = token && token.replace('Bearer ', '');
     if (!token) return res.status(401).send({ success: false, message: 'No token provided.' });
     jwt.verify(token, config.JWT_SECRET, async (err, decoded) => {
-        if (err) return res.status(500).send({ success: false, message: 'Failed to authenticate token.' });
+        if (err) return res.status(401).send({ success: false, message: 'Failed to authenticate token.' });
         req.userId = decoded.id;
         req.user = await User.findOne({
             where: { id: req.userId },

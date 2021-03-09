@@ -6,11 +6,11 @@ const config = require('../config');
 
 /* GET customers listing. */
 router.get('/', async (req, res, next) => {
-  const limit = req.body.rowsPerPage || config.rowsPerPage
-  const offset = (req.body.page || 0) * limit;
+  const limit = req.query.rowsPerPage || config.rowsPerPage
+  const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
-  if (req.body.search) where.name = { [Op.like]: '%' + req.body.search + '%' };
-  const customers = await Customer.findAll({
+  if (req.query.search) where.name = { [Op.like]: '%' + req.query.search + '%' };
+  const customers = await Customer.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['createdAt', 'DESC']],
     limit, offset, where, raw: true
@@ -18,7 +18,8 @@ router.get('/', async (req, res, next) => {
   res.json({
     success: true,
     message: 'respond with a resource',
-    data: customers
+    data: response.rows,
+    pages: Math.ceil(response.count / limit)
   });
 });
 

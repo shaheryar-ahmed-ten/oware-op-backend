@@ -8,11 +8,11 @@ const { Op } = require("sequelize");
 
 /* GET users listing. */
 router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
-  const limit = req.body.rowsPerPage || config.rowsPerPage
-  const offset = (req.body.page || 0) * limit;
+  const limit = req.query.rowsPerPage || config.rowsPerPage
+  const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
-  if (req.body.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.body.search + '%' } }));
-  const users = await User.findAll({
+  if (req.query.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.body.search + '%' } }));
+  const response = await User.findAndCountAll({
     include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
     orderBy: [['createdAt', 'DESC']],
     limit, offset, where, raw: true
@@ -20,7 +20,8 @@ router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, re
   res.json({
     success: true,
     message: 'respond with a resource',
-    data: users
+    data: response.rows,
+    pages: Math.ceil(response.count / limit)
   });
 });
 
