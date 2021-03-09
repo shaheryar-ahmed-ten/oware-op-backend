@@ -1,16 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { Warehouse, User } = require('../models')
+const { Customer, User } = require('../models')
 const { Op } = require("sequelize");
 const config = require('../config');
 
-/* GET warehouses listing. */
+/* GET customers listing. */
 router.get('/', async (req, res, next) => {
   const limit = req.body.rowsPerPage || config.rowsPerPage
   const offset = (req.body.page || 0) * limit;
   let where = {};
   if (req.body.search) where.name = { [Op.like]: '%' + req.body.search + '%' };
-  const warehouses = await Warehouse.findAll({
+  const customers = await Customer.findAll({
     include: [{ model: User }],
     orderBy: [['createdAt', 'DESC']],
     limit, offset, where, raw: true
@@ -18,16 +18,16 @@ router.get('/', async (req, res, next) => {
   res.json({
     success: true,
     message: 'respond with a resource',
-    data: warehouses
+    data: customers
   });
 });
 
-/* POST create new warehouse. */
+/* POST create new customer. */
 router.post('/', async (req, res, next) => {
-  let message = 'New warehouse registered';
-  let warehouse;
+  let message = 'New customer registered';
+  let customer;
   try {
-    warehouse = await Warehouse.create({
+    customer = await Customer.create({
       userId: req.userId,
       ...req.body
     });
@@ -37,23 +37,23 @@ router.post('/', async (req, res, next) => {
   res.json({
     success: true,
     message,
-    data: warehouse
+    data: customer
   });
 });
 
-/* PUT update existing warehouse. */
+/* PUT update existing customer. */
 router.put('/:id', async (req, res, next) => {
-  let warehouse = await Warehouse.findOne({ where: { id: req.params.id } });
-  if (warehouse) {
+  let customer = await Customer.findOne({ where: { id: req.params.id } });
+  if (customer) {
     res.json({
       success: true,
-      message: 'Warehouse updated',
-      data: warehouse
+      message: 'Customer updated',
+      data: customer
     });
   } else {
     res.status(400).json({
       success: false,
-      message: 'No warehouse found!'
+      message: 'No customer found!'
     })
   }
 });

@@ -8,6 +8,7 @@ var cors = require('cors')
 const authService = require('./services/auth.service');
 const indexRouter = require('./routes/index');
 const userRouter = require('./routes/user');
+const customerRouter = require('./routes/customer');
 const categoryRouter = require('./routes/category');
 const uomRouter = require('./routes/uom');
 const brandRouter = require('./routes/brand');
@@ -29,6 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/user', userRouter);
+app.use('/customer', authService.isLoggedIn, customerRouter);
 app.use('/category', authService.isLoggedIn, categoryRouter);
 app.use('/uom', authService.isLoggedIn, uomRouter);
 app.use('/brand', authService.isLoggedIn, brandRouter);
