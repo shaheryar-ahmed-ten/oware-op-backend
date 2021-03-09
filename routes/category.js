@@ -10,7 +10,7 @@ router.get('/', async (req, res, next) => {
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
   if (req.query.search) where.name = { [Op.like]: '%' + req.query.search + '%' };
-  const categories = await Category.findAndCountAll({
+  const response = await Category.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['createdAt', 'DESC']],
     limit, offset, where, raw: true

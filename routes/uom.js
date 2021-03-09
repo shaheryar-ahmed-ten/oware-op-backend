@@ -11,7 +11,7 @@ router.get('/', async (req, res, next) => {
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
   if (req.query.search) where.name = { [Op.like]: '%' + req.query.search + '%' };
-  const uoms = await UOM.findAndCountAll({
+  const response = await UOM.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['createdAt', 'DESC']],
     limit, offset, where, raw: true
