@@ -9,10 +9,10 @@ router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
-  if (req.body.search) where.name = { [Op.like]: '%' + req.body.search + '%' };
+  if (req.query.search) where.name = { [Op.like]: '%' + req.query.search + '%' };
   const response = await Brand.findAndCountAll({
     include: [{ model: User }],
-    orderBy: [['createdAt', 'DESC']],
+    orderBy: [['updatedAt', 'DESC']],
     where, limit, offset, raw: true
   });
   res.json({

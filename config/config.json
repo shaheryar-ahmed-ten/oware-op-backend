@@ -5,7 +5,7 @@
     "database": "oware_dev",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "rowsPerPage": 10
+    "rowsPerPage": 4
   },
   "test": {
     "username": "root",
@@ -13,7 +13,7 @@
     "database": "database_test",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "rowsPerPage": 10
+    "rowsPerPage": 4
   },
   "production": {
     "username": "root",
@@ -21,6 +21,6 @@
     "database": "database_production",
     "host": "127.0.0.1",
     "dialect": "mysql",
-    "rowsPerPage": 10
+    "rowsPerPage": 4
   }
 }

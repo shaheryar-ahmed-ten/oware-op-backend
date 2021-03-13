@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
   if (req.query.search) where.name = { [Op.like]: '%' + req.query.search + '%' };
   const response = await UOM.findAndCountAll({
     include: [{ model: User }],
-    orderBy: [['createdAt', 'DESC']],
+    orderBy: [['updatedAt', 'DESC']],
     limit, offset, where, raw: true
   });
   res.json({

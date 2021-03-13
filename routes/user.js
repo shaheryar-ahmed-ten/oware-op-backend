@@ -5,17 +5,21 @@ const { User, Role, PermissionAccess, Permission } = require('../models')
 const config = require('../config');
 const authService = require('../services/auth.service');
 const { Op } = require("sequelize");
+const { response } = require('express');
 
 /* GET users listing. */
 router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+  console.log('here')
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
-  let where = {};
-  if (req.query.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.body.search + '%' } }));
+  let where = {
+    id: { [Op.not]: req.userId }
+  };
+  if (req.query.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await User.findAndCountAll({
     include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
-    orderBy: [['createdAt', 'DESC']],
-    limit, offset, where, raw: true
+    orderBy: [['updatedAt', 'DESC']],
+    limit, offset, where, raw: true, paranoid: false
   });
   res.json({
     success: true,
@@ -81,28 +85,42 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
 /* PUT update existing user. */
 router.put('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
   let user = await User.findOne({ where: { id: req.params.id } });
-  if (user) {
-    res.json({
-      success: true,
-      message: 'User updated',
-      data: user
-    });
-  } else {
-    res.status(400).json({
-      success: false,
-      message: 'No user found!'
-    })
-  }
+  user.firstName = req.body.firstName;
+  user.lastName = req.body.lastName;
+  user.roleId = req.body.roleId;
+  user.phone = req.body.phone;
+  user.isActive = req.body.isActive;
+  const response = await user.save();
+  if (response) res.json({
+    success: true,
+    message: 'User updated',
+    data: response
+  });
+  else res.status(400).json({
+    success: false,
+    message: 'No user found!'
+  });
 });
 
-router.get('/roles', async (req, res, next) => {
-  const users = await Role.findAll({
-    include: [{ model: PermissionAccess, include: [{ model: Permission }] }]
+router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+  let response = await User.destroy({ where: { id: req.params.id } });
+  if (response) res.json({
+    success: true,
+    message: 'User deleted'
   });
+  else res.status(400).json({
+    success: false,
+    message: 'No user found!'
+  });
+})
+
+
+router.get('/relations', authService.isLoggedIn, authService.isSuperAdmin,  async (req, res, next) => {
+  const roles = await Role.findAll();
   res.json({
     success: true,
     message: 'respond with a resource',
-    data: users
+    roles
   });
 });
 
