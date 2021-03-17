@@ -8,8 +8,10 @@ const config = require('../config');
 router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
-  let where = {};
-  if (req.query.search) where.name = { [Op.like]: '%' + req.query.search + '%' };
+  let where = {
+    // userId: req.userId
+  };
+  if (req.query.search) where[Op.or] = ['companyName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Customer.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['updatedAt', 'DESC']],
@@ -45,18 +47,34 @@ router.post('/', async (req, res, next) => {
 /* PUT update existing customer. */
 router.put('/:id', async (req, res, next) => {
   let customer = await Customer.findOne({ where: { id: req.params.id } });
-  if (customer) {
-    res.json({
-      success: true,
-      message: 'Customer updated',
-      data: customer
-    });
-  } else {
-    res.status(400).json({
-      success: false,
-      message: 'No customer found!'
-    })
-  }
+  if (!customer) return res.status(400).json({
+    success: false,
+    message: 'No customer found!'
+  });
+  customer.companyName = req.body.companyName;
+  customer.contactName = req.body.contactName;
+  customer.contactEmail = req.body.contactEmail;
+  customer.contactPhone = req.body.contactPhone;
+  customer.notes = req.body.notes;
+  customer.isActive = req.body.isActive;
+  const response = await customer.save();
+  return res.json({
+    success: true,
+    message: 'Customer updated',
+    data: response
+  });
 });
+
+router.delete('/:id', async (req, res, next) => {
+  let response = await Customer.destroy({ where: { id: req.params.id } });
+  if (response) res.json({
+    success: true,
+    message: 'Customer deleted'
+  });
+  else res.status(400).json({
+    success: false,
+    message: 'No customer found!'
+  });
+})
 
 module.exports = router;

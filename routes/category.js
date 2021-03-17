@@ -8,8 +8,10 @@ const config = require('../config');
 router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
-  let where = {};
-  if (req.query.search) where.name = { [Op.like]: '%' + req.query.search + '%' };
+  let where = {
+    // userId: req.userId
+  };
+  if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Category.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['updatedAt', 'DESC']],
@@ -45,18 +47,30 @@ router.post('/', async (req, res, next) => {
 /* PUT update existing category. */
 router.put('/:id', async (req, res, next) => {
   let category = await Category.findOne({ where: { id: req.params.id } });
-  if (category) {
-    res.json({
-      success: true,
-      message: 'Category updated',
-      data: category
-    });
-  } else {
-    res.status(400).json({
-      success: false,
-      message: 'No category found!'
-    })
-  }
+  if (!category) return res.status(400).json({
+    success: false,
+    message: 'No category found!'
+  });
+  category.name = req.body.name;
+  category.isActive = req.body.isActive;
+  const response = await category.save();
+  return res.json({
+    success: true,
+    message: 'User updated',
+    data: response
+  });
 });
+
+router.delete('/:id', async (req, res, next) => {
+  let response = await Category.destroy({ where: { id: req.params.id } });
+  if (response) res.json({
+    success: true,
+    message: 'Category deleted'
+  });
+  else res.status(400).json({
+    success: false,
+    message: 'No category found!'
+  });
+})
 
 module.exports = router;

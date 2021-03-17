@@ -8,8 +8,10 @@ const { Op } = require("sequelize");
 router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
-  let where = {};
-  if (req.query.search) where.name = { [Op.like]: '%' + req.query.search + '%' };
+  let where = {
+    // userId: req.userId
+  };
+  if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Brand.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['updatedAt', 'DESC']],
@@ -45,18 +47,31 @@ router.post('/', async (req, res, next) => {
 /* PUT update existing brand. */
 router.put('/:id', async (req, res, next) => {
   let brand = await Brand.findOne({ where: { id: req.params.id } });
-  if (brand) {
-    res.json({
-      success: true,
-      message: 'Brand updated',
-      data: brand
-    });
-  } else {
-    res.status(400).json({
-      success: false,
-      message: 'No brand found!'
-    })
-  }
+  if (!brand) return res.status(400).json({
+    success: false,
+    message: 'No brand found!'
+  });
+  brand.name = req.body.name;
+  brand.manufacturerName = req.body.manufacturerName;
+  brand.isActive = req.body.isActive;
+  const response = await brand.save();
+  return res.json({
+    success: true,
+    message: 'User updated',
+    data: response
+  });
 });
+
+router.delete('/:id', async (req, res, next) => {
+  let response = await Brand.destroy({ where: { id: req.params.id } });
+  if (response) res.json({
+    success: true,
+    message: 'Brand deleted'
+  });
+  else res.status(400).json({
+    success: false,
+    message: 'No brand found!'
+  });
+})
 
 module.exports = router;

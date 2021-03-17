@@ -9,7 +9,6 @@ const { response } = require('express');
 
 /* GET users listing. */
 router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
-  console.log('here')
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {
@@ -19,7 +18,7 @@ router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, re
   const response = await User.findAndCountAll({
     include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
     orderBy: [['updatedAt', 'DESC']],
-    limit, offset, where, raw: true, paranoid: false
+    limit, offset, where, raw: true
   });
   res.json({
     success: true,
@@ -29,12 +28,14 @@ router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, re
   });
 });
 
+/* GET current logged in user. */
 router.get('/me', authService.isLoggedIn, async (req, res, next) => {
   return res.json({
     success: true,
     data: req.user
   })
 });
+
 /* POST user login. */
 router.post('/auth/login', async (req, res, next) => {
   let loginKey = req.body.username.indexOf('@') > -1 ? 'email' : 'username';
@@ -85,20 +86,20 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
 /* PUT update existing user. */
 router.put('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
   let user = await User.findOne({ where: { id: req.params.id } });
+  if (!user) return res.status(400).json({
+    success: false,
+    message: 'No user found!'
+  });
   user.firstName = req.body.firstName;
   user.lastName = req.body.lastName;
   user.roleId = req.body.roleId;
   user.phone = req.body.phone;
   user.isActive = req.body.isActive;
   const response = await user.save();
-  if (response) res.json({
+  return res.json({
     success: true,
     message: 'User updated',
     data: response
-  });
-  else res.status(400).json({
-    success: false,
-    message: 'No user found!'
   });
 });
 
@@ -115,7 +116,7 @@ router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (r
 })
 
 
-router.get('/relations', authService.isLoggedIn, authService.isSuperAdmin,  async (req, res, next) => {
+router.get('/relations', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
   const roles = await Role.findAll();
   res.json({
     success: true,
