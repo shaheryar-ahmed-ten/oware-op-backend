@@ -37,7 +37,7 @@ module.exports = {
       createdAt: new Date(),
       updatedAt: new Date()
     }]);
-    let permission_accesses = await PermissionAccess.bulkCreate([{
+    let permissionAccesses = await PermissionAccess.bulkCreate([{
       roleId: roles[0].dataValues.id,
       permissionId: permissions[0].dataValues.id,
       createdAt: new Date(),
@@ -48,7 +48,7 @@ module.exports = {
       createdAt: new Date(),
       updatedAt: new Date()
     }]);
-    return [roles, superUser, permissions, permission_accesses];
+    return [roles, superUser, permissions, permissionAccesses];
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('Roles', null, {});

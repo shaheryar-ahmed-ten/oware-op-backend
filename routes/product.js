@@ -52,7 +52,12 @@ router.put('/:id', async (req, res, next) => {
     message: 'No product found!'
   });
   product.name = req.body.name;
-  product.manufacturerName = req.body.manufacturerName;
+  product.description = req.body.description;
+  product.dimensionsCBM = req.body.dimensionsCBM;
+  product.weight = req.body.weight;
+  product.categoryId = req.body.categoryId;
+  product.brandId = req.body.brandId;
+  product.uomId = req.body.uomId;
   product.isActive = req.body.isActive;
   const response = await product.save();
   return res.json({

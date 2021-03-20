@@ -12,8 +12,9 @@ const customerRouter = require('./routes/customer');
 const categoryRouter = require('./routes/category');
 const uomRouter = require('./routes/uom');
 const brandRouter = require('./routes/brand');
-const productRouter = require('./routes/product');
 const warehouseRouter = require('./routes/warehouse');
+const productRouter = require('./routes/product');
+const productInwardRouter = require('./routes/productInward');
 
 const app = express();
 
@@ -34,8 +35,9 @@ app.use('/customer', authService.isLoggedIn, customerRouter);
 app.use('/category', authService.isLoggedIn, categoryRouter);
 app.use('/uom', authService.isLoggedIn, uomRouter);
 app.use('/brand', authService.isLoggedIn, brandRouter);
-app.use('/product', authService.isLoggedIn, productRouter);
 app.use('/warehouse', authService.isLoggedIn, warehouseRouter);
+app.use('/product', authService.isLoggedIn, productRouter);
+app.use('/product-inward', authService.isLoggedIn, productInwardRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
