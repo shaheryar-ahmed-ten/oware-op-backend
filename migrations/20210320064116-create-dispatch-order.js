@@ -17,6 +17,10 @@ module.exports = {
       receiverPhone: {
         type: Sequelize.STRING
       },
+      shipmentDate: {
+        allowNull: false,
+        type: Sequelize.DATE
+      },
       productInwardId: {
         type: Sequelize.INTEGER,
         allowNull: true,

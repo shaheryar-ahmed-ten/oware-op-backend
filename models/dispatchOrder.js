@@ -27,6 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     quantity: DataTypes.INTEGER,
     receiverName: DataTypes.STRING,
     receiverPhone: DataTypes.STRING,
+    shipmentDate: DataTypes.DATE,
     productInwardId: {
       type: DataTypes.INTEGER,
       allowNull: true

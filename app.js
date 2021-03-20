@@ -15,6 +15,7 @@ const brandRouter = require('./routes/brand');
 const warehouseRouter = require('./routes/warehouse');
 const productRouter = require('./routes/product');
 const productInwardRouter = require('./routes/productInward');
+const dispatchOrderRouter = require('./routes/dispatchOrder');
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use('/brand', authService.isLoggedIn, brandRouter);
 app.use('/warehouse', authService.isLoggedIn, warehouseRouter);
 app.use('/product', authService.isLoggedIn, productRouter);
 app.use('/product-inward', authService.isLoggedIn, productInwardRouter);
+app.use('/dispatch-order', authService.isLoggedIn, dispatchOrderRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
