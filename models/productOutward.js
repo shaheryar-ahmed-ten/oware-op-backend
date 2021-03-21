@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
       ProductOutward.belongsTo(models.User, {
         foreignKey: 'userId'
       });
-      ProductOutward.belongsTo(models.ProductOutward, {
-        foreignKey: 'productOutwardId'
+      ProductOutward.belongsTo(models.DispatchOrder, {
+        foreignKey: 'dispatchOrderId'
       });
     };
   };
@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     quantity: DataTypes.INTEGER,
-    productOutwardId: {
+    dispatchOrderId: {
       type: DataTypes.INTEGER,
       allowNull: true
     },
