@@ -31,17 +31,17 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/user', userRouter);
-app.use('/customer', authService.isLoggedIn, customerRouter);
-app.use('/category', authService.isLoggedIn, categoryRouter);
-app.use('/uom', authService.isLoggedIn, uomRouter);
-app.use('/brand', authService.isLoggedIn, brandRouter);
-app.use('/warehouse', authService.isLoggedIn, warehouseRouter);
-app.use('/product', authService.isLoggedIn, productRouter);
-app.use('/product-inward', authService.isLoggedIn, productInwardRouter);
-app.use('/dispatch-order', authService.isLoggedIn, dispatchOrderRouter);
-app.use('/product-outward', authService.isLoggedIn, productOutwardRouter);
+app.use('/api/v1/', indexRouter);
+app.use('/api/v1/user', userRouter);
+app.use('/api/v1/customer', authService.isLoggedIn, customerRouter);
+app.use('/api/v1/category', authService.isLoggedIn, categoryRouter);
+app.use('/api/v1/uom', authService.isLoggedIn, uomRouter);
+app.use('/api/v1/brand', authService.isLoggedIn, brandRouter);
+app.use('/api/v1/warehouse', authService.isLoggedIn, warehouseRouter);
+app.use('/api/v1/product', authService.isLoggedIn, productRouter);
+app.use('/api/v1/product-inward', authService.isLoggedIn, productInwardRouter);
+app.use('/api/v1/dispatch-order', authService.isLoggedIn, dispatchOrderRouter);
+app.use('/api/v1/product-outward', authService.isLoggedIn, productOutwardRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
