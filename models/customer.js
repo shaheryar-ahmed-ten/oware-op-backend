@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       Customer.belongsTo(models.User, {
         foreignKey: 'userId'
       });
+      Customer.belongsTo(models.User, {
+        foreignKey: 'contactId',
+        as: 'Contact'
+      });
     };
   };
   Customer.init({
@@ -21,10 +25,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    contactId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     companyName: DataTypes.STRING,
-    contactName: DataTypes.STRING,
-    contactEmail: DataTypes.STRING,
-    contactPhone: DataTypes.STRING,
     notes: DataTypes.STRING,
     isActive: {
       type: DataTypes.BOOLEAN,

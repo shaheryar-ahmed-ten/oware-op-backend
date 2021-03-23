@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
   };
   if (req.query.search) where[Op.or] = ['companyName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Customer.findAndCountAll({
-    include: [{ model: User }],
+    include: [{ model: User }, {model: User, as: 'Contact'}],
     orderBy: [['updatedAt', 'DESC']],
     limit, offset, where, raw: true
   });
@@ -52,9 +52,7 @@ router.put('/:id', async (req, res, next) => {
     message: 'No customer found!'
   });
   customer.companyName = req.body.companyName;
-  customer.contactName = req.body.contactName;
-  customer.contactEmail = req.body.contactEmail;
-  customer.contactPhone = req.body.contactPhone;
+  customer.contactId = req.body.contactId;
   customer.notes = req.body.notes;
   customer.isActive = req.body.isActive;
   const response = await customer.save();
@@ -76,5 +74,14 @@ router.delete('/:id', async (req, res, next) => {
     message: 'No customer found!'
   });
 })
+
+router.get('/relations', async (req, res, next) => {
+  const users = await User.findAll();
+  res.json({
+    success: true,
+    message: 'respond with a resource',
+    users
+  });
+});
 
 module.exports = router;
