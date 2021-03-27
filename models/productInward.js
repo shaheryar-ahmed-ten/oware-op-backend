@@ -23,6 +23,9 @@ module.exports = (sequelize, DataTypes) => {
       ProductInward.belongsTo(models.Customer, {
         foreignKey: 'customerId'
       });
+      ProductInward.hasMany(models.DispatchOrder, {
+        foreignKey: 'productInwardId'
+      });
     };
   };
   ProductInward.init({
@@ -31,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     quantity: DataTypes.INTEGER,
+    currentQuantity: DataTypes.INTEGER,
     productId: {
       type: DataTypes.INTEGER,
       allowNull: true

@@ -15,7 +15,7 @@ router.get('/', async (req, res, next) => {
   const response = await ProductInward.findAndCountAll({
     include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
     orderBy: [['updatedAt', 'DESC']],
-    where, limit, offset, raw: true
+    where, limit, offset
   });
   res.json({
     success: true,
@@ -32,7 +32,8 @@ router.post('/', async (req, res, next) => {
   try {
     productInward = await ProductInward.create({
       userId: req.userId,
-      ...req.body
+      ...req.body,
+      currentQuantity: req.body.quantity
     });
   } catch (err) {
     message = err.errors.pop().message;
@@ -51,6 +52,12 @@ router.put('/:id', async (req, res, next) => {
     success: false,
     message: 'No productInward found!'
   });
+  const quantityDifference = req.body.quantity - productInward.quantity;
+  productInward.currentQuantity += quantityDifference;
+  if (productInward.currentQuantity < 0) return res.json({
+    success: false,
+    message: 'Quantity should be less than available quantity'
+  })
   productInward.quantity = req.body.quantity;
   productInward.customerId = req.body.customerId;
   productInward.warehouseId = req.body.warehouseId;
@@ -78,7 +85,7 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   const customers = await Customer.findAll();
-  const products = await Product.findAll({ include: [{ model: UOM }], raw: true });
+  const products = await Product.findAll({ include: [{ model: UOM }] });
   const warehouses = await Warehouse.findAll();
   res.json({
     success: true,

@@ -10,8 +10,7 @@ module.exports.isLoggedIn = (req, res, next) => {
         if (err) return res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
         const user = await User.findOne({
             where: { id: decoded.id },
-            include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
-            raw: true
+            include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }]
         });
         if (!user) return res.status(401).json({ status: false, message: 'User doesn\'t exist' });
         else if (!user.isActive) return res.status(401).json({ status: false, message: 'User is inactive' });
@@ -22,7 +21,7 @@ module.exports.isLoggedIn = (req, res, next) => {
 }
 
 module.exports.isSuperAdmin = (req, res, next) => {
-    if (req.user['Role.PermissionAccesses.Permission.type'] === 'superadmin_privileges') next();
+    if (req.user.Role.PermissionAccesses.find(permissionAccess => permissionAccess.Permission.type == 'superadmin_privileges')) next();
     else res.status(401).json({ status: false, message: 'Operation not permitted!' })
 }
 

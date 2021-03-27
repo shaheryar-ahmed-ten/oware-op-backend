@@ -17,6 +17,9 @@ module.exports = (sequelize, DataTypes) => {
       DispatchOrder.belongsTo(models.ProductInward, {
         foreignKey: 'productInwardId'
       });
+      DispatchOrder.hasMany(models.ProductOutward, {
+        foreignKey: 'dispatchOrderId'
+      });
     };
   };
   DispatchOrder.init({

@@ -15,7 +15,7 @@ router.get('/', async (req, res, next) => {
   const response = await Warehouse.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['updatedAt', 'DESC']],
-    where, limit, offset, raw: true
+    where, limit, offset
   });
   res.json({
     success: true,

@@ -15,7 +15,7 @@ router.get('/', async (req, res, next) => {
   const response = await Customer.findAndCountAll({
     include: [{ model: User }, {model: User, as: 'Contact'}],
     orderBy: [['updatedAt', 'DESC']],
-    limit, offset, where, raw: true
+    limit, offset, where
   });
   res.json({
     success: true,

@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
   const response = await UOM.findAndCountAll({
     include: [{ model: User }],
     orderBy: [['updatedAt', 'DESC']],
-    limit, offset, where, raw: true
+    limit, offset, where
   });
   res.json({
     success: true,

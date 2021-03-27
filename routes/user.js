@@ -18,7 +18,7 @@ router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, re
   const response = await User.findAndCountAll({
     include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
     orderBy: [['updatedAt', 'DESC']],
-    limit, offset, where, raw: true
+    limit, offset, where
   });
   res.json({
     success: true,

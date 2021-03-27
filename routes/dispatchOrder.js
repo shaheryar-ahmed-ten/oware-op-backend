@@ -20,7 +20,7 @@ router.get('/', async (req, res, next) => {
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
     }],
     orderBy: [['updatedAt', 'DESC']],
-    where, limit, offset, raw: true
+    where, limit, offset
   });
   res.json({
     success: true,
@@ -59,7 +59,6 @@ router.put('/:id', async (req, res, next) => {
   dispatchOrder.quantity = req.body.quantity;
   dispatchOrder.receiverName = req.body.receiverName;
   dispatchOrder.receiverPhone = req.body.receiverPhone;
-  dispatchOrder.productInwardId = req.body.productInwardId;
   dispatchOrder.isActive = req.body.isActive;
   const response = await dispatchOrder.save();
   return res.json({
@@ -86,7 +85,7 @@ router.get('/relations', async (req, res, next) => {
     include: [{
       model: Product,
       include: [{ model: UOM }]
-    }, { model: Customer }, { model: Warehouse }], raw: true
+    }, { model: Customer }, { model: Warehouse }]
   });
   res.json({
     success: true,
