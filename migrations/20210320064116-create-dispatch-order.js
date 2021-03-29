@@ -21,19 +21,9 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       },
-      productInwardId: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: 'ProductInwards', // name of Target model
-          key: 'id', // key in Target model that we're referencing
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-      },
       userId: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: false,
         references: {
           model: 'Users', // name of Target model
           key: 'id', // key in Target model that we're referencing

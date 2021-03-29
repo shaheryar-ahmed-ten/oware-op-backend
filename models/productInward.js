@@ -23,33 +23,26 @@ module.exports = (sequelize, DataTypes) => {
       ProductInward.belongsTo(models.Customer, {
         foreignKey: 'customerId'
       });
-      ProductInward.hasMany(models.DispatchOrder, {
-        foreignKey: 'productInwardId'
-      });
     };
   };
   ProductInward.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false
     },
     quantity: DataTypes.INTEGER,
     currentQuantity: DataTypes.INTEGER,
     productId: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false
     },
     customerId: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false
     },
     warehouseId: {
       type: DataTypes.INTEGER,
-      allowNull: true
-    },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
+      allowNull: false
     },
   }, {
     sequelize,

@@ -5,7 +5,7 @@ module.exports = {
     // logic for transforming into the new state
     await queryInterface.addColumn('Customers', 'contactId', {
       type: Sequelize.INTEGER,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: 'Users', // name of Target model
         key: 'id', // key in Target model that we're referencing
