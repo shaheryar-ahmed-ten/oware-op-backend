@@ -3,7 +3,7 @@ const { Model } = require('sequelize');
 const bcrypt = require('bcrypt');
 
 module.exports = (sequelize, DataTypes) => {
-  class DispatchOrder extends Model {
+  class Inventory extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,27 +11,33 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      DispatchOrder.belongsTo(models.User, {
-        foreignKey: 'userId'
+      Inventory.belongsTo(models.Product, {
+        foreignKey: 'productId'
       });
-      DispatchOrder.belongsTo(models.ProductInward, {
-        foreignKey: 'productInwardId'
+      Inventory.belongsTo(models.Warehouse, {
+        foreignKey: 'warehouseId'
       });
-      DispatchOrder.hasMany(models.ProductOutward, {
-        foreignKey: 'dispatchOrderId'
+      Inventory.belongsTo(models.Customer, {
+        foreignKey: 'customerId'
+      });
+      Inventory.hasMany(models.ProductInward, {
+        foreignKey: 'inventoryId'
       });
     };
   };
-  DispatchOrder.init({
-    userId: {
+  Inventory.init({
+    quantity: DataTypes.INTEGER,
+    commitedQuantity: DataTypes.INTEGER,
+    dispatchedQuantity: DataTypes.INTEGER,
+    productId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    quantity: DataTypes.INTEGER,
-    receiverName: DataTypes.STRING,
-    receiverPhone: DataTypes.STRING,
-    shipmentDate: DataTypes.DATE,
-    productInwardId: {
+    customerId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    warehouseId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
@@ -42,8 +48,8 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     paranoid: true,
-    modelName: 'DispatchOrder',
+    modelName: 'Inventory',
   });
 
-  return DispatchOrder;
+  return Inventory;
 };

@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
   Warehouse.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false
     },
     name: DataTypes.STRING,
     businessWarehouseCode: DataTypes.STRING,

@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
   UOM.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false
     },
     name: {
       type: DataTypes.STRING,
