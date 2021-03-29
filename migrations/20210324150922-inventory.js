@@ -19,14 +19,14 @@ module.exports = {
           ON PI.customerId = DO.customerId
           AND PI.warehouseId = DO.warehouseId
           AND PI.productId = DO.productId
-        LEFT JOIN ProductOutwards as PO on PO.dispatchOrderId = DO.id
-        LEFT JOIN Products as Product ON PI.productId=Product.id
-        LEFT JOIN Warehouses as Warehouse ON PI.warehouseId=Warehouse.id
-        LEFT JOIN Customers as Customer ON PI.customerId=Customer.id
-        LEFT JOIN UOMs as UOM ON Product.uomId=UOM.id
+          INNER JOIN ProductOutwards as PO on PO.dispatchOrderId = DO.id
+          LEFT JOIN Products as Product ON PI.productId=Product.id
+          LEFT JOIN Warehouses as Warehouse ON PI.warehouseId=Warehouse.id
+          LEFT JOIN Customers as Customer ON PI.customerId=Customer.id
+          LEFT JOIN UOMs as UOM ON Product.uomId=UOM.id
         group by PI.customerId, PI.productId, PI.warehouseId
         ;
-    `);
+        `);
   },
 
   down: async function (queryInterface, Sequelize) {
