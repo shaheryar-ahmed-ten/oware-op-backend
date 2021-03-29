@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
@@ -32,8 +32,7 @@ router.post('/', async (req, res, next) => {
   try {
     productInward = await ProductInward.create({
       userId: req.userId,
-      ...req.body,
-      currentQuantity: req.body.quantity
+      ...req.body
     });
   } catch (err) {
     message = err.errors.pop().message;
@@ -53,12 +52,6 @@ router.put('/:id', async (req, res, next) => {
     message: 'No productInward found!'
   });
   const quantityDifference = req.body.quantity - productInward.quantity;
-  productInward.currentQuantity += quantityDifference;
-  if (productInward.currentQuantity < 0) return res.json({
-    success: false,
-    message: 'Quantity should be less than available quantity'
-  })
-  productInward.quantity = req.body.quantity;
   productInward.customerId = req.body.customerId;
   productInward.warehouseId = req.body.warehouseId;
   productInward.productId = req.body.productId
@@ -87,10 +80,16 @@ router.get('/relations', async (req, res, next) => {
   const customers = await Customer.findAll();
   const products = await Product.findAll({ include: [{ model: UOM }] });
   const warehouses = await Warehouse.findAll();
+  const inventories = await Inventory.findAll({
+    attributes: ['customerId', 'warehouseId', 'productId', 'quantity', 'committedQuantity', 'dispatchedQuantity'],
+    raw: true,
+    paranoid: false,
+    include: [{ model: Customer }, { model: Warehouse }, { model: Product }]
+  });
   res.json({
     success: true,
     message: 'respond with a resource',
-    customers, products, warehouses
+    customers, products, warehouses, inventories
   });
 });
 

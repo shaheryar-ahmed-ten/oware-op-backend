@@ -11,14 +11,15 @@ module.exports = {
       companyName: {
         type: Sequelize.STRING
       },
-      contactName: {
-        type: Sequelize.STRING
-      },
-      contactEmail: {
-        type: Sequelize.STRING
-      },
-      contactPhone: {
-        type: Sequelize.STRING
+      contactId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Users', // name of Target model
+          key: 'id', // key in Target model that we're referencing
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       notes: {
         type: Sequelize.STRING

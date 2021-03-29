@@ -17,10 +17,7 @@ router.get('/', async (req, res, next) => {
       { model: User },
       {
         model: DispatchOrder,
-        include: [{
-          model: ProductInward,
-          include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
-        }]
+        include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
       }],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
@@ -43,7 +40,7 @@ router.post('/', async (req, res, next) => {
       ...req.body
     });
   } catch (err) {
-    message = err.errors.message;
+    message = err;
   }
   res.json({
     success: true,
@@ -59,13 +56,7 @@ router.put('/:id', async (req, res, next) => {
     success: false,
     message: 'No productOutward found!'
   });
-  productOutward.ProductInward.currentQuantity -= req.body.quantity;
-  if (productOutward.ProductInward.currentQuantity < 0) return res.json({
-    success: false,
-    message: 'Quantity should be less than available quantity'
-  })
   await productOutward.ProductInward.save();
-  productOutward.quantity = req.body.quantity;
   productOutward.receiverName = req.body.receiverName;
   productOutward.receiverPhone = req.body.receiverPhone;
   productOutward.isActive = req.body.isActive;
@@ -91,10 +82,7 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
-    include: [{
-      model: ProductInward,
-      include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
-    }]
+    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
   });
   res.json({
     success: true,

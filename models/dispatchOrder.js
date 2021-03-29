@@ -14,8 +14,14 @@ module.exports = (sequelize, DataTypes) => {
       DispatchOrder.belongsTo(models.User, {
         foreignKey: 'userId'
       });
-      DispatchOrder.belongsTo(models.ProductInward, {
-        foreignKey: 'productInwardId'
+      DispatchOrder.belongsTo(models.Product, {
+        foreignKey: 'productId'
+      });
+      DispatchOrder.belongsTo(models.Warehouse, {
+        foreignKey: 'warehouseId'
+      });
+      DispatchOrder.belongsTo(models.Customer, {
+        foreignKey: 'customerId'
       });
       DispatchOrder.hasMany(models.ProductOutward, {
         foreignKey: 'dispatchOrderId'
@@ -31,13 +37,17 @@ module.exports = (sequelize, DataTypes) => {
     receiverName: DataTypes.STRING,
     receiverPhone: DataTypes.STRING,
     shipmentDate: DataTypes.DATE,
-    productInwardId: {
+    productId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
+    customerId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    warehouseId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     },
   }, {
     sequelize,

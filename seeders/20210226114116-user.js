@@ -17,10 +17,10 @@ module.exports = {
     let superUser = await User.create({
       firstName: 'Yousha',
       lastName: 'Rizvi',
-      email: 'yousha@yopmail.com',
-      username: 'yousha',
+      email: 'admin@yopmail.com',
+      username: 'admin',
       isActive: true,
-      password: 'yousha',
+      password: 'admin',
       roleId: roles[1].dataValues.id,
       phone: '03242363523',
       createdAt: new Date(),

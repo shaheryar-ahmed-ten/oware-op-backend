@@ -13,12 +13,7 @@ router.get('/', async (req, res, next) => {
   };
   if (req.query.search) where[Op.or] = ['ProductInward.Product.name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await DispatchOrder.findAndCountAll({
-    include: [{
-      model: User
-    }, {
-      model: ProductInward,
-      include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
-    }],
+    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
@@ -40,7 +35,8 @@ router.post('/', async (req, res, next) => {
       ...req.body
     });
   } catch (err) {
-    message = err.errors.message;
+    console.log(err)
+    message = err;
   }
   res.json({
     success: true,
@@ -56,7 +52,6 @@ router.put('/:id', async (req, res, next) => {
     success: false,
     message: 'No dispatchOrder found!'
   });
-  dispatchOrder.quantity = req.body.quantity;
   dispatchOrder.receiverName = req.body.receiverName;
   dispatchOrder.receiverPhone = req.body.receiverPhone;
   dispatchOrder.isActive = req.body.isActive;
@@ -81,16 +76,13 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 router.get('/relations', async (req, res, next) => {
-  const productInwards = await ProductInward.findAll({
-    include: [{
-      model: Product,
-      include: [{ model: UOM }]
-    }, { model: Customer }, { model: Warehouse }]
-  });
+  const customers = await Customer.findAll();
+  const products = await Product.findAll({ include: [{ model: UOM }] });
+  const warehouses = await Warehouse.findAll();
   res.json({
     success: true,
     message: 'respond with a resource',
-    productInwards
+    customers, products, warehouses
   });
 });
 
