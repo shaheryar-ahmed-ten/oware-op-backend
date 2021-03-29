@@ -16,16 +16,17 @@ router.get('/', async (req, res, next) => {
 
   const response = await Inventory.findAll({
     attributes: ['product', 'customer', 'warehouse', 'uom', 'customerId', 'warehouseId',
-                    'productId', 'quantity', 'committedQuantity', 'dispatchedQuantity'],
+      'productId', 'quantity', 'committedQuantity', 'dispatchedQuantity'],
     raw: true,
     paranoid: false,
     where, limit, offset
   });
+  const totalCount = await Inventory.count({ where, raw: true, paranoid: false });
   res.json({
     success: true,
     message: 'respond with a resource',
     data: response,
-    pages: Math.ceil(response.count / limit)
+    pages: Math.ceil(totalCount / limit)
   });
 });
 
