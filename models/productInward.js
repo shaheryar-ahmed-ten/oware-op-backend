@@ -23,6 +23,9 @@ module.exports = (sequelize, DataTypes) => {
       ProductInward.belongsTo(models.Customer, {
         foreignKey: 'customerId'
       });
+      ProductInward.belongsTo(models.Inventory, {
+        foreignKey: 'inventoryId'
+      });
     };
   };
   ProductInward.init({
@@ -36,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     customerId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    inventoryId: {
       type: DataTypes.INTEGER,
       allowNull: false
     },

@@ -31,38 +31,15 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      productId: {
+      inentoryId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Products', // name of Target model
+          model: 'Inventories', // name of Target model
           key: 'id', // key in Target model that we're referencing
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
-      },
-      customerId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Customers', // name of Target model
-          key: 'id', // key in Target model that we're referencing
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-      },
-      warehouseId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Warehouses', // name of Target model
-          key: 'id', // key in Target model that we're referencing
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-      },
-      isActive: {
-        type: Sequelize.BOOLEAN
       },
       createdAt: {
         allowNull: false,

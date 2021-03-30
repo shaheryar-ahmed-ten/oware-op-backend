@@ -23,13 +23,10 @@ module.exports = (sequelize, DataTypes) => {
     };
   };
   Inventory.init({
-    quantity: DataTypes.INTEGER,
+    availableQuantity: DataTypes.INTEGER,
+    totalInwardQuantity: DataTypes.INTEGER,
     commitedQuantity: DataTypes.INTEGER,
     dispatchedQuantity: DataTypes.INTEGER,
-    product: DataTypes.INTEGER,
-    uom: DataTypes.INTEGER,
-    warehouse: DataTypes.INTEGER,
-    customer: DataTypes.INTEGER,
     productId: {
       type: DataTypes.INTEGER,
       allowNull: false
