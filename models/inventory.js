@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
   Inventory.init({
     availableQuantity: DataTypes.INTEGER,
     totalInwardQuantity: DataTypes.INTEGER,
-    commitedQuantity: {
+    committedQuantity: {
       type: DataTypes.INTEGER,
       defaultValue: 0
     },

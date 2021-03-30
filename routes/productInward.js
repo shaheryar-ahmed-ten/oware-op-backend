@@ -70,11 +70,6 @@ router.put('/:id', async (req, res, next) => {
     success: false,
     message: 'No productInward found!'
   });
-  const quantityDifference = req.body.quantity - productInward.quantity;
-  productInward.customerId = req.body.customerId;
-  productInward.warehouseId = req.body.warehouseId;
-  productInward.productId = req.body.productId
-  productInward.isActive = req.body.isActive;
   const response = await productInward.save();
   return res.json({
     success: true,

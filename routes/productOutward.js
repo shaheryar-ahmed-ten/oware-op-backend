@@ -14,10 +14,12 @@ router.get('/', async (req, res, next) => {
   if (req.query.search) where[Op.or] = ['DispatchOrder.ProductInward.Product.name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await ProductOutward.findAndCountAll({
     include: [
-      { model: User },
       {
         model: DispatchOrder,
-        include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+        include: [{
+          model: Inventory,
+          include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
+        }]
       }],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
@@ -33,12 +35,12 @@ router.get('/', async (req, res, next) => {
 /* POST create new productOutward. */
 router.post('/', async (req, res, next) => {
   let message = 'New productOutward registered';
-  let dispatchOrder = await DispatchOrder.findByPk(req.body.dispatchOrderId, { include: [{ model: ProductOutwards }, { model: inventory }] })
+  let dispatchOrder = await DispatchOrder.findByPk(req.body.dispatchOrderId, { include: [{ model: ProductOutward }, { model: Inventory }] })
   if (!dispatchOrder) return res.json({
     success: false,
     message: 'No dispatch order found'
   });
-  let availableOrderQuantity = dispatchOrder.ProductOutwards.reduce((acc, outward) => acc += outward.quantity, 0);
+  let availableOrderQuantity = dispatchOrder.quantity - dispatchOrder.ProductOutwards.reduce((acc, outward) => acc += outward.quantity, 0);
   if (req.body.quantity > availableOrderQuantity) return res.json({
     success: false,
     message: 'Cannot dispatch above ordered quantity'
@@ -47,7 +49,8 @@ router.post('/', async (req, res, next) => {
     success: false,
     message: 'Cannot dispatch above available quantity'
   })
-  dispatchOrder.inventory.dispatchedQuantity += (+req.body.quantity);
+  dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
+  dispatchOrder.Inventory.save();
   let productOutward;
   try {
     productOutward = await ProductOutward.create({

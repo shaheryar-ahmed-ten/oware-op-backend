@@ -13,7 +13,10 @@ router.get('/', async (req, res, next) => {
   };
   if (req.query.search) where[Op.or] = ['ProductInward.Product.name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await DispatchOrder.findAndCountAll({
-    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+    include: [{
+      model: Inventory,
+      include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+    }],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
@@ -33,11 +36,12 @@ router.post('/', async (req, res, next) => {
     success: false,
     message: 'No inventory found'
   });
-  if (quantity > inventory.availableQuantity) return res.json({
+  if (req.body.quantity > inventory.availableQuantity) return res.json({
     success: false,
     message: 'Cannot create orders above available quantity'
   })
-  inventory.committedQuantity += (+quantity);
+  inventory.committedQuantity += (+req.body.quantity);
+  inventory.availableQuantity -= (+req.body.quantity);
   inventory.save();
   let dispatchOrder;
   try {
@@ -63,9 +67,9 @@ router.put('/:id', async (req, res, next) => {
     success: false,
     message: 'No dispatchOrder found!'
   });
+  dispatchOrder.shipmentDate = req.body.shipmentDate;
   dispatchOrder.receiverName = req.body.receiverName;
   dispatchOrder.receiverPhone = req.body.receiverPhone;
-  dispatchOrder.isActive = req.body.isActive;
   const response = await dispatchOrder.save();
   return res.json({
     success: true,
