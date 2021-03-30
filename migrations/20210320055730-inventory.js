@@ -8,7 +8,16 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      quantity: {
+      availableQuantity: {
+        type: Sequelize.INTEGER
+      },
+      totalInwardQuantity: {
+        type: Sequelize.INTEGER
+      },
+      committedQuantity: {
+        type: Sequelize.INTEGER
+      },
+      dispatchedQuantity: {
         type: Sequelize.INTEGER
       },
       productId: {
@@ -36,16 +45,6 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'Warehouses', // name of Target model
-          key: 'id', // key in Target model that we're referencing
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-      },
-      userId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Users', // name of Target model
           key: 'id', // key in Target model that we're referencing
         },
         onUpdate: 'CASCADE',
