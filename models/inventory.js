@@ -20,13 +20,22 @@ module.exports = (sequelize, DataTypes) => {
       Inventory.belongsTo(models.Customer, {
         foreignKey: 'customerId'
       });
+      Inventory.hasMany(models.DispatchOrder, {
+        foreignKey: 'inventoryId'
+      });
     };
   };
   Inventory.init({
     availableQuantity: DataTypes.INTEGER,
     totalInwardQuantity: DataTypes.INTEGER,
-    commitedQuantity: DataTypes.INTEGER,
-    dispatchedQuantity: DataTypes.INTEGER,
+    commitedQuantity: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    dispatchedQuantity: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
     productId: {
       type: DataTypes.INTEGER,
       allowNull: false

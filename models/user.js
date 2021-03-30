@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsTo(models.Role, {
         foreignKey: 'roleId'
       });
+      User.hasOne(models.Customer, {
+        foreignKey: 'contactId'
+      });
     };
     generateHash(password) {
       return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);

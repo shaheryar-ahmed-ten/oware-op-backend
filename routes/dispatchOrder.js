@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
@@ -28,6 +28,17 @@ router.get('/', async (req, res, next) => {
 /* POST create new dispatchOrder. */
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
+  let inventory = await Inventory.findByPk(req.body.inventoryId);
+  if (!inventory) return res.json({
+    success: false,
+    message: 'No inventory found'
+  });
+  if (quantity > inventory.availableQuantity) return res.json({
+    success: false,
+    message: 'Cannot create orders above available quantity'
+  })
+  inventory.committedQuantity += (+quantity);
+  inventory.save();
   let dispatchOrder;
   try {
     dispatchOrder = await DispatchOrder.create({
@@ -76,13 +87,17 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 router.get('/relations', async (req, res, next) => {
-  const customers = await Customer.findAll();
-  const products = await Product.findAll({ include: [{ model: UOM }] });
-  const warehouses = await Warehouse.findAll();
+  const inventories = await Inventory.findAll({
+    include: [{
+      model: Customer
+    },
+    { model: Product, include: [{ model: UOM }] },
+    { model: Warehouse }]
+  })
   res.json({
     success: true,
     message: 'respond with a resource',
-    customers, products, warehouses
+    inventories
   });
 });
 

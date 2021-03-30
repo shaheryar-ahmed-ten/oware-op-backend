@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { ProductOutward, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, ProductOutward, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
@@ -33,6 +33,21 @@ router.get('/', async (req, res, next) => {
 /* POST create new productOutward. */
 router.post('/', async (req, res, next) => {
   let message = 'New productOutward registered';
+  let dispatchOrder = await DispatchOrder.findByPk(req.body.dispatchOrderId, { include: [{ model: ProductOutwards }, { model: inventory }] })
+  if (!dispatchOrder) return res.json({
+    success: false,
+    message: 'No dispatch order found'
+  });
+  let availableOrderQuantity = dispatchOrder.ProductOutwards.reduce((acc, outward) => acc += outward.quantity, 0);
+  if (req.body.quantity > availableOrderQuantity) return res.json({
+    success: false,
+    message: 'Cannot dispatch above ordered quantity'
+  })
+  if (req.body.quantity > dispatchOrder.Inventory.availableQuantity) return res.json({
+    success: false,
+    message: 'Cannot dispatch above available quantity'
+  })
+  dispatchOrder.inventory.dispatchedQuantity += (+req.body.quantity);
   let productOutward;
   try {
     productOutward = await ProductOutward.create({
@@ -82,7 +97,7 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
-    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
+    include: [{ model: Inventory, include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }] }]
   });
   res.json({
     success: true,

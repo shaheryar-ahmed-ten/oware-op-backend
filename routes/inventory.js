@@ -11,22 +11,19 @@ router.get('/', async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['product', 'customer', 'warehouse']
+  if (req.query.search) where[Op.or] = ['Product.name', 'Customer.companyName', 'Warehouse.name']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
 
-  const response = await Inventory.findAll({
-    attributes: ['product', 'customer', 'warehouse', 'uom', 'customerId', 'warehouseId',
-      'productId', 'quantity', 'committedQuantity', 'dispatchedQuantity'],
-    raw: true,
-    paranoid: false,
+  const response = await Inventory.findAndCountAll({
+    include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+    orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
-  const totalCount = await Inventory.count({ where, raw: true, paranoid: false });
   res.json({
     success: true,
     message: 'respond with a resource',
-    data: response,
-    pages: Math.ceil(totalCount / limit)
+    data: response.rows,
+    pages: Math.ceil(response.count / limit)
   });
 });
 

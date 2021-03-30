@@ -28,6 +28,25 @@ router.get('/', async (req, res, next) => {
 /* POST create new productInward. */
 router.post('/', async (req, res, next) => {
   let message = 'New productInward registered';
+  let inventory = await Inventory.findOne({
+    where: {
+      customerId: req.body.customerId,
+      warehouseId: req.body.warehouseId,
+      productId: req.body.productId
+    }
+  });
+  if (!inventory) await Inventory.create({
+    customerId: req.body.customerId,
+    warehouseId: req.body.warehouseId,
+    productId: req.body.productId,
+    availableQuantity: req.body.quantity,
+    totalInwardQuantity: req.body.quantity
+  })
+  else {
+    inventory.availableQuantity += (+req.body.quantity);
+    inventory.totalInwardQuantity += (+req.body.quantity);
+    inventory.save();
+  }
   let productInward;
   try {
     productInward = await ProductInward.create({
@@ -80,16 +99,10 @@ router.get('/relations', async (req, res, next) => {
   const customers = await Customer.findAll();
   const products = await Product.findAll({ include: [{ model: UOM }] });
   const warehouses = await Warehouse.findAll();
-  const inventories = await Inventory.findAll({
-    attributes: ['customerId', 'warehouseId', 'productId', 'quantity', 'committedQuantity', 'dispatchedQuantity'],
-    raw: true,
-    paranoid: false,
-    include: [{ model: Customer }, { model: Warehouse }, { model: Product }]
-  });
   res.json({
     success: true,
     message: 'respond with a resource',
-    customers, products, warehouses, inventories
+    customers, products, warehouses
   });
 });
 

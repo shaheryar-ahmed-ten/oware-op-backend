@@ -31,7 +31,7 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      inentoryId: {
+      inventoryId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
