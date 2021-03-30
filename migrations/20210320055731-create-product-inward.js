@@ -1,24 +1,25 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Inventories', {
+    await queryInterface.createTable('ProductInwards', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      availableQuantity: {
+      quantity: {
         type: Sequelize.INTEGER
       },
-      totalInwardQuantity: {
-        type: Sequelize.INTEGER
-      },
-      commitedQuantity: {
-        type: Sequelize.INTEGER
-      },
-      dispatchedQuantity: {
-        type: Sequelize.INTEGER
+      userId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Users', // name of Target model
+          key: 'id', // key in Target model that we're referencing
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       productId: {
         type: Sequelize.INTEGER,
@@ -64,6 +65,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Inventories');
+    await queryInterface.dropTable('ProductInwards');
   }
 };
