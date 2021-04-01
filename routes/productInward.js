@@ -73,12 +73,19 @@ router.put('/:id', async (req, res, next) => {
     success: false,
     message: 'No productInward found!'
   });
-  const response = await productInward.save();
-  return res.json({
-    success: true,
-    message: 'User updated',
-    data: response
-  });
+  try {
+    const response = await productInward.save();
+    return res.json({
+      success: true,
+      message: 'Product Inward updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

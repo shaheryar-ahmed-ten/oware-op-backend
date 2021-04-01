@@ -56,12 +56,19 @@ router.put('/:id', async (req, res, next) => {
   });
   category.name = req.body.name;
   category.isActive = req.body.isActive;
-  const response = await category.save();
-  return res.json({
-    success: true,
-    message: 'User updated',
-    data: response
-  });
+  try {
+    const response = await category.save();
+    return res.json({
+      success: true,
+      message: 'Category updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

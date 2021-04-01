@@ -57,12 +57,19 @@ router.put('/:id', async (req, res, next) => {
   });
   uom.name = req.body.name;
   uom.isActive = req.body.isActive;
-  const response = await uom.save();
-  return res.json({
-    success: true,
-    message: 'User updated',
-    data: response
-  });
+  try {
+    const response = await uom.save();
+    return res.json({
+      success: true,
+      message: 'UOM updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

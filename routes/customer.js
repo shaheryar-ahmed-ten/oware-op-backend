@@ -58,12 +58,19 @@ router.put('/:id', async (req, res, next) => {
   customer.contactId = req.body.contactId;
   customer.notes = req.body.notes;
   customer.isActive = req.body.isActive;
-  const response = await customer.save();
-  return res.json({
-    success: true,
-    message: 'Customer updated',
-    data: response
-  });
+  try {
+    const response = await customer.save();
+    return res.json({
+      success: true,
+      message: 'Customer updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

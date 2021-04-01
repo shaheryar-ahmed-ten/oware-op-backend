@@ -73,12 +73,19 @@ router.put('/:id', async (req, res, next) => {
   dispatchOrder.shipmentDate = req.body.shipmentDate;
   dispatchOrder.receiverName = req.body.receiverName;
   dispatchOrder.receiverPhone = req.body.receiverPhone;
-  const response = await dispatchOrder.save();
-  return res.json({
-    success: true,
-    message: 'User updated',
-    data: response
-  });
+  try {
+    const response = await dispatchOrder.save();
+    return res.json({
+      success: true,
+      message: 'Dispatch Order updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

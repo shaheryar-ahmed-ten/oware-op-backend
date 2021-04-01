@@ -82,12 +82,19 @@ router.put('/:id', async (req, res, next) => {
   productOutward.receiverName = req.body.receiverName;
   productOutward.receiverPhone = req.body.receiverPhone;
   productOutward.isActive = req.body.isActive;
-  const response = await productOutward.save();
-  return res.json({
-    success: true,
-    message: 'User updated',
-    data: response
-  });
+  try {
+    const response = await productOutward.save();
+    return res.json({
+      success: true,
+      message: 'Product Outward updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

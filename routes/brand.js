@@ -57,12 +57,19 @@ router.put('/:id', async (req, res, next) => {
   brand.name = req.body.name;
   brand.manufacturerName = req.body.manufacturerName;
   brand.isActive = req.body.isActive;
-  const response = await brand.save();
-  return res.json({
-    success: true,
-    message: 'User updated',
-    data: response
-  });
+  try {
+    const response = await brand.save();
+    return res.json({
+      success: true,
+      message: 'Brand updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {

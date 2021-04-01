@@ -104,12 +104,19 @@ router.put('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req,
   user.roleId = req.body.roleId;
   user.phone = req.body.phone;
   user.isActive = req.body.isActive;
-  const response = await user.save();
-  return res.json({
-    success: true,
-    message: 'User updated',
-    data: response
-  });
+  try {
+    const response = await user.save();
+    return res.json({
+      success: true,
+      message: 'User updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {

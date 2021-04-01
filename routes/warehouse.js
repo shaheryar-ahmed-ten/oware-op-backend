@@ -59,12 +59,19 @@ router.put('/:id', async (req, res, next) => {
   warehouse.address = req.body.address;
   warehouse.city = req.body.city;
   warehouse.isActive = req.body.isActive;
-  const response = await warehouse.save();
-  return res.json({
-    success: true,
-    message: 'User updated',
-    data: response
-  });
+  try {
+    const response = await warehouse.save();
+    return res.json({
+      success: true,
+      message: 'Warehouse updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
 });
 
 router.delete('/:id', async (req, res, next) => {
