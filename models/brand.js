@@ -24,9 +24,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
-      unique: true
+      unique: true,
+      validate: { notEmpty: { msg: 'Please enter brand name' } }
     },
-    manufacturerName: DataTypes.STRING,
+    manufacturerName: {
+      type: DataTypes.STRING,
+      unique: true,
+      validate: { notEmpty: { msg: 'Please enter manufacturer name' } }
+    },
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true

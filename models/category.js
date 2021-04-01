@@ -24,6 +24,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
+      allowNull: false,
+      validate: { notEmpty: {msg: 'Please enter category name'} },
       unique: true
     },
     isActive: {

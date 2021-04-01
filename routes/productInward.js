@@ -35,26 +35,29 @@ router.post('/', async (req, res, next) => {
       productId: req.body.productId
     }
   });
-  if (!inventory) await Inventory.create({
-    customerId: req.body.customerId,
-    warehouseId: req.body.warehouseId,
-    productId: req.body.productId,
-    availableQuantity: req.body.quantity,
-    totalInwardQuantity: req.body.quantity
-  })
-  else {
-    inventory.availableQuantity += (+req.body.quantity);
-    inventory.totalInwardQuantity += (+req.body.quantity);
-    inventory.save();
-  }
   let productInward;
   try {
+    if (!inventory) await Inventory.create({
+      customerId: req.body.customerId,
+      warehouseId: req.body.warehouseId,
+      productId: req.body.productId,
+      availableQuantity: req.body.quantity,
+      totalInwardQuantity: req.body.quantity
+    })
+    else {
+      inventory.availableQuantity += (+req.body.quantity);
+      inventory.totalInwardQuantity += (+req.body.quantity);
+      inventory.save();
+    }
     productInward = await ProductInward.create({
       userId: req.userId,
       ...req.body
     });
   } catch (err) {
-    message = err.errors.pop().message;
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
   }
   res.json({
     success: true,

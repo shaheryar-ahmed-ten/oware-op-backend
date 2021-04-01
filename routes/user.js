@@ -82,7 +82,7 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
   } catch (err) {
     return res.json({
       success: false,
-      message: err.message
+      message: err.errors.pop().message
     });
   }
   res.json({

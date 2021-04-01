@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
     quantity: {
       type: DataTypes.INTEGER,
       validate: {
-        isInt: true
+        isInt: { msg: 'Please enter quantity' }
       }
     },
     productId: {

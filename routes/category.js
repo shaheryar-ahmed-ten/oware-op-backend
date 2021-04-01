@@ -35,7 +35,10 @@ router.post('/', async (req, res, next) => {
       ...req.body
     });
   } catch (err) {
-    message = err.errors.pop().message;
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
   }
   res.json({
     success: true,

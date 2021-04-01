@@ -32,17 +32,28 @@ module.exports = (sequelize, DataTypes) => {
     quantity: {
       type: DataTypes.INTEGER,
       validate: {
-        isInt: true
+        isInt: { msg: 'Please enter quantity' }
       }
     },
-    receiverName: DataTypes.STRING,
-    receiverPhone: DataTypes.STRING,
-    shipmentDate: DataTypes.DATE,
+    receiverName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Please enter receiver name' } }
+    },
+    receiverPhone: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Please enter receiver phone number' } }
+    },
+    shipmentDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Please select shipment date' } }
+    },
     inventoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notEmpty: { msg: 'Inventory code cannot be empty' } }
-
+      validate: { notEmpty: { msg: 'Please select inventory' } }
     },
   }, {
     sequelize,

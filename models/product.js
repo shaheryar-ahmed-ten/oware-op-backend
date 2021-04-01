@@ -32,27 +32,36 @@ module.exports = (sequelize, DataTypes) => {
       validate: { notEmpty: true }
 
     },
-    name: DataTypes.STRING,
-    description: DataTypes.STRING,
-    dimensionsCBM: DataTypes.STRING,
-    weight: DataTypes.STRING,
+    name: {
+      type: DataTypes.STRING,
+      validate: { notEmpty: { msg: 'Please enter name' } }
+    },
+    description: {
+      type: DataTypes.STRING,
+      validate: { notEmpty: { msg: 'Please enter description' } }
+    },
+    dimensionsCBM: {
+      type: DataTypes.STRING,
+      validate: { notEmpty: { msg: 'Please enter dimensionsCBM' } }
+    },
+    weight: {
+      type: DataTypes.STRING,
+      validate: { notEmpty: { msg: 'Please enter weight' } }
+    },
     categoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: { msg: 'Category cannot be empty' } }
-
     },
     brandId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: { msg: 'Brand cannot be empty' } }
-
     },
     uomId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: { msg: 'UOM cannot be empty' } }
-
     },
     isActive: {
       type: DataTypes.BOOLEAN,
@@ -62,7 +71,5 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     paranoid: true,
     modelName: 'Product',
-  });
-
-  return Product;
+  }); return Product;
 };

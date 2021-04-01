@@ -33,7 +33,7 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
   let inventory = await Inventory.findByPk(req.body.inventoryId);
-  if (!inventory) return res.json({
+  if (!inventory && !req.body.inventoryId) return res.json({
     success: false,
     message: 'No inventory found'
   });
@@ -51,8 +51,10 @@ router.post('/', async (req, res, next) => {
       ...req.body
     });
   } catch (err) {
-    console.log(err)
-    message = err;
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
   }
   res.json({
     success: true,
