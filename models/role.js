@@ -27,6 +27,6 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     paranoid: true,
     modelName: 'Role',
-  });
+  }).sync();
   return Role;
 };

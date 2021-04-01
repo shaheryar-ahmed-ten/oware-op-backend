@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: true }
 
     },
     name: DataTypes.STRING,
@@ -39,19 +39,19 @@ module.exports = (sequelize, DataTypes) => {
     categoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Category cannot be empty' } }
 
     },
     brandId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Brand cannot be empty' } }
 
     },
     uomId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'UOM cannot be empty' } }
 
     },
     isActive: {

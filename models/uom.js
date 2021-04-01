@@ -20,8 +20,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
-
+      validate: { notEmpty: true }
     },
     name: {
       type: DataTypes.STRING,

@@ -126,8 +126,7 @@ router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (r
 
 
 router.get('/relations', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
-  let where = { isActive: true };
-  const roles = await Role.findAll({ where });
+  const roles = await Role.findAll();
   res.json({
     success: true,
     message: 'respond with a resource',

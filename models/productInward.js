@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: true }
     },
     quantity: {
       type: DataTypes.INTEGER,
@@ -40,17 +40,17 @@ module.exports = (sequelize, DataTypes) => {
     productId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Product cannot be empty' } }
     },
     customerId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Customer cannot be empty' } }
     },
     warehouseId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Warehouse cannot be empty' } }
     },
   }, {
     sequelize,

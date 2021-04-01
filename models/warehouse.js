@@ -16,17 +16,17 @@ module.exports = (sequelize, DataTypes) => {
       });
     };
   };
-  Warehouse.init({
+  const model = Warehouse.init({
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: true }
     },
     name: DataTypes.STRING,
     businessWarehouseCode: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Business warehouse code cannot be empty' } }
     },
     address: DataTypes.STRING,
     city: DataTypes.STRING,

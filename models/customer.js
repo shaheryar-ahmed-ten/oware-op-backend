@@ -24,14 +24,13 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: true }
 
     },
     contactId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
-
+      validate: { notEmpty: { msg: 'Contact can not be empty' } }
     },
     companyName: DataTypes.STRING,
     notes: DataTypes.STRING,

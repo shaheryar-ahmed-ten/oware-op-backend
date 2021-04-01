@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: true }
 
     },
     quantity: {
@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
     inventoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Inventory code cannot be empty' } }
 
     },
   }, {

@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: true }
 
     },
     quantity: {
@@ -35,8 +35,7 @@ module.exports = (sequelize, DataTypes) => {
     dispatchOrderId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
-
+      validate: { notEmpty: { msg: 'Dispatch order cannot be empty' } }
     },
   }, {
     sequelize,

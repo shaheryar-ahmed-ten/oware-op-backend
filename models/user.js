@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     roleId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Role cannot be empty' } }
     },
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
       allowNull: false,
-      validate: { notNull: true }
+      validate: { notEmpty: { msg: 'Username cannot be empty' } }
     },
     phone: DataTypes.STRING,
     password: DataTypes.STRING,
@@ -46,8 +46,8 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
       allowNull: false,
       validate: {
-        notNull: true,
-        isEmail: true
+        notEmpty: { msg: 'Email cannot be empty' },
+        isEmail: { msg: 'Email format is incorrect' }
       }
     },
     isActive: {
