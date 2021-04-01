@@ -23,11 +23,15 @@ module.exports = (sequelize, DataTypes) => {
   Customer.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
     contactId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
     companyName: DataTypes.STRING,
     notes: DataTypes.STRING,

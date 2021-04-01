@@ -35,7 +35,10 @@ router.post('/', async (req, res, next) => {
       ...req.body
     });
   } catch (err) {
-    message = err.errors.pop().message;
+    return res.json({
+      success: false,
+      message: err.message
+    });
   }
   res.json({
     success: true,
@@ -80,9 +83,10 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 router.get('/relations', async (req, res, next) => {
-  const brands = await Brand.findAll();
-  const uoms = await UOM.findAll();
-  const categories = await Category.findAll();
+  let where = { isActive: true };
+  const brands = await Brand.findAll({ where });
+  const uoms = await UOM.findAll({ where });
+  const categories = await Category.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',

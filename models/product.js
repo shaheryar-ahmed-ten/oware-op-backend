@@ -28,7 +28,9 @@ module.exports = (sequelize, DataTypes) => {
   Product.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
     name: DataTypes.STRING,
     description: DataTypes.STRING,
@@ -36,15 +38,21 @@ module.exports = (sequelize, DataTypes) => {
     weight: DataTypes.STRING,
     categoryId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
     brandId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
     uomId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
     isActive: {
       type: DataTypes.BOOLEAN,

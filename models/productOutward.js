@@ -22,12 +22,21 @@ module.exports = (sequelize, DataTypes) => {
   ProductOutward.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
-    quantity: DataTypes.INTEGER,
+    quantity: {
+      type: DataTypes.INTEGER,
+      validate: {
+        isInt: true
+      }
+    },
     dispatchOrderId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
   }, {
     sequelize,

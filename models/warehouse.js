@@ -19,12 +19,17 @@ module.exports = (sequelize, DataTypes) => {
   Warehouse.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
     },
     name: DataTypes.STRING,
-    businessWarehouseCode: DataTypes.STRING,
+    businessWarehouseCode: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: { notNull: true }
+    },
     address: DataTypes.STRING,
-    city: DataTypes.STRING, 
+    city: DataTypes.STRING,
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true

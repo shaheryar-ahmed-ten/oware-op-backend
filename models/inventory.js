@@ -38,15 +38,21 @@ module.exports = (sequelize, DataTypes) => {
     },
     productId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
     customerId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
     warehouseId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
   }, {
     sequelize,

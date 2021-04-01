@@ -91,9 +91,10 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 router.get('/relations', async (req, res, next) => {
-  const customers = await Customer.findAll();
-  const products = await Product.findAll({ include: [{ model: UOM }] });
-  const warehouses = await Warehouse.findAll();
+  let where = { isActive: true };
+  const customers = await Customer.findAll({ where });
+  const products = await Product.findAll({ where, include: [{ model: UOM }] });
+  const warehouses = await Warehouse.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',

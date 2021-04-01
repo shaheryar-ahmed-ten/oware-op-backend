@@ -64,9 +64,15 @@ router.post('/auth/login', async (req, res, next) => {
 
 /* POST create new user. */
 router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
-  let adminRole = await Role.findOne({ where: { type: 'admin' } });
+  const adminRole = await Role.findOne({ where: { type: 'admin' } });
   let message = 'New user registered';
   let user;
+  // const requiredFields = ['roleId', 'username', 'password', 'email'];
+  // const fieldsValid = requiredFields.reduce((acc, field) => acc && req.body[field], true);
+  // if (!fieldsValid) return res.json({
+  //   success: false,
+  //   message: 'Please fill all required fields'
+  // })
   try {
     user = await User.create({
       roleId: adminRole.id,
@@ -74,7 +80,10 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
     });
     delete user.password;
   } catch (err) {
-    message = err.errors.pop().message;
+    return res.json({
+      success: false,
+      message: err.message
+    });
   }
   res.json({
     success: true,
@@ -117,7 +126,8 @@ router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (r
 
 
 router.get('/relations', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
-  const roles = await Role.findAll();
+  let where = { isActive: true };
+  const roles = await Role.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',

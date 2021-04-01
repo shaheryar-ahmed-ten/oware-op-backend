@@ -19,7 +19,8 @@ module.exports = (sequelize, DataTypes) => {
   Brand.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
     },
     name: {
       type: DataTypes.STRING,

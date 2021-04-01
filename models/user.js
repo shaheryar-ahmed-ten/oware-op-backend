@@ -28,20 +28,27 @@ module.exports = (sequelize, DataTypes) => {
   User.init({
     roleId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
     },
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
     username: {
       type: DataTypes.STRING,
       unique: true,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
     },
     phone: DataTypes.STRING,
     password: DataTypes.STRING,
     email: {
       type: DataTypes.STRING,
-      unique: true
+      unique: true,
+      allowNull: false,
+      validate: {
+        notNull: true,
+        isEmail: true
+      }
     },
     isActive: {
       type: DataTypes.BOOLEAN,

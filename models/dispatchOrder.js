@@ -25,15 +25,24 @@ module.exports = (sequelize, DataTypes) => {
   DispatchOrder.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
-    quantity: DataTypes.INTEGER,
+    quantity: {
+      type: DataTypes.INTEGER,
+      validate: {
+        isInt: true
+      }
+    },
     receiverName: DataTypes.STRING,
     receiverPhone: DataTypes.STRING,
     shipmentDate: DataTypes.DATE,
     inventoryId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      validate: { notNull: true }
+
     },
   }, {
     sequelize,
