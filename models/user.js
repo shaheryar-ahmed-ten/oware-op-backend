@@ -39,7 +39,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: { notEmpty: { msg: 'Username cannot be empty' } }
     },
-    phone: DataTypes.STRING,
+    phone: {
+      type: DataTypes.STRING,
+      validate: {
+        isNumeric: {msg: 'Please enter correct phone number'}
+      }
+    },
     password: DataTypes.STRING,
     email: {
       type: DataTypes.STRING,

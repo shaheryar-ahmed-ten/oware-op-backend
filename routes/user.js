@@ -7,6 +7,32 @@ const authService = require('../services/auth.service');
 const { Op } = require("sequelize");
 const { response } = require('express');
 
+async function updateUser(req, res, next) {
+  let user = await User.findOne({ where: { id: req.params.id } });
+  if (!user) return res.status(400).json({
+    success: false,
+    message: 'No user found!'
+  });
+  user.firstName = req.body.firstName;
+  user.lastName = req.body.lastName;
+  user.roleId = req.body.roleId;
+  user.phone = req.body.phone;
+  user.isActive = req.body.isActive;
+  try {
+    const response = await user.save();
+    return res.json({
+      success: true,
+      message: 'User updated',
+      data: response
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err.errors.pop().message
+    });
+  }
+}
+
 /* GET users listing. */
 router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
@@ -35,6 +61,12 @@ router.get('/me', authService.isLoggedIn, async (req, res, next) => {
     data: req.user
   })
 });
+
+/* GET current logged in user. */
+router.put('/me', authService.isLoggedIn, async (req, res, next) => {
+  req.params.id = req.userId;
+  return next()
+}, updateUser);
 
 /* POST user login. */
 router.post('/auth/login', async (req, res, next) => {
@@ -93,31 +125,7 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
 });
 
 /* PUT update existing user. */
-router.put('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
-  let user = await User.findOne({ where: { id: req.params.id } });
-  if (!user) return res.status(400).json({
-    success: false,
-    message: 'No user found!'
-  });
-  user.firstName = req.body.firstName;
-  user.lastName = req.body.lastName;
-  user.roleId = req.body.roleId;
-  user.phone = req.body.phone;
-  user.isActive = req.body.isActive;
-  try {
-    const response = await user.save();
-    return res.json({
-      success: true,
-      message: 'User updated',
-      data: response
-    });
-  } catch (err) {
-    return res.json({
-      success: false,
-      message: err.errors.pop().message
-    });
-  }
-});
+router.put('/:id', authService.isLoggedIn, authService.isSuperAdmin, updateUser);
 
 router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
   let response = await User.destroy({ where: { id: req.params.id } });

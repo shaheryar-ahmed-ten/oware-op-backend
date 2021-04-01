@@ -43,7 +43,10 @@ module.exports = (sequelize, DataTypes) => {
     receiverPhone: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: { notEmpty: { msg: 'Please enter receiver phone number' } }
+      validate: {
+        notEmpty: { msg: 'Please enter receiver phone number' },
+        isNumeric: { msg: 'Please enter correct receiver phone number' }
+      }
     },
     shipmentDate: {
       type: DataTypes.DATE,
