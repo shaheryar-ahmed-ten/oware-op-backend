@@ -9,7 +9,7 @@ router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {
-    // userId: req.userId
+    contactId: req.userId
   };
   if (req.query.search) where[Op.or] = ['companyName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Customer.findAndCountAll({

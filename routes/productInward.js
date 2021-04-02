@@ -102,7 +102,7 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
-  const customers = await Customer.findAll({ where });
+  const customers = await Customer.findAll({ where: { ...where, contactId: req.userId } });
   const products = await Product.findAll({ where, include: [{ model: UOM }] });
   const warehouses = await Warehouse.findAll({ where });
   res.json({
