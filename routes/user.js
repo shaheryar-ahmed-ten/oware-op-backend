@@ -17,6 +17,7 @@ async function updateUser(req, res, next) {
   user.lastName = req.body.lastName;
   user.roleId = req.body.roleId;
   user.phone = req.body.phone;
+  user.password = req.body.password;
   user.isActive = req.body.isActive;
   try {
     const response = await user.save();

@@ -42,7 +42,7 @@ module.exports = (sequelize, DataTypes) => {
     phone: {
       type: DataTypes.STRING,
       validate: {
-        isNumeric: {msg: 'Please enter correct phone number'}
+        isNumeric: { msg: 'Please enter correct phone number' }
       }
     },
     password: DataTypes.STRING,
@@ -63,6 +63,12 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     paranoid: true,
     modelName: 'User',
+  });
+  User.beforeUpdate((user, options) => {
+    if (options.fields.indexOf('password') > -1 && user.password) {
+      const hashedPassword = user.generateHash(user.password);
+      user.password = hashedPassword;
+    }
   });
   User.beforeCreate((user, options) => {
     const hashedPassword = user.generateHash(user.password);

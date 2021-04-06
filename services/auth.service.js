@@ -21,7 +21,11 @@ module.exports.isLoggedIn = (req, res, next) => {
 }
 
 module.exports.isSuperAdmin = (req, res, next) => {
-    if (req.user.Role.PermissionAccesses.find(permissionAccess => permissionAccess.Permission.type == 'superadmin_privileges')) next();
-    else res.status(401).json({ status: false, message: 'Operation not permitted!' })
+    if (req.user.Role.PermissionAccesses.find(permissionAccess => permissionAccess.Permission.type == 'superadmin_privileges'))
+        if (next) next();
+        else return true;
+    else
+        if (next) res.status(401).json({ status: false, message: 'Operation not permitted!' });
+        else return false;
 }
 

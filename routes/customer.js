@@ -3,14 +3,15 @@ const router = express.Router();
 const { Customer, User } = require('../models')
 const { Op } = require("sequelize");
 const config = require('../config');
+const authService = require('../services/auth.service');
 
 /* GET customers listing. */
 router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {
-    contactId: req.userId
   };
+  if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
   if (req.query.search) where[Op.or] = ['companyName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Customer.findAndCountAll({
     include: [{ model: User }, { model: User, as: 'Contact' }],
