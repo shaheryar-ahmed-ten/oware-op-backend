@@ -25,8 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     businessWarehouseCode: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Business warehouse code cannot be empty' } }
+      allowNull: true
     },
     address: DataTypes.STRING,
     city: DataTypes.STRING,

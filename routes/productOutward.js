@@ -46,9 +46,9 @@ router.post('/', async (req, res, next) => {
     success: false,
     message: 'Cannot dispatch above ordered quantity'
   })
-  if (req.body.quantity > dispatchOrder.Inventory.availableQuantity) return res.json({
+  if (req.body.quantity > dispatchOrder.Inventory.committedQuantity) return res.json({
     success: false,
-    message: 'Cannot dispatch above available quantity'
+    message: 'Cannot dispatch above available inventory quantity'
   })
   dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
   dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
@@ -112,7 +112,12 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
-    include: [{ model: Inventory, include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }] }]
+    include: [{
+      model: Inventory,
+      include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
+    }, {
+      model: ProductOutward
+    }]
   });
   res.json({
     success: true,

@@ -4,6 +4,16 @@ const { Warehouse, User } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
+
+function getWarehouseCode(id, city) {
+  return `WH-${city.slice(0, 3).toUpperCase()}-${digitize(id, 3)}`
+}
+
+function digitize(value, places) {
+  let strVal = (value + '');
+  return new Array(places - strVal.length).fill('0').join('') + strVal;
+}
+
 /* GET warehouses listing. */
 router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
@@ -34,6 +44,8 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
+    warehouse.businessWarehouseCode = getWarehouseCode(warehouse.id, warehouse.city)
+    warehouse.save();
   } catch (err) {
     return res.json({
       success: false,
@@ -55,10 +67,10 @@ router.put('/:id', async (req, res, next) => {
     message: 'No warehouse found!'
   });
   warehouse.name = req.body.name;
-  warehouse.businessWarehouseCode = req.body.businessWarehouseCode;
   warehouse.address = req.body.address;
   warehouse.city = req.body.city;
   warehouse.isActive = req.body.isActive;
+  warehouse.businessWarehouseCode = getWarehouseCode(warehouse.id, warehouse.city);
   try {
     const response = await warehouse.save();
     return res.json({
