@@ -1,6 +1,7 @@
 'use strict';
 const { Model } = require('sequelize');
 const bcrypt = require('bcrypt');
+const config = require('../config');
 
 module.exports = (sequelize, DataTypes) => {
   class Customer extends Model {
@@ -25,6 +26,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: true }
+    },
+    type: {
+      type: DataTypes.ENUM({
+        values: config.customerTypes
+      }),
+      allowNull: false,
     },
     contactId: {
       type: DataTypes.INTEGER,

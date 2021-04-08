@@ -51,6 +51,7 @@ router.post('/', async (req, res, next) => {
     message: 'Cannot dispatch above available quantity'
   })
   dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
+  dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
   dispatchOrder.Inventory.save();
   let productOutward;
   try {

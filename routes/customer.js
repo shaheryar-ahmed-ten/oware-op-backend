@@ -56,6 +56,7 @@ router.put('/:id', async (req, res, next) => {
     message: 'No customer found!'
   });
   customer.companyName = req.body.companyName;
+  customer.type = req.body.type;
   customer.contactId = req.body.contactId;
   customer.notes = req.body.notes;
   customer.isActive = req.body.isActive;
@@ -89,10 +90,11 @@ router.delete('/:id', async (req, res, next) => {
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
   const users = await User.findAll(where);
+  const customerTypes = config.customerTypes;
   res.json({
     success: true,
     message: 'respond with a resource',
-    users
+    users, customerTypes
   });
 });
 

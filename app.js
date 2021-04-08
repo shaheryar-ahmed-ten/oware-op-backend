@@ -52,7 +52,7 @@ app.use(function (req, res, next) {
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use('/api/v1', function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -63,6 +63,12 @@ app.use(function (err, req, res, next) {
     success: false,
     message: 'error'
   });
+});
+
+// error handler
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.redirect('/');
 });
 
 module.exports = app;

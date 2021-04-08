@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, DispatchOrder, ProductOutward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
     include: [{
       model: Inventory,
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
-    }],
+    }, { model: ProductOutward }],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
