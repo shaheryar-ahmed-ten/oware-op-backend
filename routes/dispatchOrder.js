@@ -40,7 +40,7 @@ router.post('/', async (req, res, next) => {
   if (req.body.quantity > inventory.availableQuantity) return res.json({
     success: false,
     message: 'Cannot create orders above available quantity'
-  })
+  });
   inventory.committedQuantity += (+req.body.quantity);
   inventory.availableQuantity -= (+req.body.quantity);
   inventory.save();
