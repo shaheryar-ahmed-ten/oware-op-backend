@@ -31,6 +31,7 @@
       "Trader",
       "Wholesaler",
       "Retailer"
-    ]
+    ],
+    "dbLogging": false
   }
 }

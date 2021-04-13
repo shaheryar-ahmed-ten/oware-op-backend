@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, DispatchOrder, ProductOutward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, DispatchOrder, ProductOutward, User, Customer, Warehouse, Product, UOM } = require('../models');
 const config = require('../config');
 const { Op } = require("sequelize");
+const authService = require('../services/auth.service');
 
 /* GET dispatchOrders listing. */
 router.get('/', async (req, res, next) => {
@@ -17,10 +18,11 @@ router.get('/', async (req, res, next) => {
     include: [{
       model: Inventory,
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
-    }, { model: ProductOutward }],
+    }],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
+  console.log(response.count, limit, Math.ceil(response.count / limit))
   res.json({
     success: true,
     message: 'respond with a resource',
@@ -35,7 +37,7 @@ router.post('/', async (req, res, next) => {
   let inventory = await Inventory.findByPk(req.body.inventoryId);
   if (!inventory && !req.body.inventoryId) return res.json({
     success: false,
-    message: 'No inventory found'
+    message: 'Inventory is not available'
   });
   if (req.body.quantity > inventory.availableQuantity) return res.json({
     success: false,
@@ -101,18 +103,38 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 router.get('/relations', async (req, res, next) => {
-  const inventories = await Inventory.findAll({
-    include: [{
-      model: Customer
-    },
-    { model: Product, include: [{ model: UOM }] },
-    { model: Warehouse }]
-  })
+  let where = { isActive: true };
+  
+  const warehouses = await Warehouse.findAll({ where });
+  const products = await Product.findAll({ where, include: [{ model: UOM }] });
+
+  if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
+  const customers = await Customer.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',
-    inventories
+    customers, warehouses, products
   });
+});
+
+router.get('/inventory', async (req, res, next) => {
+  if (req.query.customerId && req.query.warehouseId && req.query.productId) {
+    const inventory = await Inventory.findOne({
+      where: {
+        customerId: req.query.customerId,
+        warehouseId: req.query.warehouseId,
+        productId: req.query.productId
+      }
+    })
+    res.json({
+      success: true,
+      message: 'respond with a resource',
+      inventory
+    });
+  } else res.json({
+    success: false,
+    message: 'No inventory found'
+  })
 });
 
 module.exports = router;

@@ -8,7 +8,7 @@ const config = require('../config');
 const db = {};
 
 let sequelize = new Sequelize(config.database, config.username, config.password, {
-  ...config, logging: false
+  ...config, logging: config.dbLogging || false
 });
 
 fs
