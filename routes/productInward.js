@@ -3,6 +3,7 @@ const router = express.Router();
 const { Inventory, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
+const authService = require('../services/auth.service');
 
 /* GET productInwards listing. */
 router.get('/', async (req, res, next) => {
@@ -102,13 +103,16 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
-  const customers = await Customer.findAll({ where: { ...where, contactId: req.userId } });
-  const products = await Product.findAll({ where, include: [{ model: UOM }] });
+  
   const warehouses = await Warehouse.findAll({ where });
+  const products = await Product.findAll({ where, include: [{ model: UOM }] });
+
+  if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
+  const customers = await Customer.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',
-    customers, products, warehouses
+    customers, warehouses, products
   });
 });
 

@@ -22,7 +22,6 @@ router.get('/', async (req, res, next) => {
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
-  console.log(response.count, limit, Math.ceil(response.count / limit))
   res.json({
     success: true,
     message: 'respond with a resource',
