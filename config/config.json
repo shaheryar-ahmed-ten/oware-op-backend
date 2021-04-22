@@ -4,26 +4,24 @@
     "password": "root",
     "database": "oware_dev",
     "host": "127.0.0.1",
-    "dialect": "mysql",
-    "rowsPerPage": 4
+    "dialect": "mysql"
   },
   "test": {
     "username": "root",
     "password": "root",
     "database": "database_test",
     "host": "127.0.0.1",
-    "dialect": "mysql",
-    "rowsPerPage": 4
+    "dialect": "mysql"
   },
   "production": {
     "username": "root",
     "password": "root",
     "database": "database_production",
     "host": "127.0.0.1",
-    "dialect": "mysql",
-    "rowsPerPage": 4
+    "dialect": "mysql"
   },
   "misc": {
+    "rowsPerPage": 10,
     "customerTypes": [
       "Manufacturer",
       "Distributor",
