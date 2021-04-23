@@ -44,7 +44,6 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
-    warehouse.businessWarehouseCode = getWarehouseCode(warehouse.id, warehouse.city)
     warehouse.save();
   } catch (err) {
     return res.json({
@@ -70,7 +69,7 @@ router.put('/:id', async (req, res, next) => {
   warehouse.address = req.body.address;
   warehouse.city = req.body.city;
   warehouse.isActive = req.body.isActive;
-  warehouse.businessWarehouseCode = getWarehouseCode(warehouse.id, warehouse.city);
+  warehouse.businessWarehouseCode = req.body.businessWarehouseCode;
   try {
     const response = await warehouse.save();
     return res.json({

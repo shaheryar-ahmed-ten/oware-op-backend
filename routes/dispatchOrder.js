@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Inventory, DispatchOrder, ProductOutward, User, Customer, Warehouse, Product, UOM } = require('../models');
 const config = require('../config');
-const { Op } = require("sequelize");
+const { Op, fn, col } = require("sequelize");
 const authService = require('../services/auth.service');
 
 /* GET dispatchOrders listing. */
@@ -103,16 +103,12 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
-  
-  const warehouses = await Warehouse.findAll({ where });
-  const products = await Product.findAll({ where, include: [{ model: UOM }] });
-
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
   const customers = await Customer.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',
-    customers, warehouses, products
+    customers
   });
 });
 
@@ -129,6 +125,60 @@ router.get('/inventory', async (req, res, next) => {
       success: true,
       message: 'respond with a resource',
       inventory
+    });
+  } else res.json({
+    success: false,
+    message: 'No inventory found'
+  })
+});
+
+router.get('/warehouses', async (req, res, next) => {
+  if (req.query.customerId) {
+    const inventories = await Inventory.findAll({
+      where: {
+        customerId: req.query.customerId
+      },
+      attributes: [
+        'warehouseId',
+        fn('COUNT', col('warehouseId'))
+      ],
+      include: [{
+        model: Warehouse
+      }],
+      group: 'warehouseId'
+    })
+    res.json({
+      success: true,
+      message: 'respond with a resource',
+      warehouses: inventories.map(inventory => inventory.Warehouse)
+    });
+  } else res.json({
+    success: false,
+    message: 'No inventory found'
+  })
+});
+
+router.get('/products', async (req, res, next) => {
+  if (req.query.customerId) {
+    const inventories = await Inventory.findAll({
+      where: {
+        customerId: req.query.customerId,
+        warehouseId: req.query.warehouseId
+      },
+      attributes: [
+        'productId',
+        fn('COUNT', col('productId'))
+      ],
+      include: [{
+        model: Product,
+        include: [{ model: UOM }]
+      }],
+      group: 'productId'
+    })
+    res.json({
+      success: true,
+      message: 'respond with a resource',
+      products: inventories.map(inventory => inventory.Product)
     });
   } else res.json({
     success: false,
