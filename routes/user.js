@@ -38,9 +38,7 @@ async function updateUser(req, res, next) {
 router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
-  let where = {
-    id: { [Op.not]: req.userId }
-  };
+  let where = {};
   if (req.query.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await User.findAndCountAll({
     include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
