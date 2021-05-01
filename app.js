@@ -4,7 +4,6 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 var cors = require('cors')
-const csv = require('express-csv');
 
 const authService = require('./services/auth.service');
 const indexRouter = require('./routes/index');

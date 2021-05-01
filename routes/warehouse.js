@@ -5,10 +5,6 @@ const config = require('../config');
 const { Op } = require("sequelize");
 
 
-function getWarehouseCode(id, city) {
-  return `WH-${city.slice(0, 3).toUpperCase()}-${digitize(id, 3)}`
-}
-
 function digitize(value, places) {
   let strVal = (value + '');
   return new Array(places - strVal.length).fill('0').join('') + strVal;
