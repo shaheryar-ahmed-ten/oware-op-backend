@@ -32,6 +32,11 @@ module.exports = (sequelize, DataTypes) => {
         isInt: { msg: 'Please enter quantity' }
       }
     },
+    referenceId:{
+      type: DataTypes.STRING(30),
+      allowNull:true,
+      
+    },
     dispatchOrderId: {
       type: DataTypes.INTEGER,
       allowNull: false,
