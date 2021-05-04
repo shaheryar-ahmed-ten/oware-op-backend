@@ -52,7 +52,7 @@ module.exports = {
         onDelete: 'CASCADE',
       },
       referenceId:{
-        type: Sequelize.STRING(30),
+        type: Sequelize.STRING,
         allowNull: true,
       },
       createdAt: {
