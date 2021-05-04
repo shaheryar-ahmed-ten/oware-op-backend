@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       ProductOutward.belongsTo(models.User, {
         foreignKey: 'userId'
       });
+      // ProductOutward.hasOne(models.Vehicle,{
+      //   foreignKey:"VehicleId"
+      // })
       ProductOutward.belongsTo(models.DispatchOrder, {
         foreignKey: 'dispatchOrderId'
       });

@@ -30,6 +30,12 @@
       "Wholesaler",
       "Retailer"
     ],
+    "vehicleTypes":[
+      "Truck",
+      "Shehzor",
+      "Suzuki",
+      "Riksha"
+    ],
     "dbLogging": false
   }
 }

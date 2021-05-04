@@ -119,10 +119,11 @@ router.get('/relations', async (req, res, next) => {
       model: ProductOutward
     }]
   });
+  const vehicleTypes = config.vehicleTypes;
   res.json({
     success: true,
     message: 'respond with a resource',
-    dispatchOrders
+    dispatchOrders,vehicleTypes
   });
 });
 
