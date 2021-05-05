@@ -23,18 +23,20 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         //validate: { notEmpty: { msg: "Please enter a vehicle number" } },
       },
-      vehicleType: DataTypes.ENUM({
-        values: config.vehicleTypes,
-      }),
-      allowNull: false,
-      //validate: { notEmpty: { msg: "Please select vehicle type" } },
+      vehicleType: {
+        type: DataTypes.ENUM({
+          values: config.vehicleTypes,
+        }),
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please select vehicle type" } },
+      },
     },
     {
       sequelize,
       paranoid: true,
       modelName: "Vehicle",
-      timestamps:true
+      timestamps: true,
     }
-  )
+  );
   return Vehicle;
 };
