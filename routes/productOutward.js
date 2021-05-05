@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, ProductOutward, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
@@ -54,15 +54,22 @@ router.post('/', async (req, res, next) => {
   dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
   dispatchOrder.Inventory.save();
   let productOutward;
+  let vehicle;
   try {
+    vehicle = await Vehicle.create({
+      vehicleType: req.body.vehicle.vehicleType,
+      vehicleNumber: req.body.vehicle.vehicleNumber
+    })
     productOutward = await ProductOutward.create({
       userId: req.userId,
+      vehicleId: vehicle.id,
       ...req.body
     });
   } catch (err) {
+    console.log(err)
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.message
     });
   }
   res.json({
@@ -109,7 +116,7 @@ router.delete('/:id', async (req, res, next) => {
     message: 'No productOutward found!'
   });
 })
-
+console.log(config.vehicleTypes)
 router.get('/relations', async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
     include: [{

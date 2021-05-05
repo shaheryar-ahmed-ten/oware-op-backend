@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       ProductOutward.belongsTo(models.User, {
         foreignKey: 'userId'
       });
-      // ProductOutward.hasOne(models.Vehicle,{
-      //   foreignKey:"VehicleId"
-      // })
+      ProductOutward.belongsTo(models.Vehicle,{
+        foreignKey:"vehicleId"
+      })
       ProductOutward.belongsTo(models.DispatchOrder, {
         foreignKey: 'dispatchOrderId'
       });
@@ -41,6 +41,11 @@ module.exports = (sequelize, DataTypes) => {
       
     },
     dispatchOrderId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Dispatch order cannot be empty' } }
+    },
+    vehicleId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: { msg: 'Dispatch order cannot be empty' } }
