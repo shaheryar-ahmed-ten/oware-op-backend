@@ -5,6 +5,18 @@ const config = require('../config');
 const { Op } = require("sequelize");
 
 
+router.get('/:id', async (req, res, next) => {
+  let response = await Warehouse.findOne({ where: { id: req.params.id } });
+  if (response) res.json({
+    success: true,
+    message: 'Warehouse found'
+  });
+  else res.status(400).json({
+    success: false,
+    message: 'No warehouse found!'
+  });
+})
+
 function getWarehouseCode(id, city) {
   return `WH-${city.slice(0, 3).toUpperCase()}-${digitize(id, 3)}`
 }
@@ -96,5 +108,7 @@ router.delete('/:id', async (req, res, next) => {
     message: 'No warehouse found!'
   });
 })
+
+
 
 module.exports = router;

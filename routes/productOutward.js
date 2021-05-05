@@ -119,7 +119,6 @@ router.delete('/:id', async (req, res, next) => {
     message: 'No productOutward found!'
   });
 })
-console.log(config.vehicleTypes)
 router.get('/relations', async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
     include: [{
