@@ -17,11 +17,11 @@ module.exports = {
     let superUser = await User.create({
       firstName: 'Yousha',
       lastName: 'Rizvi',
-      email: 'yousha@yopmail.com',
-      username: 'yousha',
+      email: 'admin@yopmail.com',
+      username: 'admin',
       isActive: true,
-      password: 'yousha',
-      role_id: roles[1].dataValues.id,
+      password: 'admin',
+      roleId: roles[1].dataValues.id,
       phone: '03242363523',
       createdAt: new Date(),
       updatedAt: new Date()
@@ -37,18 +37,18 @@ module.exports = {
       createdAt: new Date(),
       updatedAt: new Date()
     }]);
-    let permission_accesses = await PermissionAccess.bulkCreate([{
-      role_id: roles[0].dataValues.id,
-      permission_id: permissions[0].dataValues.id,
+    let permissionAccesses = await PermissionAccess.bulkCreate([{
+      roleId: roles[0].dataValues.id,
+      permissionId: permissions[0].dataValues.id,
       createdAt: new Date(),
       updatedAt: new Date()
     }, {
-      role_id: roles[1].dataValues.id,
-      permission_id: permissions[1].dataValues.id,
+      roleId: roles[1].dataValues.id,
+      permissionId: permissions[1].dataValues.id,
       createdAt: new Date(),
       updatedAt: new Date()
     }]);
-    return [roles, superUser, permissions, permission_accesses];
+    return [roles, superUser, permissions, permissionAccesses];
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('Roles', null, {});

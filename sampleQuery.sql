@@ -1,0 +1,24 @@
+select
+    PI.customerId,
+    PI.warehouseId,
+    PI.productId,
+    Product.name as product,
+    UOM.name as uom,
+    Warehouse.name as warehouse,
+    Customer.companyName as customer,
+    COALESCE(SUM(PI.quantity), 0) as quantity,
+    COALESCE(SUM(DO.quantity), 0) as committedQuantity
+    from ProductInwards as PI
+    LEFT JOIN (SELECT customerId, productId, warehouseId, sum(quantity) as quantity
+    FROM DispatchOrders
+    WHERE customerId=PI.customerId AND productId=PI.productId AND warehouseId=PI.warehouseId)
+    as DO on
+    PI.productId=DO.productId AND
+    PI.warehouseId=DO.warehouseId AND
+    PI.customerId=DO.customerId
+    
+    LEFT JOIN Products as Product ON PI.productId=Product.id
+    LEFT JOIN Warehouses as Warehouse ON PI.warehouseId=Warehouse.id
+    LEFT JOIN Customers as Customer ON PI.customerId=Customer.id
+    LEFT JOIN UOMs as UOM ON Product.uomId=UOM.id
+group by PI.customerId, PI.productId, PI.warehouseId;

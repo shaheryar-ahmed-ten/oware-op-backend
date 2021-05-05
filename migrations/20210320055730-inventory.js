@@ -1,26 +1,50 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('PermissionAccesses', {
+    await queryInterface.createTable('Inventories', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      roleId: {
+      availableQuantity: {
+        type: Sequelize.INTEGER
+      },
+      totalInwardQuantity: {
+        type: Sequelize.INTEGER
+      },
+      committedQuantity: {
+        type: Sequelize.INTEGER
+      },
+      dispatchedQuantity: {
+        type: Sequelize.INTEGER
+      },
+      productId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
-          model: 'Roles', // name of Target model
+          model: 'Products', // name of Target model
           key: 'id', // key in Target model that we're referencing
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      permissionId: {
+      customerId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
-          model: 'Permissions', // name of Target model
+          model: 'Customers', // name of Target model
+          key: 'id', // key in Target model that we're referencing
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
+      warehouseId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Warehouses', // name of Target model
           key: 'id', // key in Target model that we're referencing
         },
         onUpdate: 'CASCADE',
@@ -40,6 +64,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('PermissionAccesses');
+    await queryInterface.dropTable('Inventories');
   }
 };

@@ -12,16 +12,17 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       PermissionAccess.hasOne(models.Permission, {
-        sourceKey: 'role_id',
+        sourceKey: 'roleId',
         foreignKey: 'id'
       });
     }
   };
   PermissionAccess.init({
-    role_id: DataTypes.INTEGER,
-    permission_id: DataTypes.INTEGER
+    roleId: DataTypes.INTEGER,
+    permissionId: DataTypes.INTEGER
   }, {
     sequelize,
+    paranoid: true,
     modelName: 'PermissionAccess',
   });
   return PermissionAccess;

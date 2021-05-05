@@ -1,26 +1,33 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('PermissionAccesses', {
+    await queryInterface.createTable('Warehouses', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      roleId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Roles', // name of Target model
-          key: 'id', // key in Target model that we're referencing
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+      name: {
+        type: Sequelize.STRING
       },
-      permissionId: {
+      businessWarehouseCode: {
+        type: Sequelize.STRING
+      },
+      address: {
+        type: Sequelize.STRING
+      },
+      city: {
+        type: Sequelize.STRING
+      },
+      isActive: {
+        type: Sequelize.BOOLEAN
+      },
+      userId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
-          model: 'Permissions', // name of Target model
+          model: 'Users', // name of Target model
           key: 'id', // key in Target model that we're referencing
         },
         onUpdate: 'CASCADE',
@@ -40,6 +47,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('PermissionAccesses');
+    await queryInterface.dropTable('Warehouses');
   }
 };

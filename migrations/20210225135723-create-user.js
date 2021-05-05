@@ -15,7 +15,9 @@ module.exports = {
         type: Sequelize.STRING
       },
       username: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        unique: true,
+        allowNull: false
       },
       phone: {
         type: Sequelize.STRING
@@ -25,14 +27,15 @@ module.exports = {
       },
       email: {
         type: Sequelize.STRING,
-        unique: true
+        unique: true,
+        allowNull: false
       },
       isActive: {
         type: Sequelize.BOOLEAN
       },
-      role_id: {
+      roleId: {
         type: Sequelize.INTEGER,
-        allowNull: true,
+        allowNull: false,
         references: {
           model: 'Roles', // name of Target model
           key: 'id', // key in Target model that we're referencing
@@ -46,6 +49,9 @@ module.exports = {
       },
       updatedAt: {
         allowNull: false,
+        type: Sequelize.DATE
+      },
+      deletedAt: {
         type: Sequelize.DATE
       }
     });

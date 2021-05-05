@@ -19,5 +19,17 @@
     "database": "database_production",
     "host": "127.0.0.1",
     "dialect": "mysql"
+  },
+  "misc": {
+    "rowsPerPage": 10,
+    "customerTypes": [
+      "Manufacturer",
+      "Distributor",
+      "Importer",
+      "Trader",
+      "Wholesaler",
+      "Retailer"
+    ],
+    "dbLogging": false
   }
 }

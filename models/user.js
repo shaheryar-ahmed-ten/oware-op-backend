@@ -12,7 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       User.belongsTo(models.Role, {
-        foreignKey: 'role_id'
+        foreignKey: 'roleId'
+      });
+      User.hasOne(models.Customer, {
+        foreignKey: 'contactId'
       });
     };
     generateHash(password) {
@@ -23,23 +26,49 @@ module.exports = (sequelize, DataTypes) => {
     };
   };
   User.init({
-    role_id: {
+    roleId: {
       type: DataTypes.INTEGER,
-      allowNull: true
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Role cannot be empty' } }
     },
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
-    username: DataTypes.STRING,
-    phone: DataTypes.STRING,
+    username: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Username cannot be empty' } }
+    },
+    phone: {
+      type: DataTypes.STRING,
+      validate: {
+        isNumeric: { msg: 'Please enter correct phone number' }
+      }
+    },
     password: DataTypes.STRING,
     email: {
       type: DataTypes.STRING,
-      unique: true
+      unique: true,
+      allowNull: false,
+      validate: {
+        notEmpty: { msg: 'Email cannot be empty' },
+        isEmail: { msg: 'Email format is incorrect' }
+      }
     },
-    isActive: DataTypes.BOOLEAN,
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
   }, {
     sequelize,
+    paranoid: true,
     modelName: 'User',
+  });
+  User.beforeUpdate((user, options) => {
+    if (options.fields.indexOf('password') > -1 && user.password) {
+      const hashedPassword = user.generateHash(user.password);
+      user.password = hashedPassword;
+    }
   });
   User.beforeCreate((user, options) => {
     const hashedPassword = user.generateHash(user.password);
