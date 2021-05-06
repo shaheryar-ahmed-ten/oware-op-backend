@@ -39,7 +39,7 @@ router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
   const numberOfDispatchOrders = await DispatchOrder.count();
   const numberOfBusinessId = digitizie(numberOfDispatchOrders+1,6)
-  req.body.dispatchorderIdForBusiness = req.dispatchorderIdForBusiness + numberOfBusinessId
+  req.body.dispatchorderIdForBusiness = req.body.dispatchorderIdForBusiness + numberOfBusinessId
   
   let inventory = await Inventory.findByPk(req.body.inventoryId);
   if (!inventory && !req.body.inventoryId) return res.json({
