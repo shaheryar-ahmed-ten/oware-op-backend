@@ -30,6 +30,7 @@ router.get('/', async (req, res, next) => {
   });
 });
 
+//for arranging value in format 000001 and ascending for DOBID
 const digitizie = (value,places)=>{
   let strValue = (value+"")
   return new Array(places - strValue.length).fill('0').join('') + strValue
@@ -62,8 +63,7 @@ router.post('/', async (req, res, next) => {
   } catch (err) {
     return res.json({
       success: false,
-      message:err.message
-     // message: err.errors.pop().message
+      message: err.errors.pop().message
     });
   }
   res.json({
