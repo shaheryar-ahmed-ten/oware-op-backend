@@ -128,21 +128,20 @@ router.get('/relations', async (req, res, next) => {
       model: ProductOutward
     }]
   });
-  let remainingDispatchOrders = [];
-  dispatchOrders.forEach(dispatchOrder => {
-  // loop 
-  let totalQuantityDispatched = dispatchOrder.ProductOutwards.reduce((acc, po) => acc + po.quantity, 0); // 1 DO
-  // disptached orders k count dey raha
-  let remainingQuantityOfDispatch = dispatchOrder.quantity - totalQuantityDispatched // 1 DO ki remaining kitni hai
-    if(remainingQuantityOfDispatch != 0){
-      remainingDispatchOrders.push(dispatchOrder)
-    }
-});
+//   let remainingDispatchOrders = [];
+//   dispatchOrders.forEach(dispatchOrder => {
+//   // loop to get the PO of each DO
+//   let totalQuantityDispatched = dispatchOrder.ProductOutwards.reduce((acc, po) => acc + po.quantity, 0); // 1 DO
+//   let remainingQuantityOfDispatch = dispatchOrder.quantity - totalQuantityDispatched // 1 DO's remaining quantity
+//     if(remainingQuantityOfDispatch != 0){
+//       remainingDispatchOrders.push(dispatchOrder)
+//     }
+// });
   const vehicleTypes = config.vehicleTypes;
   res.json({
     success: true,
     message: 'respond with a resource',
-    dispatchOrders:remainingDispatchOrders,vehicleTypes
+    dispatchOrders,vehicleTypes
   });
 });
 
