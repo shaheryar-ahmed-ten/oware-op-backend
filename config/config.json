@@ -31,10 +31,11 @@
       "Retailer"
     ],
     "vehicleTypes":[
-      "Truck",
-      "Shehzor",
-      "Suzuki",
-      "Riksha"
+      "Bike",
+      "Mini Truck",
+      "Light Truck",
+      "Heavy Truck",
+      "Refregerated Truck"
     ],
     "dbLogging": false
   }
