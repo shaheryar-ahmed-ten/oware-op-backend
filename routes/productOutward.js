@@ -125,7 +125,8 @@ router.get('/relations', async (req, res, next) => {
       model: Inventory,
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
     }, {
-      model: ProductOutward
+      model: ProductOutward,
+      include:{model:Vehicle}
     }]
   });
 //   let remainingDispatchOrders = [];
