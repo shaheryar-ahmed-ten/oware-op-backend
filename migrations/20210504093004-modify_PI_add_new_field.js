@@ -5,6 +5,7 @@ module.exports = {
         type: Sequelize.STRING(30),
         allowNull: true,
       })
+    
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('ProductInwards');

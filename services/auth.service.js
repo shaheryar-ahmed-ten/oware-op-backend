@@ -34,6 +34,7 @@ module.exports.isLoggedIn = (req, res, next) => {
         .status(401)
         .json({ status: false, message: "User is inactive" });
     req.userId = decoded.id;
+    user.password = undefined
     req.user = user;
     return next();
   });

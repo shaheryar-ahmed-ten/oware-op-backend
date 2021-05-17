@@ -57,7 +57,6 @@ router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, re
 
 /* GET current logged in user. */
 router.get('/me', authService.isLoggedIn, async (req, res, next) => {
-  req.user.password = undefined;
   return res.json({
     success: true,
     data: req.user

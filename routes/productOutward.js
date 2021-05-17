@@ -69,7 +69,6 @@ router.post('/', async (req, res, next) => {
       ...req.body
     });
   } catch (err) {
-    console.log(err)
     return res.json({
       success: false,
       message: err.errors.pop().message
@@ -129,15 +128,7 @@ router.get('/relations', async (req, res, next) => {
       include:{model:Vehicle}
     }]
   });
-//   let remainingDispatchOrders = [];
-//   dispatchOrders.forEach(dispatchOrder => {
-//   // loop to get the PO of each DO
-//   let totalQuantityDispatched = dispatchOrder.ProductOutwards.reduce((acc, po) => acc + po.quantity, 0); // 1 DO
-//   let remainingQuantityOfDispatch = dispatchOrder.quantity - totalQuantityDispatched // 1 DO's remaining quantity
-//     if(remainingQuantityOfDispatch != 0){
-//       remainingDispatchOrders.push(dispatchOrder)
-//     }
-// });
+
   const vehicleTypes = config.vehicleTypes;
   res.json({
     success: true,

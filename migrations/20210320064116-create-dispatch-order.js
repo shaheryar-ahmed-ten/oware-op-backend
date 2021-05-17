@@ -14,10 +14,6 @@ module.exports = {
       receiverName: {
         type: Sequelize.STRING
       },
-      referenceId:{
-        type: Sequelize.STRING(30),
-        allowNull: true,
-      },
       receiverPhone: {
         type: Sequelize.STRING
       },

@@ -11,10 +11,6 @@ module.exports = {
       quantity: {
         type: Sequelize.INTEGER
       },
-      referenceId:{
-        type: Sequelize.STRING(30),
-        allowNull: true,
-      },
       dispatchOrderId: {
         type: Sequelize.INTEGER,
         allowNull: false,
