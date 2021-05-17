@@ -1,19 +1,19 @@
-const { User, Role, PermissionAccess, Permission } = require("../models");
-const jwt = require("jsonwebtoken");
-const config = require("../config");
+const { User, Role, PermissionAccess, Permission } = require('../models');
+const jwt = require('jsonwebtoken');
+const config = require('../config');
 
 module.exports.isLoggedIn = (req, res, next) => {
-  let token = req.headers["authorization"];
-  token = token && token.replace("Bearer ", "");
+  let token = req.headers['authorization'];
+  token = token && token.replace('Bearer ', '');
   if (!token)
     return res
       .status(401)
-      .json({ success: false, message: "No token provided." });
+      .json({ success: false, message: 'No token provided.' });
   jwt.verify(token, config.JWT_SECRET, async (err, decoded) => {
     if (err)
       return res
         .status(401)
-        .json({ success: false, message: "Failed to authenticate token." });
+        .json({ success: false, message: 'Failed to authenticate token.' });
     const user = await User.findOne({
       where: { id: decoded.id },
       include: [
@@ -32,7 +32,7 @@ module.exports.isLoggedIn = (req, res, next) => {
     else if (!user.isActive)
       return res
         .status(401)
-        .json({ status: false, message: "User is inactive" });
+        .json({ status: false, message: 'User is inactive' });
     req.userId = decoded.id;
     user.password = undefined
     req.user = user;
@@ -44,7 +44,7 @@ module.exports.isSuperAdmin = (req, res, next) => {
   if (
     req.user.Role.PermissionAccesses.find(
       (permissionAccess) =>
-        permissionAccess.Permission.type == "superadmin_privileges"
+        permissionAccess.Permission.type == 'superadmin_privileges'
     )
   )
     if (next) next();
@@ -52,6 +52,6 @@ module.exports.isSuperAdmin = (req, res, next) => {
   else if (next)
     res
       .status(401)
-      .json({ status: false, message: "Operation not permitted!" });
+      .json({ status: false, message: 'Operation not permitted!' });
   else return false;
 };
