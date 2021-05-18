@@ -34,6 +34,15 @@ module.exports = (sequelize, DataTypes) => {
         isInt: { msg: 'Please enter quantity' }
       }
     },
+    businessId:{
+      type: DataTypes.STRING(30),
+      allowNull:false,
+      validate: { notEmpty: { msg: 'Please enter Dispatch Order ID' } }
+    },
+    referenceId:{
+      type: DataTypes.STRING(30),
+      allowNull:true,
+    },
     receiverName: {
       type: DataTypes.STRING,
       allowNull: false,

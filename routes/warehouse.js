@@ -4,7 +4,6 @@ const { Warehouse, User } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
-
 function getWarehouseCode(id, city) {
   return `WH-${city.slice(0, 3).toUpperCase()}-${digitize(id, 3)}`
 }
@@ -96,5 +95,7 @@ router.delete('/:id', async (req, res, next) => {
     message: 'No warehouse found!'
   });
 })
+
+
 
 module.exports = router;

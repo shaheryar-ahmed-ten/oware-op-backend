@@ -43,6 +43,7 @@ router.post('/', async (req, res, next) => {
       warehouseId: req.body.warehouseId,
       productId: req.body.productId,
       availableQuantity: req.body.quantity,
+      referenceId:req.body.referenceId,
       totalInwardQuantity: req.body.quantity
     })
     else {
@@ -57,7 +58,7 @@ router.post('/', async (req, res, next) => {
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.message
     });
   }
   res.json({
