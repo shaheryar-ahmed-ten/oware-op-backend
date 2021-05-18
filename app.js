@@ -20,7 +20,7 @@ const productInwardRouter = require('./routes/productInward');
 const dispatchOrderRouter = require('./routes/dispatchOrder');
 const productOutwardRouter = require('./routes/productOutward');
 const inventoryRouter = require('./routes/inventory');
-const customerInqueryRouter = require('./routes/customerInquery');
+const customerInquiryRouter = require('./routes/customerInquiry');
 
 
 
@@ -42,7 +42,7 @@ app.use('/api/v1/user', userRouter);
 app.use('/api/v1/public', publicRouter);
 app.use('/api/v1/customer', authService.isLoggedIn, customerRouter);
 app.use('/api/v1/category', authService.isLoggedIn, categoryRouter);
-app.use('/api/v1/customer-inquery', authService.isLoggedIn, customerInqueryRouter);
+app.use('/api/v1/customer-inquiry', authService.isLoggedIn, customerInquiryRouter);
 app.use('/api/v1/uom', authService.isLoggedIn, uomRouter);
 app.use('/api/v1/brand', authService.isLoggedIn, brandRouter);
 app.use('/api/v1/warehouse', authService.isLoggedIn, warehouseRouter);

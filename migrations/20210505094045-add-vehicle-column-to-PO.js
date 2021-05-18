@@ -7,6 +7,6 @@ module.exports = {
       })
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('ProductOutwards');
+    await queryInterface.removeColumn('ProductOutwards','referenceId');
   }
 };

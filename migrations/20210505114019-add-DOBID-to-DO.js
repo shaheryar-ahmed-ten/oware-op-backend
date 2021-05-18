@@ -7,6 +7,6 @@ module.exports = {
       })
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('DispatchOrders');
+    await queryInterface.removeColumn('DispatchOrders','referenceId');
   }
 };

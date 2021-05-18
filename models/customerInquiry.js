@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const config = require('../config');
 
 module.exports = (sequelize, DataTypes) => {
-  class CustomerInquery extends Model {
+  class CustomerInquiry extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     };
   };
-  CustomerInquery.init({
+  CustomerInquiry.init({
     name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -26,16 +26,13 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: { notEmpty: { msg: 'Please enter phone number' } }
     },
-    email:DataTypes.STRING,
-    pickUp: DataTypes.STRING,
-    dropOff: DataTypes.STRING,
-    notes: DataTypes.STRING,
-    goodsType: DataTypes.STRING,
+    serviceType:DataTypes.STRING,
+    cityForService: DataTypes.STRING,
   }, {
     sequelize,
     paranoid: true,
-    modelName: 'CustomerInquery',
+    modelName: 'CustomerInquiry',
   });
 
-  return CustomerInquery;
+  return CustomerInquiry;
 };

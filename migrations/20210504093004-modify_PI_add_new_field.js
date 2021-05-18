@@ -8,6 +8,6 @@ module.exports = {
     
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('ProductInwards');
+    await queryInterface.removeColumn('ProductInwards','referenceId');
   }
 };

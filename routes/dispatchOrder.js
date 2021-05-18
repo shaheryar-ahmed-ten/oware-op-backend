@@ -38,9 +38,7 @@ const digitizie = (value,places)=>{
 /* POST create new dispatchOrder. */
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
-  const numberOfDispatchOrders = await DispatchOrder.count();
-  const numberOfBusinessId = digitizie(numberOfDispatchOrders+1,6)
-  req.body.dispatchorderIdForBusiness = req.body.dispatchorderIdForBusiness + numberOfBusinessId
+  
   
   let inventory = await Inventory.findByPk(req.body.inventoryId);
   if (!inventory && !req.body.inventoryId) return res.json({
@@ -60,6 +58,9 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
+    const numberOfBusinessId = digitizie(dispatchOrder.id,6);
+    dispatchOrder.dispatchorderIdForBusiness = req.body.dispatchorderIdForBusiness + numberOfBusinessId;
+    dispatchOrder.save();
   } catch (err) {
     return res.json({
       success: false,

@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { CustomerInquery } = require("../models");
+const { CustomerInquiry } = require("../models");
 
 /* POST create new customer inquery request. */
-router.post("/customer-inquery", async (req, res, next) => {
-  let message = "New customer inquery sent";
-  let customerInquery;
+router.post("/customer-inquiry", async (req, res, next) => {
+  let message = "New customer inquiry sent";
+  let customerInquiry;
   try {
-    customerInquery = await CustomerInquery.create({
+    customerInquiry = await CustomerInquiry.create({
       ...req.body,
     });
   } catch (err) {
@@ -19,7 +19,7 @@ router.post("/customer-inquery", async (req, res, next) => {
   res.json({
     success: true,
     message,
-    data: customerInquery,
+    data: customerInquiry,
   });
 });
 

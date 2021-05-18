@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { CustomerInquery } = require("../models");
+const { CustomerInquiry } = require("../models");
 const authService = require('../services/auth.service');
 const config = require('../config');
 
@@ -11,7 +11,7 @@ router.get('/', authService.isLoggedIn,async (req, res, next) => {
     const offset = (req.query.page - 1 || 0) * limit;
     let where = {
     };
-    const response = await CustomerInquery.findAndCountAll({
+    const response = await CustomerInquiry.findAndCountAll({
       orderBy: [['updatedAt', 'DESC']],
       limit, offset, where
     });
