@@ -59,7 +59,7 @@ router.post('/', async (req, res, next) => {
       ...req.body
     });
     const numberOfBusinessId = digitizie(dispatchOrder.id,6);
-    dispatchOrder.dispatchorderIdForBusiness = req.body.dispatchorderIdForBusiness + numberOfBusinessId;
+    dispatchOrder.businessId = req.body.businessId + numberOfBusinessId;
     dispatchOrder.save();
   } catch (err) {
     return res.json({
