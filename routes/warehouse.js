@@ -4,12 +4,6 @@ const { Warehouse, User } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
-
-function digitize(value, places) {
-  let strVal = (value + '');
-  return new Array(places - strVal.length).fill('0').join('') + strVal;
-}
-
 /* GET warehouses listing. */
 router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
@@ -92,5 +86,7 @@ router.delete('/:id', async (req, res, next) => {
     message: 'No warehouse found!'
   });
 })
+
+
 
 module.exports = router;
