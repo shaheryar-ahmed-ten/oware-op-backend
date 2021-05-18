@@ -8,11 +8,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      vehicleType: {
+      type: {
         allowNull: false,
         type: Sequelize.STRING
       },
-      vehicleNumber: {
+      number: {
         allowNull: false,
         type: Sequelize.STRING
       },

@@ -60,8 +60,8 @@ router.post('/', async (req, res, next) => {
   let vehicle;
   try {
     vehicle = await Vehicle.create({
-      vehicleType: req.body.vehicle.vehicleType,
-      vehicleNumber: req.body.vehicle.vehicleNumber
+      type: req.body.vehicle.type,
+      number: req.body.vehicle.number
     })
     productOutward = await ProductOutward.create({
       userId: req.userId,

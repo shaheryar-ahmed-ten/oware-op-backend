@@ -17,13 +17,13 @@ module.exports = (sequelize, DataTypes) => {
   }
   Vehicle.init(
     {
-      vehicleNumber: {
+      number: {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,
         //validate: { notEmpty: { msg: "Please enter a vehicle number" } },
       },
-      vehicleType: {
+      type: {
         type: DataTypes.ENUM({
           values: config.vehicleTypes,
         }),
