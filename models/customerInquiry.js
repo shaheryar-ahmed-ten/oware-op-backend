@@ -19,14 +19,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       validate: { notEmpty: { msg: 'Please enter name' } }
-      
     },
     phone: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: { notEmpty: { msg: 'Please enter phone number' } }
     },
-    serviceType:DataTypes.STRING,
+    serviceType: DataTypes.STRING,
     cityForService: DataTypes.STRING,
   }, {
     sequelize,

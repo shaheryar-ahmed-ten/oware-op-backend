@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { CustomerInquiry } = require("../models");
+const { sendCustomerInquiryEmail } = require('../services/mailer.service');
 
 /* POST create new customer inquery request. */
 router.post("/customer-inquiry", async (req, res, next) => {
@@ -8,8 +9,9 @@ router.post("/customer-inquiry", async (req, res, next) => {
   let customerInquiry;
   try {
     customerInquiry = await CustomerInquiry.create({
-      ...req.body,
+      ...req.body
     });
+    sendCustomerInquiryEmail(customerInquiry);
   } catch (err) {
     return res.json({
       success: false,
@@ -19,7 +21,7 @@ router.post("/customer-inquiry", async (req, res, next) => {
   res.json({
     success: true,
     message,
-    data: customerInquiry,
+    data: customerInquiry
   });
 });
 

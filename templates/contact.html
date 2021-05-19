@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeadGen</title>
+</head>
+
+<body>
+  <form id="form">
+    <input type="text" name="name" id="name" placeholder="Enter Name">
+    <input type="text" name="phone" id="phone" placeholder="Enter Phone">
+    <label for="cars">Type Of Service</label>
+    <select id="service" name="serviceType">
+      <option value="Warehousing">Warehousing</option>
+      <option value="Fulfilment">Fulfilment</option>
+      <option value="Transportation">Transportation</option>
+    </select>
+    <label for="city">Choose City For Service:</label>
+    <select id="city" name="cityForService">
+      <option value="Karachi">Karachi</option>
+      <option value="Lahore">Lahore</option>
+    </select>
+    <button id="submitbtn">Submit</button>
+  </form>
+  <h1 id="message">Thankyou For Submiting The Request.</h1>
+  <script>
+    const name = document.querySelector('#name')
+    const phone = document.querySelector('#phone')
+    const service = document.querySelector('#service')
+    const city = document.querySelector('#city')
+    const submitbtn = document.querySelector('#submitbtn')
+    const form = document.querySelector('#form')
+    const message = document.querySelector('#message')
+    message.style.display = 'none'
+    submitbtn.addEventListener('click', (e) => {
+      e.preventDefault()
+      fetch('http://localhost:3000/api/v1/public/customer-inquiry', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.value,
+          phone: phone.value,
+          service: service.value,
+          city: city.value,
+        }), // The data
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8' // The type of data you're sending
+        }
+      }).then(function (response) {
+        console.log(response)
+        form.style.display = "none"
+        message.style.display = "block"
+      }).catch(function (error) {
+        console.warn('Something went wrong.', error, error.data);
+      });
+
+    })
+  </script>
+</body>
+
+</html>
