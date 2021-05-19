@@ -3,6 +3,7 @@ const router = express.Router();
 const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
+const { digitizie } = require('./dispatchOrder');
 
 /* GET productOutwards listing. */
 router.get('/', async (req, res, next) => {
@@ -68,6 +69,9 @@ router.post('/', async (req, res, next) => {
       vehicleId: vehicle.id,
       ...req.body
     });
+    const numberOfBusinessId = digitizie(productOutward.id,6);
+    productOutward.businessId = req.body.businessId + numberOfBusinessId;
+    productOutward.save();
   } catch (err) {
     return res.json({
       success: false,

@@ -31,7 +31,7 @@ router.get('/', async (req, res, next) => {
 });
 
 //for arranging value in format 000001 and ascending for DOBID
-const digitizie = (value,places)=>{
+exports.digitizie = (value,places)=>{
   let strValue = (value+"")
   return new Array(places - strValue.length).fill('0').join('') + strValue
 }
@@ -58,7 +58,7 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
-    const numberOfBusinessId = digitizie(dispatchOrder.id,6);
+    const numberOfBusinessId = this.digitizie(dispatchOrder.id,6);
     dispatchOrder.businessId = req.body.businessId + numberOfBusinessId;
     dispatchOrder.save();
   } catch (err) {
