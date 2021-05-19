@@ -3,7 +3,8 @@ const router = express.Router();
 const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
-const { digitizie } = require('./dispatchOrder');
+const { digitizie } = require('../services/common.services');
+
 
 /* GET productOutwards listing. */
 router.get('/', async (req, res, next) => {

@@ -4,6 +4,7 @@ const { Inventory, DispatchOrder, ProductOutward, User, Customer, Warehouse, Pro
 const config = require('../config');
 const { Op, fn, col } = require("sequelize");
 const authService = require('../services/auth.service');
+const { digitizie } = require('../services/common.services');
 
 /* GET dispatchOrders listing. */
 router.get('/', async (req, res, next) => {
@@ -30,11 +31,6 @@ router.get('/', async (req, res, next) => {
   });
 });
 
-//for arranging value in format 000001 and ascending for DOBID
-exports.digitizie = (value,places)=>{
-  let strValue = (value+"")
-  return new Array(places - strValue.length).fill('0').join('') + strValue
-}
 /* POST create new dispatchOrder. */
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
@@ -58,7 +54,7 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
-    const numberOfBusinessId = this.digitizie(dispatchOrder.id,6);
+    const numberOfBusinessId = digitizie(dispatchOrder.id,6);
     dispatchOrder.businessId = req.body.businessId + numberOfBusinessId;
     dispatchOrder.save();
   } catch (err) {
