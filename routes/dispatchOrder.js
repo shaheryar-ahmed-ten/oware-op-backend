@@ -4,6 +4,7 @@ const { Inventory, DispatchOrder, ProductOutward, User, Customer, Warehouse, Pro
 const config = require('../config');
 const { Op, fn, col } = require("sequelize");
 const authService = require('../services/auth.service');
+const { digitizie } = require('../services/common.services');
 
 /* GET dispatchOrders listing. */
 router.get('/', async (req, res, next) => {
@@ -33,6 +34,8 @@ router.get('/', async (req, res, next) => {
 /* POST create new dispatchOrder. */
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
+  
+  
   let inventory = await Inventory.findByPk(req.body.inventoryId);
   if (!inventory && !req.body.inventoryId) return res.json({
     success: false,
@@ -51,6 +54,9 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
+    const numberOfBusinessId = digitizie(dispatchOrder.id,6);
+    dispatchOrder.businessId = req.body.businessId + numberOfBusinessId;
+    dispatchOrder.save();
   } catch (err) {
     return res.json({
       success: false,

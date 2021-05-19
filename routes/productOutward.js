@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, ProductOutward, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
+const { digitizie } = require('../services/common.services');
+
 
 /* GET productOutwards listing. */
 router.get('/', async (req, res, next) => {
@@ -21,7 +23,10 @@ router.get('/', async (req, res, next) => {
           model: Inventory,
           include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
         }]
-      }],
+      },{
+        model:Vehicle
+      }
+    ],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
@@ -54,11 +59,20 @@ router.post('/', async (req, res, next) => {
   dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
   dispatchOrder.Inventory.save();
   let productOutward;
+  let vehicle;
   try {
+    vehicle = await Vehicle.create({
+      type: req.body.vehicle.type,
+      number: req.body.vehicle.number
+    })
     productOutward = await ProductOutward.create({
       userId: req.userId,
+      vehicleId: vehicle.id,
       ...req.body
     });
+    const numberOfBusinessId = digitizie(productOutward.id,6);
+    productOutward.businessId = req.body.businessId + numberOfBusinessId;
+    productOutward.save();
   } catch (err) {
     return res.json({
       success: false,
@@ -109,20 +123,22 @@ router.delete('/:id', async (req, res, next) => {
     message: 'No productOutward found!'
   });
 })
-
 router.get('/relations', async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
     include: [{
       model: Inventory,
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
     }, {
-      model: ProductOutward
+      model: ProductOutward,
+      include:{model:Vehicle}
     }]
   });
+
+  const vehicleTypes = config.vehicleTypes;
   res.json({
     success: true,
     message: 'respond with a resource',
-    dispatchOrders
+    dispatchOrders,vehicleTypes
   });
 });
 
