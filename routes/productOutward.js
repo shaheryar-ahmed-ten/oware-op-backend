@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
-const { Op } = require("sequelize");
+const { Op, or } = require("sequelize");
 
 /* GET productOutwards listing. */
 router.get('/', async (req, res, next) => {
@@ -58,11 +58,13 @@ router.post('/', async (req, res, next) => {
   dispatchOrder.Inventory.save();
   let productOutward;
   let vehicle;
+  vehicle =await Vehicle.findOne({ where: {[Op.and]: [{type:req.body.vehicle.type}, {number :req.body.vehicle.number}]}})
   try {
+    if(!vehicle){
     vehicle = await Vehicle.create({
       type: req.body.vehicle.type,
-      number: req.body.vehicle.number
-    })
+      number: req.body.vehicle.number.toUpperCase()
+    })}
     productOutward = await ProductOutward.create({
       userId: req.userId,
       vehicleId: vehicle.id,
