@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeadGen</title>
+  <style>
+    legend {
+      font-weight: 800;
+      text-align: center;
+      margin: 10px 0 20px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-content: center;
+      align-content: center;
+    }
+
+    label input,
+    label select {
+      width: 160px;
+      padding: 5px;
+      margin: 0 10px;
+    }
+
+    form {
+      /* display: flex; */
+      justify-content: center;
+      width: 20%;
+      align-self: center;
+      border: 4px solid blue;
+      padding: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <form id="form">
+    <legend>Contact Us</legend>
+    <label for="Name">
+      Name:
+      <input type="text" name="name" id="name" placeholder="Enter Name">
+    </label>
+    <label for="Phone">
+      Phone:
+      <input type="text" name="phone" id="phone" placeholder="Enter Phone">
+    </label>
+
+    <label for="serviceType">Type Of Service
+      <select id="serviceType" name="serviceType" multiple>
+        <option value="Warehousing">Warehousing</option>
+        <option value="Fulfilment">Fulfilment</option>
+        <option value="Transportation">Transportation</option>
+      </select>
+    </label>
+    <label for="cityForService">Choose City For Service:
+      <select id="cityForService" name="cityForService">
+        <option value="Karachi">Karachi</option>
+        <option value="Lahore">Lahore</option>
+      </select>
+    </label>
+    <label for="companyName">Company Name:
+      <input type="text" name="companyName" id="companyName" placeholder="Company Name">
+    </label>
+    <label for="monthlyOrders">Monthly Orders:
+      <select id="monthlyOrders" name="monthlyOrders">
+        <option value="Not Started">Not Started</option>
+        <option value="0-100">0-100</option>
+        <option value="100-500">100-500</option>
+        <option value="500-1000">500-1000</option>
+        <option value="1000-3000">1000-3000</option>
+        <option value="3000+">3000+</option>
+      </select>
+    </label>
+    <label for="industry">Industry:
+      <select id="industry" name="industry">
+        <option value="Fashion">Fashion</option>
+        <option value="Cosmetics">Cosmetics</option>
+        <option value="Food/Drinks">Food/Drinks</option>
+        <option value="Electronics/Home Products">Electronics/Home Products</option>
+        <option value="Furniture">Furniture</option>
+        <option value="Other">Other</option>
+      </select>
+    </label>
+    <button id="submitbtn">Submit</button>
+  </form>
+  <h1 id="message">Thankyou For Submiting The Request.</h1>
+  <script>
+    const name = document.querySelector('#name');
+    const phone = document.querySelector('#phone');
+    const serviceType = document.querySelector('#serviceType');
+    const cityForService = document.querySelector('#cityForService');
+    const companyName = document.querySelector('#companyName');
+    const monthlyOrders = document.querySelector('#monthlyOrders');
+    const industry = document.querySelector('#industry');
+    const submitbtn = document.querySelector('#submitbtn');
+    const form = document.querySelector('#form');
+    const message = document.querySelector('#message');
+    message.style.display = 'none';
+    serviceType.value
+    submitbtn.addEventListener('click', (e) => {
+      e.preventDefault()
+      fetch('http://localhost:3000/api/v1/public/customer-inquiry', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.value,
+          phone: phone.value,
+          serviceType: [...serviceType.options].filter(option => option.selected).map(option => option.value).join(','),
+          cityForService: cityForService.value,
+          companyName: companyName.value,
+          monthlyOrders: monthlyOrders.value,
+          industry: industry.value,
+        }), // The data
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8' // The type of data you're sending
+        }
+      }).then(function (response) {
+        form.style.display = "none"
+        message.style.display = "block"
+      }).catch(function (error) {
+        console.warn('Something went wrong.', error, error.data);
+      });
+
+    })
+  </script>
+</body>
+
+</html>

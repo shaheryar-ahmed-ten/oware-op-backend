@@ -3,9 +3,10 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-var cors = require('cors')
+const cors = require('cors');
 
 const authService = require('./services/auth.service');
+const mailer = require('./services/mailer.service')
 const indexRouter = require('./routes/index');
 const userRouter = require('./routes/user');
 const publicRouter = require('./routes/public');
