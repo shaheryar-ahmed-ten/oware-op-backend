@@ -16,7 +16,7 @@ const Mailclient = nodemailer.createTransport({
 
 async function sendMail(payload) {
   let mailOptions = {
-    from: (payload.senderName ? `<${payload.senderName}> ` : '') + process.env.MAILER_EMAIL,
+    from: (payload.senderName ? `${payload.senderName} <${process.env.MAILER_EMAIL}> ` : process.env.MAILER_EMAIL),
     to: payload.to,
     subject: payload.subject,
     text: payload.text,
@@ -35,8 +35,8 @@ function sendCustomerInquiryEmail(customerInquiry) {
   let customerInquiryTemplate = fs.readFileSync('templates/customer-inquiry.html', { encoding: 'utf-8' });
   let html = ejs.render(customerInquiryTemplate, customerInquiry);
   return sendMail({
-    to: 'oware@yopmail.com',
-    from: 'yousharizvi@gmail.com',
+    to: process.env.LEAD_EMAIL_RECIPIENT,
+    from: process.env.MAILER_EMAIL,
     senderName: 'Customer Inquiry',
     subject: 'New Lead',
     html
