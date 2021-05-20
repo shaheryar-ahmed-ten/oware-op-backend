@@ -60,11 +60,13 @@ router.post('/', async (req, res, next) => {
   dispatchOrder.Inventory.save();
   let productOutward;
   let vehicle;
+  vehicle =await Vehicle.findOne({ where: {[Op.and]: [{type:req.body.vehicle.type}, {number :req.body.vehicle.number}]}})
   try {
+    if(!vehicle){
     vehicle = await Vehicle.create({
       type: req.body.vehicle.type,
-      number: req.body.vehicle.number
-    })
+      number: req.body.vehicle.number.toUpperCase()
+    })}
     productOutward = await ProductOutward.create({
       userId: req.userId,
       vehicleId: vehicle.id,
