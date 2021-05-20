@@ -89,7 +89,7 @@
     </label>
     <button id="submitbtn">Submit</button>
   </form>
-  <h1 id="message">Thankyou For Submiting The Request.</h1>
+  <h1 id="message">Thank you For Submiting The Request.</h1>
   <script>
     const name = document.querySelector('#name');
     const phone = document.querySelector('#phone');
@@ -105,7 +105,7 @@
     serviceType.value
     submitbtn.addEventListener('click', (e) => {
       e.preventDefault()
-      fetch('http://localhost:3000/api/v1/public/customer-inquiry', {
+      fetch('http://coc.oware.co/api/v1/public/customer-inquiry', {
         method: 'POST',
         body: JSON.stringify({
           name: name.value,
