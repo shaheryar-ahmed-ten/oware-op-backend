@@ -109,7 +109,7 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
       roleId: adminRole.id,
       ...req.body
     });
-    delete user.password;
+    user.password = undefined;
   } catch (err) {
     return res.json({
       success: false,
