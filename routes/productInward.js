@@ -4,6 +4,7 @@ const { Inventory, ProductInward, User, Customer, Warehouse, Product, UOM } = re
 const config = require('../config');
 const { Op } = require("sequelize");
 const authService = require('../services/auth.service');
+const { digitizie } = require('../services/common.services');
 
 /* GET productInwards listing. */
 router.get('/', async (req, res, next) => {
