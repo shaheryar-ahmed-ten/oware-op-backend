@@ -51,8 +51,8 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
-    const numberOfBusinessId = digitizie(dispatchOrder.id,6);
-    dispatchOrder.businessId = req.body.businessId + numberOfBusinessId;
+    const numberOfinternalIdForBusiness = digitizie(dispatchOrder.id,6);
+    dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
     dispatchOrder.save();
     inventory.committedQuantity += (+req.body.quantity);
     inventory.availableQuantity -= (+req.body.quantity);

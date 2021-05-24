@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull:true,
       
     },
-    businessId:{
+    internalIdForBusiness:{
       type: DataTypes.STRING(30),
       allowNull:true,
     },

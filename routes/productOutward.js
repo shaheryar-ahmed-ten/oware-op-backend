@@ -69,8 +69,8 @@ router.post('/', async (req, res, next) => {
       vehicleId: vehicle.id,
       ...req.body
     });
-    const numberOfBusinessId = digitizie(productOutward.id,6);
-    productOutward.businessId = req.body.businessId + numberOfBusinessId;
+    const numberOfinternalIdForBusiness = digitizie(productOutward.id,6);
+    productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
     productOutward.save();
     dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
     dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
