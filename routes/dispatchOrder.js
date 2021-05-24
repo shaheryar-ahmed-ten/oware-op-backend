@@ -45,9 +45,6 @@ router.post('/', async (req, res, next) => {
     success: false,
     message: 'Cannot create orders above available quantity'
   });
-  inventory.committedQuantity += (+req.body.quantity);
-  inventory.availableQuantity -= (+req.body.quantity);
-  inventory.save();
   let dispatchOrder;
   try {
     dispatchOrder = await DispatchOrder.create({
@@ -57,6 +54,9 @@ router.post('/', async (req, res, next) => {
     const numberOfBusinessId = digitizie(dispatchOrder.id,6);
     dispatchOrder.businessId = req.body.businessId + numberOfBusinessId;
     dispatchOrder.save();
+    inventory.committedQuantity += (+req.body.quantity);
+    inventory.availableQuantity -= (+req.body.quantity);
+    inventory.save();
   } catch (err) {
     return res.json({
       success: false,

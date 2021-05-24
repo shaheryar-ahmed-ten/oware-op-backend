@@ -49,12 +49,12 @@ router.post('/', async (req, res, next) => {
     else {
       inventory.availableQuantity += (+req.body.quantity);
       inventory.totalInwardQuantity += (+req.body.quantity);
-      inventory.save();
     }
     productInward = await ProductInward.create({
       userId: req.userId,
       ...req.body
     });
+    inventory.save();
   } catch (err) {
     return res.json({
       success: false,
