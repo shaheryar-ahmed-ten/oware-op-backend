@@ -28,6 +28,7 @@ router.get('/', async (req, res, next) => {
 
 /* POST create new productInward. */
 router.post('/', async (req, res, next) => {
+  let productInward;
   let message = 'New productInward registered';
   productInward = await ProductInward.create({
     userId: req.userId,
@@ -40,7 +41,6 @@ router.post('/', async (req, res, next) => {
       productId: req.body.productId
     }
   });
-  let productInward;
   try {
     if (!inventory) await Inventory.create({
       customerId: req.body.customerId,
