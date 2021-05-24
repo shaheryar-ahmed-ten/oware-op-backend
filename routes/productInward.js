@@ -29,6 +29,10 @@ router.get('/', async (req, res, next) => {
 /* POST create new productInward. */
 router.post('/', async (req, res, next) => {
   let message = 'New productInward registered';
+  productInward = await ProductInward.create({
+    userId: req.userId,
+    ...req.body
+  });
   let inventory = await Inventory.findOne({
     where: {
       customerId: req.body.customerId,
@@ -49,12 +53,8 @@ router.post('/', async (req, res, next) => {
     else {
       inventory.availableQuantity += (+req.body.quantity);
       inventory.totalInwardQuantity += (+req.body.quantity);
+      inventory.save();
     }
-    productInward = await ProductInward.create({
-      userId: req.userId,
-      ...req.body
-    });
-    inventory.save();
   } catch (err) {
     return res.json({
       success: false,
