@@ -23,8 +23,8 @@ router.get('/', async (req, res, next) => {
           model: Inventory,
           include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
         }]
-      },{
-        model:Vehicle
+      }, {
+        model: Vehicle
       }
     ],
     orderBy: [['updatedAt', 'DESC']],
@@ -57,20 +57,21 @@ router.post('/', async (req, res, next) => {
   })
   let productOutward;
   let vehicle;
-  vehicle =await Vehicle.findOne({ where: {[Op.and]: [{type:req.body.vehicle.type}, {number :req.body.vehicle.number}]}})
+  vehicle = await Vehicle.findOne({ where: { [Op.and]: [{ type: req.body.vehicle.type }, { number: req.body.vehicle.number }] } })
   try {
-    if(!vehicle){
-    vehicle = await Vehicle.create({
-      type: req.body.vehicle.type,
-      number: req.body.vehicle.number.toUpperCase()
-    })}
+    if (!vehicle) {
+      vehicle = await Vehicle.create({
+        type: req.body.vehicle.type,
+        number: req.body.vehicle.number.toUpperCase()
+      })
+    }
     productOutward = await ProductOutward.create({
       userId: req.userId,
       vehicleId: vehicle.id,
       ...req.body
     });
-    const numberOfBusinessId = digitizie(productOutward.id,6);
-    productOutward.businessId = req.body.businessId + numberOfBusinessId;
+    const numberOfInternalIdForBusiness = digitizie(productOutward.id, 6);
+    productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
     productOutward.save();
     dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
     dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
@@ -132,7 +133,7 @@ router.get('/relations', async (req, res, next) => {
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
     }, {
       model: ProductOutward,
-      include:{model:Vehicle}
+      include: { model: Vehicle }
     }]
   });
 
@@ -140,7 +141,7 @@ router.get('/relations', async (req, res, next) => {
   res.json({
     success: true,
     message: 'respond with a resource',
-    dispatchOrders,vehicleTypes
+    dispatchOrders, vehicleTypes
   });
 });
 

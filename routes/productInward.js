@@ -34,6 +34,9 @@ router.post('/', async (req, res, next) => {
     userId: req.userId,
     ...req.body
   });
+  const numberOfinternalIdForBusiness = digitizie(productInward.id, 6);
+  productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
+  productInward.save();
   let inventory = await Inventory.findOne({
     where: {
       customerId: req.body.customerId,
@@ -47,7 +50,7 @@ router.post('/', async (req, res, next) => {
       warehouseId: req.body.warehouseId,
       productId: req.body.productId,
       availableQuantity: req.body.quantity,
-      referenceId:req.body.referenceId,
+      referenceId: req.body.referenceId,
       totalInwardQuantity: req.body.quantity
     })
     else {
@@ -104,7 +107,7 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
-  
+
   const warehouses = await Warehouse.findAll({ where });
   const products = await Product.findAll({ where, include: [{ model: UOM }] });
 
