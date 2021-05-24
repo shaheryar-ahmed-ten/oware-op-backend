@@ -3,7 +3,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.addColumn('DispatchOrders', 'internalIdForBusiness', {
       type: Sequelize.STRING(30),
-      allowNull: false
+      allowNull: true
     })
   },
   down: async (queryInterface) => {

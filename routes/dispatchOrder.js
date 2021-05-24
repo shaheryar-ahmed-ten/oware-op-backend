@@ -34,8 +34,8 @@ router.get('/', async (req, res, next) => {
 /* POST create new dispatchOrder. */
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
-  
-  
+
+
   let inventory = await Inventory.findByPk(req.body.inventoryId);
   if (!inventory && !req.body.inventoryId) return res.json({
     success: false,
@@ -51,8 +51,8 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
-    const numberOfinternalIdForBusiness = digitizie(dispatchOrder.id,6);
-    dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
+    const numberOfInternalIdForBusiness = digitizie(dispatchOrder.id, 6);
+    dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
     dispatchOrder.save();
     inventory.committedQuantity += (+req.body.quantity);
     inventory.availableQuantity -= (+req.body.quantity);

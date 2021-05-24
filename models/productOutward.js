@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
       ProductOutward.belongsTo(models.User, {
         foreignKey: 'userId'
       });
-      ProductOutward.belongsTo(models.Vehicle,{
-        foreignKey:"vehicleId"
+      ProductOutward.belongsTo(models.Vehicle, {
+        foreignKey: "vehicleId"
       })
       ProductOutward.belongsTo(models.DispatchOrder, {
         foreignKey: 'dispatchOrderId'
@@ -35,14 +35,14 @@ module.exports = (sequelize, DataTypes) => {
         isInt: { msg: 'Please enter quantity' }
       }
     },
-    referenceId:{
+    referenceId: {
       type: DataTypes.STRING(30),
-      allowNull:true,
-      
+      allowNull: true
+
     },
-    internalIdForBusiness:{
+    internalIdForBusiness: {
       type: DataTypes.STRING(30),
-      allowNull:true,
+      allowNull: true
     },
     dispatchOrderId: {
       type: DataTypes.INTEGER,
