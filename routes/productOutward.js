@@ -55,9 +55,6 @@ router.post('/', async (req, res, next) => {
     success: false,
     message: 'Cannot dispatch above available inventory quantity'
   })
-  dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
-  dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
-  dispatchOrder.Inventory.save();
   let productOutward;
   let vehicle;
   vehicle =await Vehicle.findOne({ where: {[Op.and]: [{type:req.body.vehicle.type}, {number :req.body.vehicle.number}]}})
@@ -75,6 +72,9 @@ router.post('/', async (req, res, next) => {
     const numberOfBusinessId = digitizie(productOutward.id,6);
     productOutward.businessId = req.body.businessId + numberOfBusinessId;
     productOutward.save();
+    dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
+    dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
+    dispatchOrder.Inventory.save();
   } catch (err) {
     return res.json({
       success: false,
