@@ -6,7 +6,7 @@ const logger = require('morgan');
 const cors = require('cors');
 
 const authService = require('./services/auth.service');
-const mailer = require('./services/mailer.service')
+const { syncPermissions } = require('./services/permission.service');
 const indexRouter = require('./routes/index');
 const userRouter = require('./routes/user');
 const publicRouter = require('./routes/public');
@@ -70,6 +70,8 @@ app.use('/api/v1', function (err, req, res, next) {
     message: 'error'
   });
 });
+
+syncPermissions();
 
 // error handler
 app.use(function (err, req, res, next) {
