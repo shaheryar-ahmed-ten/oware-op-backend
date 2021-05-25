@@ -33,8 +33,8 @@ module.exports = {
   },
   down: async () => {
     const roles = await Role.findAll();
-    const superAdminRole = roles.find(role => role.type == 'SUPER_ADMIN');
-    const adminRole = roles.find(role => role.type == 'ADMIN');
+    const superAdminRole = roles.find(role => ['superAdmin', 'SUPER_ADMIN'].indexOf(role.type) > -1);
+    const adminRole = roles.find(role => ['admin', 'ADMIN'].indexOf(role.type) > -1);
     const permissions = await Permission.findAll({
       where: {
         type: {
