@@ -47,8 +47,6 @@ module.exports.isSuperAdmin = (req, res, next) => {
 };
 
 module.exports.checkPermission = permission => (req, res, next) => {
-  // console.log(req.user.Role.PermissionAccesses);
-  // console.log(req.user.Role.PermissionAccesses.map((permissionAccess) => permissionAccess.Permission.type));
   if (req.user.Role.PermissionAccesses.find((permissionAccess) => permissionAccess.Permission.type == permission))
     if (next) next();
     else return true;
