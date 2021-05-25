@@ -4,8 +4,8 @@ const router = express.Router();
 const { User, Role, PermissionAccess, Permission } = require('../models')
 const config = require('../config');
 const authService = require('../services/auth.service');
+const { OPS_USER_FULL } = require('../enums/permissions');
 const { Op } = require("sequelize");
-const { response } = require('express');
 
 async function updateUser(req, res, next) {
   let user = await User.findOne({ where: { id: req.params.id } });
@@ -35,7 +35,7 @@ async function updateUser(req, res, next) {
 }
 
 /* GET users listing. */
-router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+router.get('/', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
@@ -94,7 +94,7 @@ router.post('/auth/login', async (req, res, next) => {
 });
 
 /* POST create new user. */
-router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+router.post('/', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const adminRole = await Role.findOne({ where: { type: 'admin' } });
   let message = 'New user registered';
   let user;
@@ -124,9 +124,9 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
 });
 
 /* PUT update existing user. */
-router.put('/:id', authService.isLoggedIn, authService.isSuperAdmin, updateUser);
+router.put('/:id', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), updateUser);
 
-router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+router.delete('/:id', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   let response = await User.destroy({ where: { id: req.params.id } });
   if (response) res.json({
     success: true,
@@ -139,7 +139,7 @@ router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (r
 })
 
 
-router.get('/relations', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+router.get('/relations', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const roles = await Role.findAll();
   res.json({
     success: true,
