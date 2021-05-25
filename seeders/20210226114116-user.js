@@ -5,12 +5,12 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     let roles = await Role.bulkCreate([{
       name: 'Admin',
-      type: 'admin',
+      type: 'ADMIN',
       createdAt: new Date(),
       updatedAt: new Date()
     }, {
       name: 'Admin',
-      type: 'superAdmin',
+      type: 'SUPER_ADMIN',
       createdAt: new Date(),
       updatedAt: new Date()
     }]);
@@ -26,29 +26,7 @@ module.exports = {
       createdAt: new Date(),
       updatedAt: new Date()
     });
-    let permissions = await Permission.bulkCreate([{
-      type: 'admin_privileges',
-      name: 'Admin Privileges',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }, {
-      type: 'superadmin_privileges',
-      name: 'Super Admin Privileges',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }]);
-    let permissionAccesses = await PermissionAccess.bulkCreate([{
-      roleId: roles[0].dataValues.id,
-      permissionId: permissions[0].dataValues.id,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }, {
-      roleId: roles[1].dataValues.id,
-      permissionId: permissions[1].dataValues.id,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }]);
-    return [roles, superUser, permissions, permissionAccesses];
+    return [roles, superUser];
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('Roles', null, {});

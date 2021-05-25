@@ -1,6 +1,5 @@
 module.exports = Object.freeze({
   OPS_USER_FULL: 'User Full Access',
-  OPS_PUBLIC_FULL: 'Public Full Access',
   OPS_CUSTOMER_FULL: 'Customer Full Access',
   OPS_CATEGORY_FULL: 'Category Full Access',
   OPS_UOM_FULL: 'UoM Full Access',

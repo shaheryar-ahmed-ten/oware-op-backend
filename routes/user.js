@@ -3,8 +3,7 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 const { User, Role, PermissionAccess, Permission } = require('../models')
 const config = require('../config');
-const authService = require('../services/auth.service');
-const { OPS_USER_FULL } = require('../enums/permissions');
+const { isLoggedIn, checkPermission } = require('../services/auth.service');
 const { Op } = require("sequelize");
 
 async function updateUser(req, res, next) {
@@ -35,7 +34,7 @@ async function updateUser(req, res, next) {
 }
 
 /* GET users listing. */
-router.get('/', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), async (req, res, next) => {
+router.get('/', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
@@ -54,7 +53,7 @@ router.get('/', authService.isLoggedIn, authService.checkPermission('OPS_USER_FU
 });
 
 /* GET current logged in user. */
-router.get('/me', authService.isLoggedIn, async (req, res, next) => {
+router.get('/me', isLoggedIn, async (req, res, next) => {
   return res.json({
     success: true,
     data: req.user
@@ -62,7 +61,7 @@ router.get('/me', authService.isLoggedIn, async (req, res, next) => {
 });
 
 /* GET current logged in user. */
-router.put('/me', authService.isLoggedIn, async (req, res, next) => {
+router.put('/me', isLoggedIn, async (req, res, next) => {
   req.params.id = req.userId;
   return next()
 }, updateUser);
@@ -94,16 +93,10 @@ router.post('/auth/login', async (req, res, next) => {
 });
 
 /* POST create new user. */
-router.post('/', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), async (req, res, next) => {
+router.post('/', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const adminRole = await Role.findOne({ where: { type: 'admin' } });
   let message = 'New user registered';
   let user;
-  // const requiredFields = ['roleId', 'username', 'password', 'email'];
-  // const fieldsValid = requiredFields.reduce((acc, field) => acc && req.body[field], true);
-  // if (!fieldsValid) return res.json({
-  //   success: false,
-  //   message: 'Please fill all required fields'
-  // })
   try {
     user = await User.create({
       roleId: adminRole.id,
@@ -124,9 +117,9 @@ router.post('/', authService.isLoggedIn, authService.checkPermission('OPS_USER_F
 });
 
 /* PUT update existing user. */
-router.put('/:id', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), updateUser);
+router.put('/:id', isLoggedIn, checkPermission('OPS_USER_FULL'), updateUser);
 
-router.delete('/:id', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), async (req, res, next) => {
+router.delete('/:id', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   let response = await User.destroy({ where: { id: req.params.id } });
   if (response) res.json({
     success: true,
@@ -139,7 +132,7 @@ router.delete('/:id', authService.isLoggedIn, authService.checkPermission('OPS_U
 })
 
 
-router.get('/relations', authService.isLoggedIn, authService.checkPermission('OPS_USER_FULL'), async (req, res, next) => {
+router.get('/relations', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const roles = await Role.findAll();
   res.json({
     success: true,
