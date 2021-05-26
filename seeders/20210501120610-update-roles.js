@@ -7,7 +7,7 @@ module.exports = {
       name: 'Super Admin'
     }, {
       where: {
-        type: 'superAdmin'
+        type: 'SUPER_ADMIN'
       }
     });
   },
@@ -15,7 +15,7 @@ module.exports = {
     await Role.update({
       name: 'Admin'
     }, {
-      type: 'superAdmin'
+      type: 'SUPER_ADMIN'
     });
   }
 };
