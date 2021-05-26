@@ -7,6 +7,6 @@ module.exports = {
     })
   },
   down: async (queryInterface) => {
-    await queryInterface.removeColumn('DispatchOrders', 'businessId');
+    await queryInterface.removeColumn('DispatchOrders', 'internalIdForBusiness');
   }
 };

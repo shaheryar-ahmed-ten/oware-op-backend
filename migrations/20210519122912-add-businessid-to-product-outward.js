@@ -7,6 +7,6 @@ module.exports = {
     });
   },
   down: async (queryInterface) => {
-    await queryInterface.removeColumn('ProductOutwards', 'businessId');
+    await queryInterface.removeColumn('ProductOutwards', 'internalIdForBusiness');
   }
 };
