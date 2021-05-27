@@ -37,8 +37,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     companyId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      validate: { notEmpty: { msg: 'Company cannot be empty' } }
+      allowNull: true
     },
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
