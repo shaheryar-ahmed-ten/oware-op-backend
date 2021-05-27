@@ -1,9 +1,9 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-const { User, Role, PermissionAccess, Permission } = require('../models')
+const { User, Role, PermissionAccess, Permission, Customer, CustomerEmployee } = require('../models')
 const config = require('../config');
-const { isLoggedIn, checkPermission } = require('../services/auth.service');
+const { isLoggedIn, checkPermission, isSuperAdmin } = require('../services/auth.service');
 const { Op } = require("sequelize");
 
 async function updateUser(req, res, next) {
@@ -16,6 +16,7 @@ async function updateUser(req, res, next) {
   user.lastName = req.body.lastName;
   user.roleId = req.body.roleId;
   user.phone = req.body.phone;
+  user.companyId = req.body.companyId;
   if (req.body.password) user.password = req.body.password;
   user.isActive = req.body.isActive;
   try {
@@ -40,7 +41,13 @@ router.get('/', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, n
   let where = {};
   if (req.query.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await User.findAndCountAll({
-    include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
+    include: [{
+      model: Role,
+      include: [{ model: PermissionAccess, include: [{ model: Permission }] }]
+    }, {
+      model: Customer,
+      as: 'Company'
+    }],
     orderBy: [['updatedAt', 'DESC']],
     limit, offset, where
   });
@@ -134,10 +141,13 @@ router.delete('/:id', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, 
 
 router.get('/relations', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const roles = await Role.findAll();
+  let where = {};
+  if (!isSuperAdmin(req)) where.contactId = req.userId;
+  const customers = await Customer.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',
-    roles
+    roles, customers
   });
 });
 

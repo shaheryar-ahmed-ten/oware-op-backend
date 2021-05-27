@@ -1,6 +1,6 @@
 'use strict';
 const { Op } = require("sequelize");
-const { User, Role, PermissionAccess, Permission } = require('../models')
+const { Role, PermissionAccess, Permission } = require('../models')
 const permissionEnums = require('../enums/permissions');
 
 module.exports = {
