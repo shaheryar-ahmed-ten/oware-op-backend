@@ -41,6 +41,7 @@ router.get('/', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, n
   let where = {};
   if (req.query.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await User.findAndCountAll({
+    distinct: true,
     include: [{
       model: Role,
       include: [{ model: PermissionAccess, include: [{ model: Permission }] }]
