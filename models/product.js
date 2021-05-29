@@ -41,11 +41,11 @@ module.exports = (sequelize, DataTypes) => {
       validate: { notEmpty: { msg: 'Please enter description' } }
     },
     dimensionsCBM: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       validate: { notEmpty: { msg: 'Please enter dimensionsCBM' } }
     },
     weight: {
-      type: DataTypes.STRING,
+      type: DataTypes.INTEGER,
       validate: { notEmpty: { msg: 'Please enter weight' } }
     },
     categoryId: {
