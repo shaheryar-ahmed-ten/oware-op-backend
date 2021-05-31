@@ -6,7 +6,8 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.sequelize.query(`
         CREATE VIEW ${viewName} AS
-        SELECT Inventories.customerId,
+        SELECT PO.id AS id,
+          Inventories.customerId,
           Inventories.warehouseId,
           Inventories.productId,
           Product.name AS product,
@@ -16,11 +17,12 @@ module.exports = {
           Warehouse.name AS warehouse,
           Customer.companyName AS customer,
           DO.id AS dispatchOrderId,
-          PO.id AS productOutwardId,
-          DO.quantity AS dispatchOrderQuantity,
+          DO.quantity AS quantity,
           PO.quantity AS productOutwardQuantity,
           DO.createdAt AS dispatchOrderCreatedAt,
-          PO.createdAt AS productOutwardCreatedAt
+          PO.createdAt AS deletedAt,
+          PO.createdAt AS updatedAt,
+          PO.createdAt AS createdAt
         FROM ProductOutwards AS PO
           LEFT JOIN DispatchOrders AS DO ON PO.dispatchOrderId = DO.id
           LEFT JOIN Inventories ON DO.inventoryId = Inventories.id
