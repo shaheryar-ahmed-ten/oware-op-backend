@@ -16,14 +16,18 @@ module.exports = {
           UOM.name AS uom,
           Warehouse.name AS warehouse,
           Customer.companyName AS customer,
+          DO.referenceId AS referenceId,
+          DO.internalIdForBusiness AS internalIdForBusiness,
           DO.id AS dispatchOrderId,
+          DO.shipmentDate AS shipmentDate,
           DO.quantity AS dispatchOrderQuantity,
+          PO.vehicleId AS vehicleId,
           PO.quantity AS quantity,
           DO.createdAt AS dispatchOrderCreatedAt,
           PO.createdAt AS deletedAt,
           PO.createdAt AS updatedAt,
           PO.createdAt AS createdAt
-        FROM ProductOutwards AS PO
+          FROM ProductOutwards AS PO
           LEFT JOIN DispatchOrders AS DO ON PO.dispatchOrderId = DO.id
           LEFT JOIN Inventories ON DO.inventoryId = Inventories.id
           LEFT JOIN Products AS Product ON Inventories.productId = Product.id
