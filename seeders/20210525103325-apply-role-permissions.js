@@ -6,12 +6,14 @@ const permissionEnums = require('../enums/permissions');
 module.exports = {
   up: async () => {
     const roles = await Role.findAll();
-    const superAdminRole = roles.find(role => ['superAdmin', 'SUPER_ADMIN'].indexOf(role.type) > -1);
-    const adminRole = roles.find(role => ['admin', 'ADMIN'].indexOf(role.type) > -1);
+    const superAdminRole = roles.find(role => role.type == 'superAdmin' || role.type == 'SUPER_ADMIN');
+    const adminRole = roles.find(role => role.type == 'admin' || role.type == 'ADMIN');
+    superAdminRole.name = 'Super Admin';
     superAdminRole.type = 'SUPER_ADMIN';
+    adminRole.name = 'Admin';
     adminRole.type = 'ADMIN';
-    superAdminRole.save();
-    adminRole.save();
+    await superAdminRole.save();
+    await adminRole.save();
     const superAdminPermissions = await Permission.findAll({
       where: {
         type: {
@@ -33,8 +35,8 @@ module.exports = {
   },
   down: async () => {
     const roles = await Role.findAll();
-    const superAdminRole = roles.find(role => ['superAdmin', 'SUPER_ADMIN'].indexOf(role.type) > -1);
-    const adminRole = roles.find(role => ['admin', 'ADMIN'].indexOf(role.type) > -1);
+    const superAdminRole = roles.find(role => role.type == 'superAdmin' || role.type == 'SUPER_ADMIN');
+    const adminRole = roles.find(role => role.type == 'admin' || role.type == 'ADMIN');
     const permissions = await Permission.findAll({
       where: {
         type: {
