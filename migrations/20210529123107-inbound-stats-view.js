@@ -11,6 +11,8 @@ module.exports = {
           ProductInwards.customerId,
           ProductInwards.warehouseId,
           ProductInwards.productId,
+          ProductInwards.internalIdForBusiness,
+          ProductInwards.referenceId,
           Product.name AS product,
           Product.weight,
           Product.dimensionsCBM,
