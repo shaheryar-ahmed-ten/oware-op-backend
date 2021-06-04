@@ -37,16 +37,16 @@ module.exports = (sequelize, DataTypes) => {
       }),
       allowNull: false,
     },
-    contactId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Please select a contact' } }
-    },
-    companyName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Please enter company name' } }
-    },
+    // contactId: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    //   validate: { notEmpty: { msg: 'Please select a contact' } }
+    // },
+    // companyName: {
+    //   type: DataTypes.STRING,
+    //   allowNull: false,
+    //   validate: { notEmpty: { msg: 'Please enter company name' } }
+    // },
     notes: DataTypes.STRING,
     isActive: {
       type: DataTypes.BOOLEAN,
