@@ -1,7 +1,9 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
+const bcrypt = require('bcrypt');
+const config = require('../config');
+const { APPS } = require('../enums');
+
 module.exports = (sequelize, DataTypes) => {
   class Company extends Model {
     /**
@@ -11,13 +13,30 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-    }
+      Company.belongsTo(models.User, {
+        foreignKey: 'userId'
+      });
+      Company.belongsTo(models.User, {
+        foreignKey: 'contactId',
+        as: 'Contact'
+      });
+      Company.hasMany(models.User, {
+        foreignKey: 'companyId',
+        as: 'Employees'
+      });
+    };
   };
   Company.init({
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: true }
+    },
+    type: {
+      type: DataTypes.ENUM({
+        values: config.customerTypes
+      }),
+      allowNull: false,
     },
     contactId: {
       type: DataTypes.INTEGER,
@@ -31,18 +50,21 @@ module.exports = (sequelize, DataTypes) => {
     },
     allowedApps: {
       type: DataTypes.ENUM({
-        values: apps
+        values: Object.keys(APPS)
       }),
       allowNull: false,
-      defaultValue: apps[0]
+      defaultValue: Object.keys(APPS)[0]
     },
+    notes: DataTypes.STRING,
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
   }, {
     sequelize,
+    paranoid: true,
     modelName: 'Company',
   });
+
   return Company;
 };

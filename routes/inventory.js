@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, Customer, Warehouse, Product, UOM, Category, Brand, User, ProductInward, DispatchOrder, ProductOutward } = require('../models')
+const { Inventory, Company, Warehouse, Product, UOM, Category, Brand, User, ProductInward, DispatchOrder, ProductOutward } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const authService = require('../services/auth.service');
@@ -12,12 +12,12 @@ router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
-  if (!authService.isSuperAdmin(req)) where['$Customer.contactId$'] = req.userId;
-  if (req.query.search) where[Op.or] = ['$Product.name$', '$Customer.companyName$', '$Warehouse.name$']
+  if (!authService.isSuperAdmin(req)) where['$Company.contactId$'] = req.userId;
+  if (req.query.search) where[Op.or] = ['$Product.name$', '$Company.companyName$', '$Warehouse.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
 
   const response = await Inventory.findAndCountAll({
-    include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+    include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
@@ -32,7 +32,7 @@ router.get('/', async (req, res, next) => {
 /* GET inventory export. */
 router.get('/export', async (req, res, next) => {
   let where = {};
-  if (!authService.isSuperAdmin(req)) where['$Customer.contactId$'] = req.userId;
+  if (!authService.isSuperAdmin(req)) where['$Company.contactId$'] = req.userId;
 
   let workbook = new ExcelJS.Workbook();
 
@@ -43,14 +43,14 @@ router.get('/export', async (req, res, next) => {
   worksheet.columns = getColumnsConfig(['PRODUCT NAME', 'CUSTOMER', 'WAREHOUSE', 'UOM', 'AVAILABLE QUANTITY', 'COMMITTED QUANTITY', 'DISPATCHED QUANTITY']);
 
   let response = await Inventory.findAll({
-    include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+    include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     orderBy: [['updatedAt', 'DESC']],
     where
   });
 
   worksheet.addRows(response.map(row => [
     row.Product.name,
-    row.Customer.companyName,
+    row.Company.companyName,
     row.Warehouse.name,
     row.Product.UOM.name,
     row.availableQuantity,
@@ -79,12 +79,12 @@ router.get('/export', async (req, res, next) => {
     row.isActive ? 'Active' : 'In-Active'
   ]));
 
-  worksheet = workbook.addWorksheet('Customers');
+  worksheet = workbook.addWorksheet('Companys');
 
   worksheet.columns = getColumnsConfig(['COMPANY NAME', 'CUSTOMER TYPE', 'CONTACT NAME', 'CONTACT EMAIL', 'CONTACT PHONE', 'NOTES', 'STATUS']);
 
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  response = await Customer.findAll({
+  response = await Company.findAll({
     include: [{ model: User, as: 'Contact' }],
     orderBy: [['updatedAt', 'DESC']],
     where
@@ -125,13 +125,13 @@ router.get('/export', async (req, res, next) => {
 
   worksheet.columns = getColumnsConfig(['CUSTOMER', 'PRODUCT', 'WAREHOUSE', 'UOM', 'QUANTITY', 'DATE']);
   response = await ProductInward.findAll({
-    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     orderBy: [['updatedAt', 'DESC']],
     where
   });
 
   worksheet.addRows(response.map(row => [
-    row.Customer.companyName,
+    row.Company.companyName,
     row.Product.name,
     row.Warehouse.name,
     row.Product.UOM.name,
@@ -146,14 +146,14 @@ router.get('/export', async (req, res, next) => {
   response = await DispatchOrder.findAll({
     include: [{
       model: Inventory,
-      include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+      include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     }],
     orderBy: [['updatedAt', 'DESC']],
     where
   });
 
   worksheet.addRows(response.map(row => [
-    row.Inventory.Customer.companyName,
+    row.Inventory.Company.companyName,
     row.Inventory.Product.name,
     row.Inventory.Warehouse.name,
     row.Inventory.Product.UOM.name,
@@ -173,7 +173,7 @@ router.get('/export', async (req, res, next) => {
         model: DispatchOrder,
         include: [{
           model: Inventory,
-          include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
+          include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
         }]
       }],
     orderBy: [['updatedAt', 'DESC']],
@@ -181,7 +181,7 @@ router.get('/export', async (req, res, next) => {
   });
 
   worksheet.addRows(response.map(row => [
-    row.DispatchOrder.Inventory.Customer.companyName,
+    row.DispatchOrder.Inventory.Company.companyName,
     row.DispatchOrder.Inventory.Product.name,
     row.DispatchOrder.Inventory.Warehouse.name,
     row.DispatchOrder.Inventory.Product.UOM.name,

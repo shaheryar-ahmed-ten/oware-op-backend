@@ -22,10 +22,6 @@
   },
   "misc": {
     "rowsPerPage": 10,
-    "apps": [
-      "operations",
-      "customer"
-    ],
     "customerTypes": [
       "Manufacturer",
       "Distributor",

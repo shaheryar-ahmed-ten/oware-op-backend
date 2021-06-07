@@ -1,6 +1,7 @@
 const { User, Role, PermissionAccess, Permission } = require('../models');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const { ROLES } = require('../enums');
 
 module.exports.isLoggedIn = (req, res, next) => {
   let token = req.headers['authorization'];
@@ -37,7 +38,7 @@ module.exports.isLoggedIn = (req, res, next) => {
 };
 
 module.exports.isSuperAdmin = (req, res, next) => {
-  if (req.user.Role.type == 'SUPER_ADMIN')
+  if (req.user.Role.type == ROLES.SUPER_ADMIN)
     if (next) next();
     else return true;
   else if (next)

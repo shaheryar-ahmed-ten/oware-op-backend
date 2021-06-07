@@ -2,16 +2,18 @@
 const { Op } = require("sequelize");
 const { Role, PermissionAccess, Permission } = require('../models')
 const permissionEnums = require('../enums/permissions');
+const { ROLES } = require('../enums');
+
 
 module.exports = {
   up: async () => {
     const roles = await Role.findAll();
-    const superAdminRole = roles.find(role => role.type == 'superAdmin' || role.type == 'SUPER_ADMIN');
-    const adminRole = roles.find(role => role.type == 'admin' || role.type == 'ADMIN');
+    const superAdminRole = roles.find(role => role.type == 'superAdmin' || role.type == ROLES.SUPER_ADMINf);
+    const adminRole = roles.find(role => role.type == 'admin' || role.type == ROLES.ADMIN);
     superAdminRole.name = 'Super Admin';
-    superAdminRole.type = 'SUPER_ADMIN';
+    superAdminRole.type = ROLES.SUPER_ADMIN;
     adminRole.name = 'Admin';
-    adminRole.type = 'ADMIN';
+    adminRole.type = ROLES.ADMIN;
     await superAdminRole.save();
     await adminRole.save();
     const superAdminPermissions = await Permission.findAll({
@@ -35,8 +37,8 @@ module.exports = {
   },
   down: async () => {
     const roles = await Role.findAll();
-    const superAdminRole = roles.find(role => role.type == 'superAdmin' || role.type == 'SUPER_ADMIN');
-    const adminRole = roles.find(role => role.type == 'admin' || role.type == 'ADMIN');
+    const superAdminRole = roles.find(role => role.type == 'superAdmin' || role.type == ROLES.SUPER_ADMIN);
+    const adminRole = roles.find(role => role.type == 'admin' || role.type == ROLES.ADMIN);
     const permissions = await Permission.findAll({
       where: {
         type: {

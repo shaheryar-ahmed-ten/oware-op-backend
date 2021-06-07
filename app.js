@@ -24,6 +24,7 @@ const productOutwardRouter = require('./routes/productOutward');
 const inventoryRouter = require('./routes/inventory');
 const customerInquiryRouter = require('./routes/customerInquiry');
 
+const { PERMISSIONS } = require('./enums');
 
 
 const app = express();
@@ -45,17 +46,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/v1/', indexRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/public', publicRouter);
-app.use('/api/v1/customer', isLoggedIn, checkPermission('OPS_CUSTOMER_FULL'), customerRouter);
-app.use('/api/v1/category', isLoggedIn, checkPermission('OPS_CATEGORY_FULL'), categoryRouter);
-app.use('/api/v1/customer-inquiry', isLoggedIn, checkPermission('OPS_CUSTOMERINQUIRY_FULL'), customerInquiryRouter);
-app.use('/api/v1/uom', isLoggedIn, checkPermission('OPS_UOM_FULL'), uomRouter);
-app.use('/api/v1/brand', isLoggedIn, checkPermission('OPS_BRAND_FULL'), brandRouter);
-app.use('/api/v1/warehouse', isLoggedIn, checkPermission('OPS_WAREHOUSE_FULL'), warehouseRouter);
-app.use('/api/v1/product', isLoggedIn, checkPermission('OPS_PRODUCT_FULL'), productRouter);
-app.use('/api/v1/product-inward', isLoggedIn, checkPermission('OPS_PRODUCTINWARD_FULL'), productInwardRouter);
-app.use('/api/v1/dispatch-order', isLoggedIn, checkPermission('OPS_DISPATCHORDER_FULL'), dispatchOrderRouter);
-app.use('/api/v1/product-outward', isLoggedIn, checkPermission('OPS_PRODUCTOUTWARD_FULL'), productOutwardRouter);
-app.use('/api/v1/inventory', isLoggedIn, checkPermission('OPS_INVENTORY_FULL'), inventoryRouter);
+app.use('/api/v1/customer', isLoggedIn, checkPermission(PERMISSIONS.OPS_CUSTOMER_FULL), customerRouter);
+app.use('/api/v1/category', isLoggedIn, checkPermission(PERMISSIONS.OPS_CATEGORY_FULL), categoryRouter);
+app.use('/api/v1/customer-inquiry', isLoggedIn, checkPermission(PERMISSIONS.OPS_CUSTOMERINQUIRY_FULL), customerInquiryRouter);
+app.use('/api/v1/uom', isLoggedIn, checkPermission(PERMISSIONS.OPS_UOM_FULL), uomRouter);
+app.use('/api/v1/brand', isLoggedIn, checkPermission(PERMISSIONS.OPS_BRAND_FULL), brandRouter);
+app.use('/api/v1/warehouse', isLoggedIn, checkPermission(PERMISSIONS.OPS_WAREHOUSE_FULL), warehouseRouter);
+app.use('/api/v1/product', isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCT_FULL), productRouter);
+app.use('/api/v1/product-inward', isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCTINWARD_FULL), productInwardRouter);
+app.use('/api/v1/dispatch-order', isLoggedIn, checkPermission(PERMISSIONS.OPS_DISPATCHORDER_FULL), dispatchOrderRouter);
+app.use('/api/v1/product-outward', isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCTOUTWARD_FULL), productOutwardRouter);
+app.use('/api/v1/inventory', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), inventoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
