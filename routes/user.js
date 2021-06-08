@@ -5,7 +5,7 @@ const { User, Role, PermissionAccess, Permission, Company } = require('../models
 const config = require('../config');
 const { isLoggedIn, checkPermission, isSuperAdmin } = require('../services/auth.service');
 const { Op } = require("sequelize");
-const { PERMISSIONS } = require('../enums');
+const { PERMISSIONS, APPS } = require('../enums');
 
 async function updateUser(req, res, next) {
   let user = await User.findOne({ where: { id: req.params.id } });
@@ -91,6 +91,11 @@ router.post('/auth/login', async (req, res, next) => {
     success: false,
     message: 'Invalid password!'
   });
+  if (user.Role.allowedApps.split(',').indexOf(APPS.OPERATIONS) < 0)
+    return res.status(401).json({
+      status: false,
+      message: 'Not allowed to enter operations portal'
+    });
   var token = jwt.sign({ id: user.id }, config.JWT_SECRET, {
     expiresIn: 86400 // expires in 24 hours
   });

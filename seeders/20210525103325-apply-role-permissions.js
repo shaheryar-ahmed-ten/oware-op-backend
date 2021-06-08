@@ -8,7 +8,7 @@ const { ROLES } = require('../enums');
 module.exports = {
   up: async () => {
     const roles = await Role.findAll();
-    const superAdminRole = roles.find(role => role.type == 'superAdmin' || role.type == ROLES.SUPER_ADMINf);
+    const superAdminRole = roles.find(role => role.type == 'superAdmin' || role.type == ROLES.SUPER_ADMIN);
     const adminRole = roles.find(role => role.type == 'admin' || role.type == ROLES.ADMIN);
     superAdminRole.name = 'Super Admin';
     superAdminRole.type = ROLES.SUPER_ADMIN;

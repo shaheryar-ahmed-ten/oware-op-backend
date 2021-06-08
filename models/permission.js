@@ -23,8 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM({
         values: Object.keys(APPS)
       }),
-      allowNull: false,
-      defaultValue: Object.keys(APPS)[0]
+      allowNull: false
     }
   }, {
     sequelize,

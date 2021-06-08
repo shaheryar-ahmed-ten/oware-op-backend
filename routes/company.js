@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
   let where = {
   };
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  if (req.query.search) where[Op.or] = ['companyName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Company.findAndCountAll({
     include: [{ model: User }, { model: User, as: 'Contact' }, { model: User, as: 'Employees' }],
     orderBy: [['updatedAt', 'DESC']],
@@ -55,7 +55,7 @@ router.put('/:id', async (req, res, next) => {
     success: false,
     message: 'No customer found!'
   });
-  customer.companyName = req.body.companyName;
+  customer.name = req.body.name;
   customer.type = req.body.type;
   customer.contactId = req.body.contactId;
   customer.notes = req.body.notes;

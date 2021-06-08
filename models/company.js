@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
         values: Object.keys(APPS)
       }),
       allowNull: false,
-      defaultValue: Object.keys(APPS)[0]
+      defaultValue: APPS.CUSTOMER
     },
     notes: DataTypes.STRING,
     isActive: {

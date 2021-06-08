@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
   if (!authService.isSuperAdmin(req)) where['$Company.contactId$'] = req.userId;
-  if (req.query.search) where[Op.or] = ['$Product.name$', '$Company.companyName$', '$Warehouse.name$']
+  if (req.query.search) where[Op.or] = ['$Product.name$', '$Company.name$', '$Warehouse.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
 
   const response = await Inventory.findAndCountAll({
@@ -50,7 +50,7 @@ router.get('/export', async (req, res, next) => {
 
   worksheet.addRows(response.map(row => [
     row.Product.name,
-    row.Company.companyName,
+    row.Company.name,
     row.Warehouse.name,
     row.Product.UOM.name,
     row.availableQuantity,
@@ -79,7 +79,7 @@ router.get('/export', async (req, res, next) => {
     row.isActive ? 'Active' : 'In-Active'
   ]));
 
-  worksheet = workbook.addWorksheet('Companys');
+  worksheet = workbook.addWorksheet('Companies');
 
   worksheet.columns = getColumnsConfig(['COMPANY NAME', 'CUSTOMER TYPE', 'CONTACT NAME', 'CONTACT EMAIL', 'CONTACT PHONE', 'NOTES', 'STATUS']);
 
@@ -91,7 +91,7 @@ router.get('/export', async (req, res, next) => {
   });
 
   worksheet.addRows(response.map(row => [
-    row.companyName,
+    row.name,
     row.type,
     row.Contact.firstName + ' ' + row.Contact.lastName,
     row.Contact.email,
@@ -131,7 +131,7 @@ router.get('/export', async (req, res, next) => {
   });
 
   worksheet.addRows(response.map(row => [
-    row.Company.companyName,
+    row.Company.name,
     row.Product.name,
     row.Warehouse.name,
     row.Product.UOM.name,
@@ -153,7 +153,7 @@ router.get('/export', async (req, res, next) => {
   });
 
   worksheet.addRows(response.map(row => [
-    row.Inventory.Company.companyName,
+    row.Inventory.Company.name,
     row.Inventory.Product.name,
     row.Inventory.Warehouse.name,
     row.Inventory.Product.UOM.name,
@@ -181,7 +181,7 @@ router.get('/export', async (req, res, next) => {
   });
 
   worksheet.addRows(response.map(row => [
-    row.DispatchOrder.Inventory.Company.companyName,
+    row.DispatchOrder.Inventory.Company.name,
     row.DispatchOrder.Inventory.Product.name,
     row.DispatchOrder.Inventory.Warehouse.name,
     row.DispatchOrder.Inventory.Product.UOM.name,

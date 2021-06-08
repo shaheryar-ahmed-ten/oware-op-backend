@@ -1,7 +1,7 @@
 const { User, Role, PermissionAccess, Permission } = require('../models');
 const jwt = require('jsonwebtoken');
 const config = require('../config');
-const { ROLES } = require('../enums');
+const { ROLES, APPS } = require('../enums');
 
 module.exports.isLoggedIn = (req, res, next) => {
   let token = req.headers['authorization'];
@@ -28,8 +28,10 @@ module.exports.isLoggedIn = (req, res, next) => {
     });
     if (!user)
       return res.status(401).json({ status: false, message: "User doesn't exist" });
-    else if (!user.isActive)
+    if (!user.isActive)
       return res.status(401).json({ status: false, message: 'User is inactive' });
+    if (user.Role.allowedApps.split(',').indexOf(APPS.OPERATIONS) < 0)
+      return res.status(401).json({ status: false, message: 'Not allowed to enter operations portal' });
     req.userId = decoded.id;
     user.password = undefined
     req.user = user;
