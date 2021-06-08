@@ -19,7 +19,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'companyId'
       });
       User.hasOne(models.Company, {
-        foreignKey: 'contactId'
+        foreignKey: 'contactId',
+        as: 'Customer'
       });
     };
     generateHash(password) {
