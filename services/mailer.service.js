@@ -43,4 +43,16 @@ function sendCustomerInquiryEmail(customerInquiry) {
   });
 }
 
+function sendGeneralEmailToCustomers(customerEmails) {
+  // let generalTemplate = fs.readFileSync('templates/customer-inquiry.html', { encoding: 'utf-8' });
+  // let html = ejs.render(generalTemplate, customerInquiry);
+  return sendMail({
+    to: process.env.LEAD_EMAIL_RECIPIENT,
+    from: process.env.MAILER_EMAIL,
+    senderName: 'Customer Inquiry',
+    subject: 'New Lead',
+    html
+  });
+}
+
 module.exports = { sendCustomerInquiryEmail };
