@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
   if (req.query.search) where[Op.or] = ['companyName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Customer.findAndCountAll({
-    include: [{ model: User }, { model: User, as: 'Contact' }],
+    include: [{ model: User }, { model: User, as: 'Contact' }, { model: User, as: 'Employees' }],
     orderBy: [['updatedAt', 'DESC']],
     limit, offset, where
   });
@@ -38,7 +38,7 @@ router.post('/', async (req, res, next) => {
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.message
     });
   }
   res.json({

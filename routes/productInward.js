@@ -4,6 +4,7 @@ const { Inventory, ProductInward, User, Customer, Warehouse, Product, UOM } = re
 const config = require('../config');
 const { Op } = require("sequelize");
 const authService = require('../services/auth.service');
+const { digitizie } = require('../services/common.services');
 
 /* GET productInwards listing. */
 router.get('/', async (req, res, next) => {
@@ -28,7 +29,15 @@ router.get('/', async (req, res, next) => {
 
 /* POST create new productInward. */
 router.post('/', async (req, res, next) => {
+  let productInward;
   let message = 'New productInward registered';
+  productInward = await ProductInward.create({
+    userId: req.userId,
+    ...req.body
+  });
+  const numberOfinternalIdForBusiness = digitizie(productInward.id, 6);
+  productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
+  productInward.save();
   let inventory = await Inventory.findOne({
     where: {
       customerId: req.body.customerId,
@@ -36,13 +45,13 @@ router.post('/', async (req, res, next) => {
       productId: req.body.productId
     }
   });
-  let productInward;
   try {
     if (!inventory) await Inventory.create({
       customerId: req.body.customerId,
       warehouseId: req.body.warehouseId,
       productId: req.body.productId,
       availableQuantity: req.body.quantity,
+      referenceId: req.body.referenceId,
       totalInwardQuantity: req.body.quantity
     })
     else {
@@ -50,14 +59,10 @@ router.post('/', async (req, res, next) => {
       inventory.totalInwardQuantity += (+req.body.quantity);
       inventory.save();
     }
-    productInward = await ProductInward.create({
-      userId: req.userId,
-      ...req.body
-    });
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.message
     });
   }
   res.json({
@@ -103,7 +108,7 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
-  
+
   const warehouses = await Warehouse.findAll({ where });
   const products = await Product.findAll({ where, include: [{ model: UOM }] });
 

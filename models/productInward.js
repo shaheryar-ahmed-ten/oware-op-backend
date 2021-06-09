@@ -37,6 +37,10 @@ module.exports = (sequelize, DataTypes) => {
         isInt: { msg: 'Please enter quantity' }
       }
     },
+    internalIdForBusiness: {
+      type: DataTypes.STRING(30),
+      allowNull: true
+    },
     productId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -46,6 +50,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: { msg: 'Customer cannot be empty' } }
+    },
+    referenceId:{
+      type: DataTypes.STRING(30),
+      allowNull:true,
     },
     warehouseId: {
       type: DataTypes.INTEGER,

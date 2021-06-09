@@ -1,11 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-const { User, Role, PermissionAccess, Permission } = require('../models')
+const { User, Role, PermissionAccess, Permission, Customer, CustomerEmployee } = require('../models')
 const config = require('../config');
-const authService = require('../services/auth.service');
+const { isLoggedIn, checkPermission, isSuperAdmin } = require('../services/auth.service');
 const { Op } = require("sequelize");
-const { response } = require('express');
 
 async function updateUser(req, res, next) {
   let user = await User.findOne({ where: { id: req.params.id } });
@@ -17,6 +16,7 @@ async function updateUser(req, res, next) {
   user.lastName = req.body.lastName;
   user.roleId = req.body.roleId;
   user.phone = req.body.phone;
+  user.companyId = req.body.companyId;
   if (req.body.password) user.password = req.body.password;
   user.isActive = req.body.isActive;
   try {
@@ -35,13 +35,20 @@ async function updateUser(req, res, next) {
 }
 
 /* GET users listing. */
-router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+router.get('/', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
   if (req.query.search) where[Op.or] = ['firstName', 'lastName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await User.findAndCountAll({
-    include: [{ model: Role, include: [{ model: PermissionAccess, include: [{ model: Permission }] }] }],
+    distinct: true,
+    include: [{
+      model: Role,
+      include: [{ model: PermissionAccess, include: [{ model: Permission }] }]
+    }, {
+      model: Customer,
+      as: 'Company'
+    }],
     orderBy: [['updatedAt', 'DESC']],
     limit, offset, where
   });
@@ -54,7 +61,7 @@ router.get('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, re
 });
 
 /* GET current logged in user. */
-router.get('/me', authService.isLoggedIn, async (req, res, next) => {
+router.get('/me', isLoggedIn, async (req, res, next) => {
   return res.json({
     success: true,
     data: req.user
@@ -62,7 +69,7 @@ router.get('/me', authService.isLoggedIn, async (req, res, next) => {
 });
 
 /* GET current logged in user. */
-router.put('/me', authService.isLoggedIn, async (req, res, next) => {
+router.put('/me', isLoggedIn, async (req, res, next) => {
   req.params.id = req.userId;
   return next()
 }, updateUser);
@@ -94,22 +101,16 @@ router.post('/auth/login', async (req, res, next) => {
 });
 
 /* POST create new user. */
-router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+router.post('/', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const adminRole = await Role.findOne({ where: { type: 'admin' } });
   let message = 'New user registered';
   let user;
-  // const requiredFields = ['roleId', 'username', 'password', 'email'];
-  // const fieldsValid = requiredFields.reduce((acc, field) => acc && req.body[field], true);
-  // if (!fieldsValid) return res.json({
-  //   success: false,
-  //   message: 'Please fill all required fields'
-  // })
   try {
     user = await User.create({
       roleId: adminRole.id,
       ...req.body
     });
-    delete user.password;
+    user.password = undefined;
   } catch (err) {
     return res.json({
       success: false,
@@ -124,9 +125,9 @@ router.post('/', authService.isLoggedIn, authService.isSuperAdmin, async (req, r
 });
 
 /* PUT update existing user. */
-router.put('/:id', authService.isLoggedIn, authService.isSuperAdmin, updateUser);
+router.put('/:id', isLoggedIn, checkPermission('OPS_USER_FULL'), updateUser);
 
-router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+router.delete('/:id', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   let response = await User.destroy({ where: { id: req.params.id } });
   if (response) res.json({
     success: true,
@@ -139,12 +140,15 @@ router.delete('/:id', authService.isLoggedIn, authService.isSuperAdmin, async (r
 })
 
 
-router.get('/relations', authService.isLoggedIn, authService.isSuperAdmin, async (req, res, next) => {
+router.get('/relations', isLoggedIn, checkPermission('OPS_USER_FULL'), async (req, res, next) => {
   const roles = await Role.findAll();
+  let where = {};
+  if (!isSuperAdmin(req)) where.contactId = req.userId;
+  const customers = await Customer.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',
-    roles
+    roles, customers
   });
 });
 
