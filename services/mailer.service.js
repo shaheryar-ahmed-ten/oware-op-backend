@@ -24,7 +24,9 @@ async function sendMail(payload) {
   };
   let response = null;
   try {
-    response = await Mailclient.sendMail(mailOptions);
+    response = await Mailclient.sendMail(mailOptions,(error,info)=>{
+      if(error) console.log(error.message)
+    });
   } catch (err) {
     console.log(err);
   }
@@ -43,16 +45,16 @@ function sendCustomerInquiryEmail(customerInquiry) {
   });
 }
 
-function sendGeneralEmailToCustomers(customerEmails) {
+function sendGeneralEmailToCustomers(customerEmails,data,subject,senderName) {
   // let generalTemplate = fs.readFileSync('templates/customer-inquiry.html', { encoding: 'utf-8' });
   // let html = ejs.render(generalTemplate, customerInquiry);
   return sendMail({
-    to: process.env.LEAD_EMAIL_RECIPIENT,
+    to: customerEmails,
     from: process.env.MAILER_EMAIL,
-    senderName: 'Customer Inquiry',
-    subject: 'New Lead',
-    html
+    senderName,
+    subject,
+    text: data
   });
 }
 
-module.exports = { sendCustomerInquiryEmail };
+module.exports = { sendCustomerInquiryEmail,sendGeneralEmailToCustomers };
