@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Customer, User } = require('../models')
+const { Company, User } = require('../models')
 const { Op } = require("sequelize");
 const config = require('../config');
 const authService = require('../services/auth.service');
@@ -12,8 +12,8 @@ router.get('/', async (req, res, next) => {
   let where = {
   };
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  if (req.query.search) where[Op.or] = ['companyName'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
-  const response = await Customer.findAndCountAll({
+  if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  const response = await Company.findAndCountAll({
     include: [{ model: User }, { model: User, as: 'Contact' }, { model: User, as: 'Employees' }],
     orderBy: [['updatedAt', 'DESC']],
     limit, offset, where
@@ -31,7 +31,7 @@ router.post('/', async (req, res, next) => {
   let message = 'New customer registered';
   let customer;
   try {
-    customer = await Customer.create({
+    customer = await Company.create({
       userId: req.userId,
       ...req.body
     });
@@ -50,12 +50,12 @@ router.post('/', async (req, res, next) => {
 
 /* PUT update existing customer. */
 router.put('/:id', async (req, res, next) => {
-  let customer = await Customer.findOne({ where: { id: req.params.id } });
+  let customer = await Company.findOne({ where: { id: req.params.id } });
   if (!customer) return res.status(400).json({
     success: false,
     message: 'No customer found!'
   });
-  customer.companyName = req.body.companyName;
+  customer.name = req.body.name;
   customer.type = req.body.type;
   customer.contactId = req.body.contactId;
   customer.notes = req.body.notes;
@@ -76,7 +76,7 @@ router.put('/:id', async (req, res, next) => {
 });
 
 router.delete('/:id', async (req, res, next) => {
-  let response = await Customer.destroy({ where: { id: req.params.id } });
+  let response = await Company.destroy({ where: { id: req.params.id } });
   if (response) res.json({
     success: true,
     message: 'Customer deleted'

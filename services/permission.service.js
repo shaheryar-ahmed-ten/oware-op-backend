@@ -1,5 +1,5 @@
 const permissions = require('../enums/permissions');
-const { Permission } = require('../models')
+const { Permission } = require('../models');
 
 async function syncPermissions() {
   let permissionsInCode = Object.keys(permissions)
@@ -10,4 +10,4 @@ async function syncPermissions() {
   return await Permission.bulkCreate(newPermissions);
 };
 
-module.exports = { syncPermissions }
+module.exports = { syncPermissions };
