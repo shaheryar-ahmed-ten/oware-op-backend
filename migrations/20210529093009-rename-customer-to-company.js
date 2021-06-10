@@ -1,7 +1,7 @@
 'use strict';
 const { query } = require('express');
-const { ROLES, APPS } = require('../enums');
-const { Role, PermissionAccess, Permission } = require('../models')
+const { ROLES, PORTALS } = require('../enums');
+const { Role, Permission } = require('../models')
 const { Op } = require("sequelize");
 
 module.exports = {
@@ -10,23 +10,23 @@ module.exports = {
     await queryInterface.renameColumn('Companies', 'companyName', 'name');
     await queryInterface.addColumn('Companies', 'allowedApps', {
       type: Sequelize.STRING,
-      defaultValue: APPS.CUSTOMER
+      defaultValue: PORTALS.CUSTOMER
     });
     await queryInterface.addColumn('Roles', 'allowedApps', {
       type: Sequelize.STRING,
-      defaultValue: APPS.OPERATIONS
+      defaultValue: PORTALS.OPERATIONS
     });
     await queryInterface.addColumn('Permissions', 'allowedApps', {
       type: Sequelize.STRING,
-      defaultValue: APPS.OPERATIONS
+      defaultValue: PORTALS.OPERATIONS
     });
     await Role.update({
-      allowedApps: APPS.CUSTOMER
+      allowedApps: PORTALS.CUSTOMER
     }, {
       where: { type: ROLES.CUSTOMER_SUPER_ADMIN }
     });
     await Permission.update({
-      allowedApps: APPS.CUSTOMER
+      allowedApps: PORTALS.CUSTOMER
     }, {
       where: {
         type: {

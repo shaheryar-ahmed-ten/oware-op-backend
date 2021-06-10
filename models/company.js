@@ -1,8 +1,7 @@
 'use strict';
 const { Model } = require('sequelize');
-const bcrypt = require('bcrypt');
 const config = require('../config');
-const { APPS } = require('../enums');
+const { PORTALS } = require('../enums');
 
 module.exports = (sequelize, DataTypes) => {
   class Company extends Model {
@@ -50,10 +49,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     allowedApps: {
       type: DataTypes.ENUM({
-        values: Object.keys(APPS)
+        values: Object.keys(PORTALS)
       }),
       allowNull: false,
-      defaultValue: APPS.CUSTOMER
+      defaultValue: PORTALS.CUSTOMER
     },
     notes: DataTypes.STRING,
     isActive: {

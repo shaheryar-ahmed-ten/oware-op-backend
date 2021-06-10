@@ -5,7 +5,8 @@ const { User, Role, PermissionAccess, Permission, Company } = require('../models
 const config = require('../config');
 const { isLoggedIn, checkPermission, isSuperAdmin } = require('../services/auth.service');
 const { Op } = require("sequelize");
-const { PERMISSIONS, APPS } = require('../enums');
+const { PERMISSIONS, PORTALS } = require('../enums');
+const PORTALS_LABELS = require('../enums/portals');
 
 async function updateUser(req, res, next) {
   let user = await User.findOne({ where: { id: req.params.id } });
@@ -79,7 +80,8 @@ router.put('/me', isLoggedIn, async (req, res, next) => {
 router.post('/auth/login', async (req, res, next) => {
   let loginKey = req.body.username.indexOf('@') > -1 ? 'email' : 'username';
   const user = await User.findOne({
-    where: { [loginKey]: req.body.username }
+    where: { [loginKey]: req.body.username },
+    include: [Role]
   });
   if (!user)
     return res.status(401).json({
@@ -91,7 +93,7 @@ router.post('/auth/login', async (req, res, next) => {
     success: false,
     message: 'Invalid password!'
   });
-  if (user.Role.allowedApps.split(',').indexOf(APPS.OPERATIONS) < 0)
+  if (user.Role.allowedApps.split(',').indexOf(PORTALS.OPERATIONS) < 0)
     return res.status(401).json({
       status: false,
       message: 'Not allowed to enter operations portal'
@@ -148,13 +150,14 @@ router.delete('/:id', isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), as
 
 router.get('/relations', isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (req, res, next) => {
   const roles = await Role.findAll();
+  const portals = Object.keys(PORTALS_LABELS).map(portal => ({ id: portal, label: PORTALS_LABELS[portal] }));
   let where = {};
   if (!isSuperAdmin(req)) where.contactId = req.userId;
   const customers = await Company.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',
-    roles, customers
+    roles, customers, portals
   });
 });
 

@@ -1,5 +1,5 @@
 module.exports = Object.freeze({
-  APPS: {
+  PORTALS: {
     OPERATIONS: "OPERATIONS",
     CUSTOMER: "CUSTOMER"
   },
