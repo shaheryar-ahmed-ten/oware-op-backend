@@ -40,7 +40,7 @@ router.get('/3478yr2387yrj23udnhiuefi', async (req, res, next) => {
      data:await statisticsOfCustomer(Company.id)
     }
     const emails = customerObj.emails.toString()
-    const data = customerObj.data.data
+    const data = JSON.stringify(customerObj.data)
     const subject = 'Weekly Notification'
     const senderName = 'Oware Technologies'
     sendGeneralEmailToCompanys(emails,data,subject,senderName)
