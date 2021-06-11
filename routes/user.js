@@ -98,9 +98,7 @@ router.post('/auth/login', async (req, res, next) => {
       status: false,
       message: 'Not allowed to enter operations portal'
     });
-  var token = jwt.sign({ id: user.id }, config.JWT_SECRET, {
-    expiresIn: 86400 // expires in 24 hours
-  });
+  var token = jwt.sign({ id: user.id }, config.JWT_SECRET);
   res.json({
     success: isPasswordValid,
     message: 'Login successful',

@@ -45,7 +45,7 @@ function sendCustomerInquiryEmail(customerInquiry) {
   });
 }
 
-function sendGeneralEmailToCustomers(customerEmails,data,subject,senderName) {
+function sendGeneralEmailToCompanys(customerEmails,data,subject,senderName) {
   // let generalTemplate = fs.readFileSync('templates/customer-inquiry.html', { encoding: 'utf-8' });
   // let html = ejs.render(generalTemplate, customerInquiry);
   return sendMail({
@@ -57,4 +57,4 @@ function sendGeneralEmailToCustomers(customerEmails,data,subject,senderName) {
   });
 }
 
-module.exports = { sendCustomerInquiryEmail,sendGeneralEmailToCustomers };
+module.exports = { sendCustomerInquiryEmail,sendGeneralEmailToCompanys };

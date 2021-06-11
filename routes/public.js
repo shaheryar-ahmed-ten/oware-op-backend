@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { CustomerInquiry, Company, User } = require("../models");
-const { sendCustomerInquiryEmail, sendGeneralEmailToCustomers } = require('../services/mailer.service');
+const { sendCustomerInquiryEmail, sendGeneralEmailToCompanys } = require('../services/mailer.service');
 const { statisticsOfCustomer } = require("../services/customerStatistics.service");
 
 /* POST create new customer inquery request. */
@@ -29,22 +29,34 @@ router.post("/customer-inquiry", async (req, res, next) => {
 router.get('/3478yr2387yrj23udnhiuefi', async (req, res, next) => {
   let where = {
   };
+  try{
   const response = await Company.findAll({
     attributes: ['id'],
     include: [{ model: User, as: 'Employees', attributes: ['email'] }],
   });
   response.forEach(async (Company) => {
-    // sendGeneralEmailToCompanys(Company.User.email)
-    //console.log(Company.Employees[0].email)
-    Company.Employees.forEach(Employee=>console.log(Employee.email))
-    const data = await statisticsOfCustomer(Company.id)
-    //console.log(data)
-  });
+    const customerObj = {
+     emails:await Company.Employees.map(Employee=>Employee.email),
+     data:await statisticsOfCustomer(Company.id)
+    }
+    const emails = customerObj.emails.toString()
+    const data = customerObj.data.data
+    const subject = 'Weekly Notification'
+    const senderName = 'Oware Technologies'
+    sendGeneralEmailToCompanys(emails,data,subject,senderName)
 
+  });
+}catch(e){
+  res.json({
+    success: false,
+    message: 'Something Went Wrong',
+    data: e.message,
+  });
+}
   res.json({
     success: true,
     message: 'respond with a resource',
-    data: response,
+    data: 'Emails Sending..',
   });
 });
 

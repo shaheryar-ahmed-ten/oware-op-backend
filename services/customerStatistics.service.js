@@ -1,12 +1,17 @@
 const moment = require('moment')
-const { Inventory, ProductInward, OutboundStat, InboundStat, sequelize } = require('../models')
-const { Op, where } = require('sequelize');
+const { Inventory, ProductInward, OutboundStat, InboundStat, sequelize, Product } = require('../models')
+const { Op, where, Sequelize } = require('sequelize');
 
 exports.statisticsOfCustomer = async (companyId) => {
   const currentDate = moment();
   const previousDate = moment().subtract(7, 'days');
   const whereClauseWithDate = dateKey => ({ customerId: companyId, [dateKey]: { [Op.between]: [previousDate, currentDate] } });
   const whereClauseWithoutDate = { customerId: companyId };
+  const whereClauseForStorageDetails = {
+    customerId: companyId, availableQuantity: {
+      [Op.ne]: 0
+    }
+  }
 
   const inboundStats = {
     total: await InboundStat.aggregate('id', 'count', {
@@ -36,12 +41,16 @@ exports.statisticsOfCustomer = async (companyId) => {
   const generalStats = {
     products: await Inventory.aggregate('productId', 'count', {
       distinct: true,
-      where: whereClauseWithoutDate
+      where: whereClauseForStorageDetails
     }),
-    warehouses: await Inventory.aggregate('warehouseId', 'count', {
-      distinct: true,
-      where: whereClauseWithoutDate
-    }),
+    ...(await sequelize.query(`
+      select sum(Products.weight) as totalWeight, sum(Products.dimensionsCBM) as totalDimensions
+      from Inventories left join Products on Products.id = Inventories.productId
+      where availableQuantity > 0 and customerId = ${companyId} group by customerId;;
+    `, { plain: true })),
+    // dimensionsCBM: await InboundStat.aggregate('dimensionsCBM', 'sum', {
+    //   where: whereClauseForStorageDetails
+    // }),
     ...(await sequelize.query(`
       select count(*) as pendingOrders from
       (select dispatchOrderId as id,
@@ -54,8 +63,22 @@ exports.statisticsOfCustomer = async (companyId) => {
     }))
   };
 
+  const calculatingFastestMoving = await Inventory.findAll({
+    group: ['productId'],
+    plain: false,
+    where: whereClauseWithDate,
+    raw: true,
+    attributes: [
+        ['productId', 'dispatchedQuantity'],
+        [Sequelize.fn('max', Sequelize.col('dispatchedQuantity')),'maximum'],
+    ],
+    include:[{model:Product,attributes:['name']}]
+})
+  const fastestMovingProduct = calculatingFastestMoving[0]
+
+
   return ({
-    inboundStats, generalStats, outboundStats
+    inboundStats, currentStats: generalStats, outboundStats,fastestMovingProduct
   });
 };
 
