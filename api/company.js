@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Company, User } = require('../models')
+const { Company, User, Role } = require('../models')
 const { Op } = require("sequelize");
 const config = require('../config');
 const authService = require('../services/auth.service');
+const { PORTALS } = require('../enums');
 
 /* GET customers listing. */
 router.get('/', async (req, res, next) => {
@@ -89,7 +90,8 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
-  const users = await User.findAll(where);
+  where['$Role.allowedApps$'] = PORTALS.OPERATIONS;
+  const users = await User.findAll({ where, include: [Role] });
   const customerTypes = config.customerTypes;
   res.json({
     success: true,
