@@ -45,16 +45,18 @@ function sendCustomerInquiryEmail(customerInquiry) {
   });
 }
 
-function sendGeneralEmailToCompanys(customerEmails, data, subject, senderName) {
-  // let generalTemplate = fs.readFileSync('templates/customer-inquiry.html', { encoding: 'utf-8' });
-  // let html = ejs.render(generalTemplate, data);
+function sendGeneralEmailToCompanies(customerEmails, data, subject, senderName) {
+  let generalTemplate = fs.readFileSync('templates/customer-statistics.html', { encoding: 'utf-8' });
+  let html = ejs.render(generalTemplate, data);
+  console.log(JSON.stringify(data, 2, 2))
   return sendMail({
     to: customerEmails,
     from: process.env.MAILER_EMAIL,
     senderName,
     subject,
-    text: `${data}`
+    html
+    // text: `${data}`
   });
 }
 
-module.exports = { sendCustomerInquiryEmail, sendGeneralEmailToCompanys };
+module.exports = { sendCustomerInquiryEmail, sendGeneralEmailToCompanies };

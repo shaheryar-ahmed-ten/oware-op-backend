@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { CustomerInquiry, Company, User } = require("../models");
-const { sendCustomerInquiryEmail, sendGeneralEmailToCompanys } = require('../services/mailer.service');
+const { sendCustomerInquiryEmail, sendGeneralEmailToCompanies } = require('../services/mailer.service');
 const { customerStatistics } = require("../services/statistics.service");
 
 /* POST create new customer inquery request. */
@@ -43,10 +43,10 @@ router.get('/3478yr2387yrj23udnhiuefi', async (req, res, next) => {
         data: await customerStatistics(Company.id)
       };
       const emails = customerObj.emails.toString();
-      const data = JSON.stringify(customerObj.data);
+      const data = customerObj.data;
       const subject = 'Weekly Notification';
       const senderName = 'Oware Technologies';
-      sendGeneralEmailToCompanys(emails, data, subject, senderName)
+      sendGeneralEmailToCompanies(emails, data, subject, senderName)
     });
   } catch (e) {
     res.json({

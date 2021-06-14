@@ -44,7 +44,7 @@ exports.customerStatistics = async (companyId) => {
       where: whereClauseForStorageDetails
     }),
     ...(await sequelize.query(`
-      select sum(Products.weight) as totalWeight, sum(Products.dimensionsCBM) as totalDimensions
+      select sum(Products.weight) as weight, sum(Products.dimensionsCBM) as dimensionsCBM
       from Inventories left join Products on Products.id = Inventories.productId
       where availableQuantity > 0 and customerId = ${companyId} group by customerId;;
     `, { plain: true })),

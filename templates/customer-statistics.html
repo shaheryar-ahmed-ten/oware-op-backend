@@ -263,9 +263,9 @@
                                 style="color: #132f40; line-height: 140%; text-align: left; word-wrap: break-word;">
                                 <p style="font-size: 14px; line-height: 140%;"><span
                                     style="font-family: Rubik, sans-serif; font-size: 16px; line-height: 22.4px;">Hello
-                                    <strong>Admin</strong>, </span><span
-                                    style="color: #2dc26b; font-family: 'arial black', 'avant garde', arial; font-size: 16px; line-height: 22.4px;">new
-                                    customer inquiry received!</span></p>
+                                  </span><span
+                                    style="color: #2dc26b; font-family: 'arial black', 'avant garde', arial; font-size: 16px; line-height: 22.4px;">Your
+                                    weekly digest!</span></p>
                               </div>
 
                             </td>
@@ -288,49 +288,66 @@
                                     <table border="1">
                                       <tbody>
                                         <tr>
-                                          <td>Name</td>
+                                          <td>Total inbound</td>
                                           <td>
-                                            <%= name %>
+                                            <%= inboundStats.total || 0 %>
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td>Phone</td>
+                                          <td>Total inbound weight in KGs</td>
                                           <td>
-                                            <%= phone %>
+                                            <%= inboundStats.weight || 0 %>
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td>Service:</td>
+                                          <td>Total inbound dimensions in cm<sup>3</sup></td>
                                           <td>
-                                            <%= serviceType %>
+                                            <%= inboundStats.dimensionsCBM || 0 %>
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td>City For Service</td>
+                                          <td>Total outbound</td>
                                           <td>
-                                            <%= cityForService %>
+                                            <%= outboundStats.total || 0 %>
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td>Monthly Orders</td>
+                                          <td>Total outbound weight in KGs</td>
                                           <td>
-                                            <%= monthlyOrders %>
+                                            <%= outboundStats.weight || 0 %>
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td>Company Name</td>
+                                          <td>Total outbound dimensions in cm<sup>3</sup></td>
                                           <td>
-                                            <%= companyName %>
+                                            <%= outboundStats.dimensionsCBM || 0 %>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                          <td>Current products stored</td>
+                                          <td>
+                                            <%= currentStats.products || 0 %>
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td>Industry</td>
+                                          <td>Current total weight stored in KGs</td>
                                           <td>
-                                            <%= industry %>
+                                            <%= currentStats.weight || 0 %>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td>Current total dimensions stored in cm<sup>3</sup></td>
+                                          <td>
+                                            <%= currentStats.dimensionsCBM || 0 %>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td>Fastest moving product</td>
+                                          <td>
+                                            <%= fastestMovingProduct['Product.name'] || 0 %>
                                           </td>
                                         </tr>
                                       </tbody>
-
                                     </table>
                                   </span></p>
                               </div>
