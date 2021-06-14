@@ -2,7 +2,7 @@ const moment = require('moment')
 const { Inventory, ProductInward, OutboundStat, InboundStat, sequelize, Product } = require('../models')
 const { Op, where, Sequelize } = require('sequelize');
 
-exports.statisticsOfCustomer = async (companyId) => {
+exports.customerStatistics = async (companyId) => {
   const currentDate = moment();
   const previousDate = moment().subtract(7, 'days');
   const whereClauseWithDate = dateKey => ({ customerId: companyId, [dateKey]: { [Op.between]: [previousDate, currentDate] } });
@@ -48,9 +48,6 @@ exports.statisticsOfCustomer = async (companyId) => {
       from Inventories left join Products on Products.id = Inventories.productId
       where availableQuantity > 0 and customerId = ${companyId} group by customerId;;
     `, { plain: true })),
-    // dimensionsCBM: await InboundStat.aggregate('dimensionsCBM', 'sum', {
-    //   where: whereClauseForStorageDetails
-    // }),
     ...(await sequelize.query(`
       select count(*) as pendingOrders from
       (select dispatchOrderId as id,
@@ -69,16 +66,16 @@ exports.statisticsOfCustomer = async (companyId) => {
     where: whereClauseWithDate,
     raw: true,
     attributes: [
-        ['productId', 'dispatchedQuantity'],
-        [Sequelize.fn('max', Sequelize.col('dispatchedQuantity')),'maximum'],
+      ['productId', 'dispatchedQuantity'],
+      [Sequelize.fn('max', Sequelize.col('dispatchedQuantity')), 'maximum'],
     ],
-    include:[{model:Product,attributes:['name']}]
-})
+    include: [{ model: Product, attributes: ['name'] }]
+  })
   const fastestMovingProduct = calculatingFastestMoving[0]
 
 
   return ({
-    inboundStats, currentStats: generalStats, outboundStats,fastestMovingProduct
+    inboundStats, currentStats: generalStats, outboundStats, fastestMovingProduct
   });
 };
 

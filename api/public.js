@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { CustomerInquiry, Company, User } = require("../models");
 const { sendCustomerInquiryEmail, sendGeneralEmailToCompanys } = require('../services/mailer.service');
-const { statisticsOfCustomer } = require("../services/customerStatistics.service");
+const { customerStatistics } = require("../services/statistics.service");
 
 /* POST create new customer inquery request. */
 router.post("/customer-inquiry", async (req, res, next) => {
@@ -40,7 +40,7 @@ router.get('/3478yr2387yrj23udnhiuefi', async (req, res, next) => {
     response.forEach(async (Company) => {
       const customerObj = {
         emails: await Company.Employees.map(Employee => Employee.email),
-        data: await statisticsOfCustomer(Company.id)
+        data: await customerStatistics(Company.id)
       };
       const emails = customerObj.emails.toString();
       const data = JSON.stringify(customerObj.data);
