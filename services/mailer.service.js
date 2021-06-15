@@ -48,7 +48,6 @@ function sendCustomerInquiryEmail(customerInquiry) {
 function sendGeneralEmailToCompanies(customerEmails, data, subject, senderName) {
   let generalTemplate = fs.readFileSync('templates/customer-statistics.html', { encoding: 'utf-8' });
   let html = ejs.render(generalTemplate, data);
-  console.log(JSON.stringify(data, 2, 2))
   return sendMail({
     to: customerEmails,
     from: process.env.MAILER_EMAIL,
