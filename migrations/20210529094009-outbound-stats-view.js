@@ -15,7 +15,7 @@ module.exports = {
           Product.dimensionsCBM AS dimensionsCBM,
           UOM.name AS uom,
           Warehouse.name AS warehouse,
-          Customer.companyName AS customer,
+          Company.name AS customer,
           DO.referenceId AS referenceId,
           DO.internalIdForBusiness AS internalIdForBusiness,
           DO.id AS dispatchOrderId,
@@ -33,7 +33,7 @@ module.exports = {
           LEFT JOIN Inventories ON DO.inventoryId = Inventories.id
           LEFT JOIN Products AS Product ON Inventories.productId = Product.id
           LEFT JOIN Warehouses AS Warehouse ON Inventories.warehouseId = Warehouse.id
-          LEFT JOIN Customers AS Customer ON Inventories.customerId = Customer.id
+          LEFT JOIN Companies AS Company ON Inventories.customerId = Company.id
           LEFT JOIN UOMs AS UOM ON Product.uomId = UOM.id;
   `);
   },

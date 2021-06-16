@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, ProductInward, User, Company, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const authService = require('../services/auth.service');
@@ -13,9 +13,9 @@ router.get('/', async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['$Product.name$', '$Customer.companyName$', '$Warehouse.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  if (req.query.search) where[Op.or] = ['$Product.name$', '$Company.name$', '$Warehouse.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await ProductInward.findAndCountAll({
-    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }],
+    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     orderBy: [['updatedAt', 'DESC']],
     where, limit, offset
   });
@@ -113,7 +113,7 @@ router.get('/relations', async (req, res, next) => {
   const products = await Product.findAll({ where, include: [{ model: UOM }] });
 
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  const customers = await Customer.findAll({ where });
+  const customers = await Company.findAll({ where });
   res.json({
     success: true,
     message: 'respond with a resource',

@@ -24,7 +24,9 @@ async function sendMail(payload) {
   };
   let response = null;
   try {
-    response = await Mailclient.sendMail(mailOptions);
+    response = await Mailclient.sendMail(mailOptions, (error, info) => {
+      if (error) console.log(error.message)
+    });
   } catch (err) {
     console.log(err);
   }
@@ -43,4 +45,17 @@ function sendCustomerInquiryEmail(customerInquiry) {
   });
 }
 
-module.exports = { sendCustomerInquiryEmail };
+function sendGeneralEmailToCompanies(customerEmails, data, subject, senderName) {
+  let generalTemplate = fs.readFileSync('templates/customer-statistics.html', { encoding: 'utf-8' });
+  let html = ejs.render(generalTemplate, data);
+  return sendMail({
+    to: customerEmails,
+    from: process.env.MAILER_EMAIL,
+    senderName,
+    subject,
+    html
+    // text: `${data}`
+  });
+}
+
+module.exports = { sendCustomerInquiryEmail, sendGeneralEmailToCompanies };

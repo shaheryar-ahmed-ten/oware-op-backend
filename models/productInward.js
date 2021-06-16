@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       ProductInward.belongsTo(models.Warehouse, {
         foreignKey: 'warehouseId'
       });
-      ProductInward.belongsTo(models.Customer, {
+      ProductInward.belongsTo(models.Company, {
         foreignKey: 'customerId'
       });
     };
@@ -49,7 +49,7 @@ module.exports = (sequelize, DataTypes) => {
     customerId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notEmpty: { msg: 'Customer cannot be empty' } }
+      validate: { notEmpty: { msg: 'Company cannot be empty' } }
     },
     referenceId:{
       type: DataTypes.STRING(30),

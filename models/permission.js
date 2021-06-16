@@ -1,7 +1,7 @@
 'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
+const { PORTALS } = require('../enums');
+
 module.exports = (sequelize, DataTypes) => {
   class Permission extends Model {
     /**
@@ -19,6 +19,12 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     name: DataTypes.STRING,
+    allowedApps: {
+      type: DataTypes.ENUM({
+        values: Object.keys(PORTALS)
+      }),
+      allowNull: false
+    }
   }, {
     sequelize,
     paranoid: true,

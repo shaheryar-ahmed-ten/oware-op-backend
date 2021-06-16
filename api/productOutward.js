@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Customer, Warehouse, Product, UOM } = require('../models')
+const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Company, Warehouse, Product, UOM } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const { digitizie } = require('../services/common.services');
@@ -13,7 +13,7 @@ router.get('/', async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['$DispatchOrder.Inventory.Product.name$', '$DispatchOrder.Inventory.Customer.companyName$', '$DispatchOrder.Inventory.Warehouse.name$']
+  if (req.query.search) where[Op.or] = ['$DispatchOrder.Inventory.Product.name$', '$DispatchOrder.Inventory.Company.name$', '$DispatchOrder.Inventory.Warehouse.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await ProductOutward.findAndCountAll({
     include: [
@@ -21,7 +21,7 @@ router.get('/', async (req, res, next) => {
         model: DispatchOrder,
         include: [{
           model: Inventory,
-          include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
+          include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
         }]
       }, {
         model: Vehicle
@@ -130,7 +130,7 @@ router.get('/relations', async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
     include: [{
       model: Inventory,
-      include: [{ model: Product, include: [{ model: UOM }] }, { model: Customer }, { model: Warehouse }]
+      include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
     }, {
       model: ProductOutward,
       include: { model: Vehicle }
