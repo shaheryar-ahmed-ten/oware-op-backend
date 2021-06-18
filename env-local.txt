@@ -1,0 +1,5 @@
+HOST=127.0.0.1
+DB_USER=root
+DB_PASSWORD=root
+DB_NAME=oware_dev
+JWT_SECRET=sada6as1d6a1d6a1d68a16d1sa6d1sa

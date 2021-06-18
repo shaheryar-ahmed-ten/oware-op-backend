@@ -20,7 +20,7 @@ router.get('/', async (req, res, next) => {
       model: Inventory,
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
   res.json({

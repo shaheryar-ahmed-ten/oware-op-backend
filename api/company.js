@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
   if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Company.findAndCountAll({
     include: [{ model: User }, { model: User, as: 'Contact' }, { model: User, as: 'Employees' }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     limit, offset, where
   });
   res.json({

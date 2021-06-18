@@ -12,7 +12,7 @@ router.get('/', authService.isLoggedIn,async (req, res, next) => {
     let where = {
     };
     const response = await CustomerInquiry.findAndCountAll({
-      orderBy: [['updatedAt', 'DESC']],
+      order: [['updatedAt', 'DESC']],
       limit, offset, where
     });
     res.json({

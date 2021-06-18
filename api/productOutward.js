@@ -27,7 +27,7 @@ router.get('/', async (req, res, next) => {
         model: Vehicle
       }
     ],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
   res.json({

@@ -51,7 +51,7 @@ router.get('/', isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (r
       model: Company,
       as: 'Company'
     }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     limit, offset, where
   });
   res.json({
