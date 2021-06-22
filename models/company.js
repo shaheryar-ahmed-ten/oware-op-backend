@@ -1,7 +1,7 @@
 'use strict';
 const { Model } = require('sequelize');
 const config = require('../config');
-const { PORTALS } = require('../enums');
+const { PORTALS, RELATION_TYPES } = require('../enums');
 
 module.exports = (sequelize, DataTypes) => {
   class Company extends Model {
@@ -31,11 +31,14 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: { notEmpty: true }
     },
-    type: {
+    relationType: {
       type: DataTypes.ENUM({
-        values: config.customerTypes
+        values: Object.keys(RELATION_TYPES)
       }),
-      allowNull: false,
+      defaultValue: RELATION_TYPES.CUSTOMER
+    },
+    type: {
+      type: DataTypes.STRING
     },
     contactId: {
       type: DataTypes.INTEGER,
@@ -46,6 +49,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
       validate: { notEmpty: { msg: 'Please enter company name' } }
+    },
+    phone: {
+      type: DataTypes.STRING,
+      validate: {
+        isNumeric: { msg: 'Please enter correct phone number' }
+      }
     },
     allowedApps: {
       type: DataTypes.ENUM({
