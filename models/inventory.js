@@ -46,7 +46,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: { msg: 'Customer cannot be empty' } }
-
     },
     warehouseId: {
       type: DataTypes.INTEGER,
