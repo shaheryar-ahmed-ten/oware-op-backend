@@ -1,16 +1,17 @@
 'use strict';
 const { User, Role, PermissionAccess, Permission } = require('../models')
+const { ROLES } = require('../enums');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     let roles = await Role.bulkCreate([{
       name: 'Admin',
-      type: 'ADMIN',
+      type: ROLES.ADMIN,
       createdAt: new Date(),
       updatedAt: new Date()
     }, {
       name: 'Admin',
-      type: 'SUPER_ADMIN',
+      type: ROLES.SUPER_ADMIN,
       createdAt: new Date(),
       updatedAt: new Date()
     }]);
