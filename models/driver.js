@@ -15,22 +15,26 @@ module.exports = (sequelize, DataTypes) => {
       });
       Driver.belongsTo(models.File, {
         foreignKey: "drivingLicenseId",
-        as: 'drivingLicense'
+        as: 'DrivingLicense'
       });
       Driver.belongsTo(models.File, {
         foreignKey: "cnicId",
-        as: 'cnic'
+        as: 'Cnic'
       });
       Driver.belongsTo(models.File, {
         foreignKey: "photoId",
-        as: 'photo'
+        as: 'Photo'
+      });
+      Driver.belongsTo(models.Company, {
+        foreignKey: "companyId",
+        as: 'Vendor'
       });
     }
   }
   Driver.init(
     {
-      vendorName: {
-        type: DataTypes.STRING,
+      companyId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         validate: { notEmpty: { msg: "Please enter vendor name" } },
       },
@@ -52,9 +56,19 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true
       },
+      cnicNumber:{
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please enter cnic number" } },
+      },
       drivingLicenseId: {
         type: DataTypes.INTEGER,
         allowNull: true
+      },
+      drivingLicenseNumber:{
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please enter driving license number" } },
       }
     },
     {

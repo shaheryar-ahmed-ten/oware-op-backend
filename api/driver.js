@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { driver, Driver } = require('../models')
+const { Company, Driver } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 
@@ -11,9 +11,9 @@ router.get('/', async (req, res, next) => {
     let where = {
         // userId: req.userId
     };
-    if (req.query.search) where[Op.or] = ['number'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+    if (req.query.search) where[Op.or] = ['name','$Company.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
     const response = await Driver.findAndCountAll({
-        include: [{ model: driver }],
+        include: [{ model: Company }],
         order: [['updatedAt', 'DESC']],
         where, limit, offset
     });
@@ -54,8 +54,10 @@ router.put('/:id', async (req, res, next) => {
         message: 'No driver found!'
     });
     driver.name = req.body.name;
-    driver.vendorName = req.body.vendorName;
+    driver.companyId = req.body.companyId;
     driver.phone = req.body.phone;
+    driver.cnicNumber = req.body.cnicNumber
+    driver.drivingLicenseNumber = req.body.drivingLicenseNumber
     try {
         const response = await Driver.save();
         return res.json({
@@ -85,7 +87,7 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
     let where = { isActive: true };
-    const vehicle = await Vehicle.findAll({
+    const company = await Company.findAll({
         include: [{ model: Driver }],
         where
     });

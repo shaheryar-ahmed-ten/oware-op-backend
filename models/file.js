@@ -30,14 +30,11 @@ module.exports = (sequelize, DataTypes) => {
   File.init({
     bucket: {
       type: DataTypes.STRING,
-      unique: true,
       allowNull: false,
       validate: { notEmpty: { msg: "Please enter a file" } },
-
     },
     key: {
       type: DataTypes.STRING,
-      unique: true,
       allowNull: false,
       validate: { notEmpty: { msg: "Please enter a file" } },
     },

@@ -3,6 +3,7 @@ const router = express.Router();
 const { Vehicle, Driver } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
+const VEHICLE_TYPES = require('../enums/vehicleTypes');
 
 /* GET vehicles listing. */
 router.get('/', async (req, res, next) => {
@@ -31,6 +32,7 @@ router.post('/', async (req, res, next) => {
     let vehicle;
     try {
         vehicle = await Vehicle.create({
+            registrationNumber: req.body.registrationNumber.toUpperCase(),
             ...req.body
         });
     } catch (err) {
@@ -53,12 +55,13 @@ router.put('/:id', async (req, res, next) => {
         success: false,
         message: 'No vehicle found!'
     });
-    vehicle.number = req.body.number;
-    vehicle.type = req.body.type;
-    vehicle.vendorName = req.body.vendorName;
-    vehicle.vendorNumber = req.body.vendorNumber;
+    vehicle.registrationNumber = req.body.registrationNumber;
+    vehicle.companyId = req.body.companyId;
+    vehicle.driverId = req.body.driverId;
     vehicle.make = req.body.make;
-    vehicle.modelYear = req.body.modelYear;
+    vehicle.model = req.body.model;
+    vehicle.year = req.body.year;
+
     try {
         const response = await Vehicle.save();
         return res.json({
@@ -92,10 +95,11 @@ router.get('/relations', async (req, res, next) => {
         include: [{ model: Vehicle }],
         where
     });
+    const vehicleTypes = VEHICLE_TYPES;
     res.json({
         success: true,
         message: 'respond with a resource',
-        driver
+        driver, vehicleTypes    
     });
 });
 
