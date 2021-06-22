@@ -5,6 +5,7 @@ const { Op } = require("sequelize");
 const config = require('../config');
 const authService = require('../services/auth.service');
 const { PORTALS } = require('../enums');
+const RELATION_TYPES = require('../enums/relationTypes');
 
 /* GET customers listing. */
 router.get('/', async (req, res, next) => {
@@ -58,6 +59,7 @@ router.put('/:id', async (req, res, next) => {
   });
   customer.name = req.body.name;
   customer.type = req.body.type;
+  customer.relationType = req.body.relationType;
   customer.contactId = req.body.contactId;
   customer.notes = req.body.notes;
   customer.isActive = req.body.isActive;
@@ -93,10 +95,11 @@ router.get('/relations', async (req, res, next) => {
   where['$Role.allowedApps$'] = PORTALS.OPERATIONS;
   const users = await User.findAll({ where, include: [Role] });
   const customerTypes = config.customerTypes;
+  const relationTypes = RELATION_TYPES;
   res.json({
     success: true,
     message: 'respond with a resource',
-    users, customerTypes
+    users, customerTypes, relationTypes
   });
 });
 
