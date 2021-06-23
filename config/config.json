@@ -30,13 +30,6 @@
       "Wholesaler",
       "Retailer"
     ],
-    "vehicleTypes": [
-      "Bike",
-      "Mini Truck",
-      "Light Truck",
-      "Heavy Truck",
-      "Refregerated Truck"
-    ],
     "dbLogging": false
   }
 }
