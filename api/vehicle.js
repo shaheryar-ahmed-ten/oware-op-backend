@@ -58,9 +58,7 @@ router.put('/:id', async (req, res, next) => {
     vehicle.registrationNumber = req.body.registrationNumber;
     vehicle.companyId = req.body.companyId;
     vehicle.driverId = req.body.driverId;
-    vehicle.make = req.body.make;
-    vehicle.model = req.body.model;
-    vehicle.year = req.body.year;
+    vehicle.carId = req.body.carId;
 
     try {
         const response = await Vehicle.save();
@@ -92,7 +90,7 @@ router.delete('/:id', async (req, res, next) => {
 router.get('/relations', async (req, res, next) => {
     let where = { isActive: true };
     const driver = await Driver.findAll({
-        include: [{ model: Vehicle }],
+        include: [{ model: Vehicle,include:[{model: Car}] }],
         where
     });
     const vehicleTypes = VEHICLE_TYPES;
