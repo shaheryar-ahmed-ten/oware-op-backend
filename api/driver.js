@@ -3,6 +3,7 @@ const router = express.Router();
 const { Company, Driver } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
+const { RELATION_TYPES } = require('../enums');
 
 /* GET drivers listing. */
 router.get('/', async (req, res, next) => {
@@ -11,9 +12,9 @@ router.get('/', async (req, res, next) => {
     let where = {
         // userId: req.userId
     };
-    if (req.query.search) where[Op.or] = ['name','$Company.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+    if (req.query.search) where[Op.or] = ['name', '$Company.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
     const response = await Driver.findAndCountAll({
-        include: [{ model: Company }],
+        include: [{ model: Company, as: 'Vendor' }],
         order: [['updatedAt', 'DESC']],
         where, limit, offset
     });
@@ -86,15 +87,14 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 router.get('/relations', async (req, res, next) => {
-    let where = { isActive: true };
-    const company = await Company.findAll({
-        include: [{ model: Driver }],
+    let where = { relationType: RELATION_TYPES.VENDOR };
+    const companies = await Company.findAll({
         where
     });
     res.json({
         success: true,
         message: 'respond with a resource',
-        driver
+        companies
     });
 });
 

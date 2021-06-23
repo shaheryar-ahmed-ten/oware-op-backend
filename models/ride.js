@@ -1,6 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const config = require("../config");
+const { RIDE_STATUS } = require("../enums");
 module.exports = (sequelize, DataTypes) => {
   class Ride extends Model {
     /**
@@ -13,24 +14,46 @@ module.exports = (sequelize, DataTypes) => {
       Ride.belongsTo(models.Vehicle, {
         foreignKey: "vehicleId",
       });
+      Ride.belongsTo(models.Driver, {
+        foreignKey: "vehicleId",
+      });
     }
   }
-  Ride.init(
-    {
-      number: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-        //validate: { notEmpty: { msg: "Please enter a vehicle number" } },
-      },
-      vehicleId: DataTypes.INTEGER,
+  Ride.init({
+    vehicleId: DataTypes.INTEGER,
+    driverId: DataTypes.INTEGER,
+    pickupDate: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Please select pickup date' } }
     },
-    {
-      sequelize,
-      paranoid: true,
-      modelName: "Ride",
-      timestamps: true,
+    dropoffDate: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      validate: { notEmpty: { msg: 'Please select dropoff date' } }
+    },
+    pickupArea: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Please enter pickup area' } }
+    },
+    dropoffArea: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Please enter dropoff area' } }
+    },
+    status: {
+      type: DataTypes.ENUM({
+        values: Object.keys(RIDE_STATUS)
+      }),
+      allowNull: false,
+      defaultValue: RIDE_STATUS.UNASSIGNED
     }
-  );
+  }, {
+    sequelize,
+    paranoid: true,
+    modelName: "Ride",
+    timestamps: true,
+  });
   return Ride;
 };

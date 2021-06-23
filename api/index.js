@@ -12,6 +12,7 @@ const productInwardRouter = require('./productInward');
 const dispatchOrderRouter = require('./dispatchOrder');
 const productOutwardRouter = require('./productOutward');
 const inventoryRouter = require('./inventory');
+const driverRouter = require('./driver');
 const customerInquiryRouter = require('./customerInquiry');
 
 const { isLoggedIn, checkPermission } = require('../services/auth.service');
@@ -38,5 +39,8 @@ router.use('/product-inward', isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUC
 router.use('/dispatch-order', isLoggedIn, checkPermission(PERMISSIONS.OPS_DISPATCHORDER_FULL), dispatchOrderRouter);
 router.use('/product-outward', isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCTOUTWARD_FULL), productOutwardRouter);
 router.use('/inventory', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), inventoryRouter);
+
+router.use('/driver', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), driverRouter);
+
 
 module.exports = router;
