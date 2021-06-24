@@ -59,7 +59,7 @@ router.put('/:id', async (req, res, next) => {
     driver.cnicNumber = req.body.cnicNumber
     driver.drivingLicenseNumber = req.body.drivingLicenseNumber
     try {
-        const response = await Driver.save();
+        const response = await driver.save();
         return res.json({
             success: true,
             message: 'driver updated',

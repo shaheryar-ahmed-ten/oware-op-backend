@@ -2,21 +2,21 @@ const AWS = require('aws-sdk');
 const multer = require('multer')
 const multerS3 = require('multer-s3')
 
-exports.fileUploading = ()=>{
+exports.fileUploading = (Bucket,upload)=>{
 var s3 = new AWS.S3({ 
   accessKeyId: IAM_USER_KEY,
   secretAccessKey: IAM_USER_SECRET,
-  Bucket: BUCKET_NAME
+  Bucket
  })
-var upload = multer({
+ return upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: BUCKET_NAME,
+    bucket: Bucket,
     metadata: function (req, file, cb) {
       cb(null, {fieldName: file.fieldname});
     },
     key: function (req, file, cb) {
-      cb(null, Date.now().toString())
+      cb(null, file.originalname)
     }
   })
 })
