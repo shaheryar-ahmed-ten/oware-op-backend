@@ -32,11 +32,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "companyId",
         as: 'Vendor'
       });
-      Vehicle.belongsTo(models.CarModel, {
-        foreignKey: "modelId"
-      })
-      Vehicle.belongsTo(models.CarMake, {
-        foreignKey: "makeId"
+      Vehicle.belongsTo(models.Car, {
+        foreignKey: "carId"
       })
     }
   }
@@ -65,20 +62,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: { notEmpty: { msg: "Please enter a vehicle number" } },
       },
-      makeId: {
+      carId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: { notEmpty: { msg: "Please enter make name" } },
-      },
-      modelId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter model name" } },
-      },
-      year: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter model year" } },
+        validate: { notEmpty: { msg: "Please enter car" } },
       },
       photoId: {
         type: DataTypes.INTEGER,
@@ -86,13 +73,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       runningPaperId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: 'Please add a file' } }
+        allowNull: true,
       },
       routePermitId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: 'Please add a file' } }
+        allowNull: true,
       }
     },
     {

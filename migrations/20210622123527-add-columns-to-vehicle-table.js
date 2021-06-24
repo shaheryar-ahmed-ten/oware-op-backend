@@ -26,29 +26,15 @@ module.exports = {
       type: Sequelize.STRING,
       allowNull: true,
     });
-    await queryInterface.addColumn('Vehicles', 'makeId', {
+    await queryInterface.addColumn('Vehicles', 'carId', {
       type: Sequelize.INTEGER,
       allowNull: true,
       references: {
-        model: 'CarMakes', // name of Target model
+        model: 'Cars', // name of Target model
         key: 'id', // key in Target model that we're referencing
       },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE',
-    });
-    await queryInterface.addColumn('Vehicles', 'modelId', {
-      type: Sequelize.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'CarModels', // name of Target model
-        key: 'id', // key in Target model that we're referencing
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE',
-    });
-    await queryInterface.addColumn('Vehicles', 'year', {
-      type: Sequelize.STRING,
-      allowNull: true,
     });
     await queryInterface.addColumn('Vehicles', 'photoId', {
       type: Sequelize.INTEGER,
@@ -85,9 +71,7 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     await queryInterface.removeColumn('Vehicles', 'companyId')
     await queryInterface.removeColumn('Vehicles', 'driverId')
-    await queryInterface.removeColumn('Vehicles', 'makeId')
-    await queryInterface.removeColumn('Vehicles', 'modelId')
-    await queryInterface.removeColumn('Vehicles', 'year')
+    await queryInterface.removeColumn('Vehicles', 'carId')
     await queryInterface.removeColumn('Vehicles', 'photoId')
     await queryInterface.removeColumn('Vehicles', 'runningPaperId')
     await queryInterface.removeColumn('Vehicles', 'routePermitId')

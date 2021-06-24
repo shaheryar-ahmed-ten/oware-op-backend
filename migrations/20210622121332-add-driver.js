@@ -29,7 +29,7 @@ module.exports = {
       },
       photoId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'Files', // name of Target model
           key: 'id', // key in Target model that we're referencing
@@ -39,7 +39,7 @@ module.exports = {
       },
       cnicId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'Files', // name of Target model
           key: 'id', // key in Target model that we're referencing
@@ -53,7 +53,7 @@ module.exports = {
       },
       drivingLicenseId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: 'Files', // name of Target model
           key: 'id', // key in Target model that we're referencing
