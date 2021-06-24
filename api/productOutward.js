@@ -56,18 +56,9 @@ router.post('/', async (req, res, next) => {
     message: 'Cannot dispatch above available inventory quantity'
   })
   let productOutward;
-  let vehicle;
-  vehicle = await Vehicle.findOne({ where: { [Op.and]: [{ type: req.body.vehicle.type }, { number: req.body.vehicle.number }] } })
   try {
-    if (!vehicle) {
-      vehicle = await Vehicle.create({
-        type: req.body.vehicle.type,
-        number: req.body.vehicle.number.toUpperCase()
-      })
-    }
     productOutward = await ProductOutward.create({
       userId: req.userId,
-      vehicleId: vehicle.id,
       ...req.body
     });
     const numberOfInternalIdForBusiness = digitizie(productOutward.id, 6);
@@ -137,11 +128,11 @@ router.get('/relations', async (req, res, next) => {
     }]
   });
 
-  const vehicleTypes = config.vehicleTypes;
+  const vehicle = await Vehicle.findAll();
   res.json({
     success: true,
     message: 'respond with a resource',
-    dispatchOrders, vehicleTypes
+    dispatchOrders, vehicle
   });
 });
 

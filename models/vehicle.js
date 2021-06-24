@@ -1,6 +1,6 @@
 "use strict";
 const { Model } = require("sequelize");
-const config = require("../config");
+const { VEHICLE_TYPES } = require("../enums");
 module.exports = (sequelize, DataTypes) => {
   class Vehicle extends Model {
     /**
@@ -13,23 +13,72 @@ module.exports = (sequelize, DataTypes) => {
       Vehicle.hasOne(models.ProductOutward, {
         foreignKey: "vehicleId",
       });
+      Vehicle.belongsTo(models.Driver, {
+        foreignKey: "driverId"
+      }),
+        Vehicle.belongsTo(models.File, {
+          foreignKey: "runningPaperId",
+          as: 'runningPaper'
+        });
+      Vehicle.belongsTo(models.File, {
+        foreignKey: "routePermitId",
+        as: 'routePermit'
+      });
+      Vehicle.belongsTo(models.File, {
+        foreignKey: "photoId",
+        as: 'Photo'
+      });
+      Vehicle.belongsTo(models.Company, {
+        foreignKey: "companyId",
+        as: 'Vendor'
+      });
+      Vehicle.belongsTo(models.Car, {
+        foreignKey: "carId"
+      })
     }
   }
   Vehicle.init(
     {
-      number: {
-        type: DataTypes.STRING,
-        unique: true,
+      companyId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
-        //validate: { notEmpty: { msg: "Please enter a vehicle number" } },
+        validate: { notEmpty: { msg: "Please enter vendor name" } },
+      },
+      driverId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please enter driver name" } },
       },
       type: {
         type: DataTypes.ENUM({
-          values: config.vehicleTypes,
+          values: Object.keys(VEHICLE_TYPES),
         }),
         allowNull: false,
         validate: { notEmpty: { msg: "Please select vehicle type" } },
       },
+      registrationNumber: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please enter a vehicle number" } },
+      },
+      carId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please enter car" } },
+      },
+      photoId: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
+      runningPaperId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      routePermitId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      }
     },
     {
       sequelize,
