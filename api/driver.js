@@ -11,9 +11,9 @@ router.get('/', async (req, res, next) => {
     let where = {
         // userId: req.userId
     };
-    if (req.query.search) where[Op.or] = ['name','$Company.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+    if (req.query.search) where[Op.or] = ['name','$Vendor.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
     const response = await Driver.findAndCountAll({
-        include: [{ model: Company }],
+        include: [{ model: Company, as: 'Vendor' }],
         order: [['updatedAt', 'DESC']],
         where, limit, offset
     });
@@ -88,13 +88,12 @@ router.delete('/:id', async (req, res, next) => {
 router.get('/relations', async (req, res, next) => {
     let where = { isActive: true };
     const company = await Company.findAll({
-        include: [{ model: Driver }],
         where
     });
     res.json({
         success: true,
         message: 'respond with a resource',
-        driver
+        company
     });
 });
 

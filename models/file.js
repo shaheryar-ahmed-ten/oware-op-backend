@@ -10,21 +10,6 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      File.hasMany(models.Vehicle, {
-        foreignKey: "fileId"
-      })
-      File.hasOne(models.Driver, {
-        foreignKey: "drivingLicenseId",
-        as: 'drivingLicense'
-      })
-      File.hasOne(models.Driver, {
-        foreignKey: "cnicId",
-        as: 'cnic'
-      })
-      File.hasOne(models.Driver, {
-        foreignKey: "photoId",
-        as: 'photo'
-      })
     }
   }
   File.init({
