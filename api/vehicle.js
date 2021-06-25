@@ -31,9 +31,9 @@ router.post('/', async (req, res, next) => {
     let message = 'New vehicle registered';
     let vehicle;
     let car
-    car = await Car.findOne({where:{ makeId: req.body.makeId, modelId: req.body.modelId }})
+    car = await Car.findOne({ where: { makeId: req.body.makeId, modelId: req.body.modelId } })
     try {
-        if(!car){
+        if (!car) {
             car = await Car.create({
                 makeId: req.body.makeId,
                 modelId: req.body.modelId
@@ -101,15 +101,20 @@ router.get('/relations', async (req, res, next) => {
         include: [{ model: Vehicle, include: [{ model: Car, include: [CarMake, CarModel] }] }],
     });
     const vendors = await Company.findAll(
-        { as: 'Vendor' }
+        {
+            as: 'Vendor',
+           // include: [Driver]
+        }
     )
-    const makes = await CarMake.findAll()
-    const models = await CarModel.findAll()
+    let cars = await Car.findAll({
+        include:[CarMake,CarModel]
+    })
+    
     const vehicleTypes = VEHICLE_TYPES;
     res.json({
         success: true,
         message: 'respond with a resource',
-        drivers, vehicleTypes, vendors, models, makes
+        drivers, vehicleTypes, vendors, cars
     });
 });
 
