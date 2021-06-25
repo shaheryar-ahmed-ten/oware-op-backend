@@ -1,8 +1,9 @@
-"use strict";
-const { Model } = require("sequelize");
-const config = require("../config");
+'use strict';
+const {
+  Model
+} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class CarMake extends Model {
+  class Area extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -10,35 +11,39 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      CarMake.belongsTo(models.User, {
-        foreignKey: "userId",
+      Area.belongsTo(models.User, {
+        foreignKey: 'userId'
       });
-      CarMake.hasMany(models.Car, {
-        foreignKey: "makeId",
+      Area.belongsTo(models.Zone, {
+        foreignKey: 'zoneId'
       });
     }
-  }
-  CarMake.init({
+  };
+  Area.init({
     userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: true }
+    },
+    zoneId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: true }
     },
     name: {
       type: DataTypes.STRING,
-      unique: true,
       allowNull: false,
-      validate: { notEmpty: { msg: "Please enter a make name" } },
+      validate: { notEmpty: {msg: 'Please enter zone name'} },
+      unique: true
     },
     isActive: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
-    }
+    },
   }, {
     sequelize,
     paranoid: true,
-    modelName: "CarMake",
-    timestamps: true,
+    modelName: 'Area',
   });
-  return CarMake;
+  return Area;
 };

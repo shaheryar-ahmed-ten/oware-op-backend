@@ -11,17 +11,50 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Ride.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
       Ride.belongsTo(models.Vehicle, {
         foreignKey: "vehicleId",
       });
       Ride.belongsTo(models.Driver, {
         foreignKey: "vehicleId",
       });
+      Ride.belongsTo(models.Area, {
+        foreignKey: "pickupAreaId",
+        as: 'PickupArea'
+      });
+      Ride.belongsTo(models.Area, {
+        foreignKey: "dropoffAreaId",
+        as: 'DropoffArea'
+      });
+      Ride.belongsTo(models.Company, {
+        foreignKey: "customerId",
+        as: 'Customer'
+      });
+      Ride.belongsTo(models.File, {
+        foreignKey: "productManifestId",
+        as: 'ProductManifest'
+      });
+      Ride.belongsTo(models.Category, {
+        foreignKey: "productCategoryId",
+        as: 'ProductCategory'
+      });
     }
   }
   Ride.init({
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: true }
+    },
+    customerId: DataTypes.INTEGER,
     vehicleId: DataTypes.INTEGER,
     driverId: DataTypes.INTEGER,
+    productManifestId: { type: DataTypes.INTEGER, allowNull: true },
+    productCategoryId: DataTypes.INTEGER,
+    productName: DataTypes.STRING,
+    productQuantity: DataTypes.INTEGER,
     pickupDate: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -32,16 +65,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       validate: { notEmpty: { msg: 'Please select dropoff date' } }
     },
-    pickupArea: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Please enter pickup area' } }
-    },
-    dropoffArea: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Please enter dropoff area' } }
-    },
+    pickupAddress: DataTypes.STRING,
+    pickupAreaId: DataTypes.INTEGER,
+    dropoffAddress: DataTypes.STRING,
+    dropoffAreaId: DataTypes.INTEGER,
     status: {
       type: DataTypes.ENUM({
         values: Object.keys(RIDE_STATUS)

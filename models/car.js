@@ -9,7 +9,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      
+      Car.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
       Car.belongsTo(models.CarModel, {
         foreignKey: "modelId"
       })
@@ -21,25 +23,31 @@ module.exports = (sequelize, DataTypes) => {
       })
     }
   }
-  Car.init(
-    {
-      makeId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter make name" } },
-      },
-      modelId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter model name" } },
-      },
+  Car.init({
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: true }
     },
-    {
-      sequelize,
-      paranoid: true,
-      modelName: "Car",
-      timestamps: true,
+    makeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: { msg: "Please enter make name" } },
+    },
+    modelId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: { msg: "Please enter model name" } },
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
     }
-  );
+  }, {
+    sequelize,
+    paranoid: true,
+    modelName: "Car",
+    timestamps: true,
+  });
   return Car;
 };

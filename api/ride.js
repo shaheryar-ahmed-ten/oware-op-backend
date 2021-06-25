@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Ride, User, Vehicle, Driver, Company } = require('../models')
+const { Ride, User, Vehicle, Driver, Company, Area, Zone, City, Category } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
-const { RIDE_STATUS } = require('../enums/rideStatus');
+const RIDE_STATUS = require('../enums/rideStatus');
+const { RELATION_TYPES } = require('../enums');
 
 /* GET rides listing. */
 router.get('/', async (req, res, next) => {
@@ -13,7 +14,29 @@ router.get('/', async (req, res, next) => {
   if (req.query.search) where[Op.or] = ['pickupArea', 'dropoffArea', '$Vehicle.Car.CarModel.name$', '$Vehicle.Car.CarModel.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Ride.findAndCountAll({
-    include: [{ model: User }, { model: Vehicle, include: [Company] }, Driver],
+    include: [{
+      model: User
+    }, {
+      model: Company,
+      as: 'Customer'
+    }, {
+      model: Category,
+      as: 'ProductCategory'
+    }, {
+      model: Area,
+      include: [{ model: Zone, include: [City] }],
+      as: 'PickupArea'
+    }, {
+      model: Area,
+      include: [{ model: Zone, include: [City] }],
+      as: 'DropoffArea'
+    }, {
+      model: Vehicle,
+      include: [{ model: Company, as: 'Vendor' }]
+    }, {
+      model: Driver,
+      include: [{ model: Company, as: 'Vendor' }]
+    }],
     order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
@@ -37,7 +60,7 @@ router.post('/', async (req, res, next) => {
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.message
     });
   }
   res.json({
@@ -92,11 +115,14 @@ router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
   const vehicles = await Vehicle.findAll({ where });
   const drivers = await Driver.findAll({ where });
+  const areas = await Area.findAll({ where, include: [{ model: Zone, include: [City] }] });
+  const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
+  const productCategories = await Category.findAll({ where });
   const statuses = RIDE_STATUS;
   res.json({
     success: true,
     message: 'respond with a resource',
-    vehicles, drivers, categories, statuses
+    vehicles, drivers, statuses, areas, companies, productCategories
   });
 });
 
