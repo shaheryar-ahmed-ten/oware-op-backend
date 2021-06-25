@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'companyId',
         as: 'Employees'
       });
+      Company.hasMany(models.Driver, {
+        foreignKey: 'companyId',
+        as: 'Drivers'
+      });
     };
   };
   Company.init({

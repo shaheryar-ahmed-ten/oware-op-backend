@@ -31,17 +31,8 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
     let message = 'New vehicle registered';
     let vehicle;
-    let car
-    car = await Car.findOne({ where: { makeId: req.body.makeId, modelId: req.body.modelId } })
     try {
-        if (!car) {
-            car = await Car.create({
-                makeId: req.body.makeId,
-                modelId: req.body.modelId
-            })
-        }
         vehicle = await Vehicle.create({
-            carId: car.id,
             registrationNumber: req.body.registrationNumber.toUpperCase(),
             ...req.body
         });
@@ -99,12 +90,11 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
     const drivers = await Driver.findAll({
-        include: [{ model: Vehicle, include: [{ model: Car, include: [CarMake, CarModel] }] }],
+        include: [{model:Company, as:'Vendor'},{ model: Vehicle, include: [{ model: Car, include: [CarMake, CarModel] }] }],
     });
     const vendors = await Company.findAll(
         {
-            as: 'Vendor',
-           // include: [Driver]
+            include: [{model:Driver, as:'Drivers'}]
         }
     )
     let cars = await Car.findAll({
