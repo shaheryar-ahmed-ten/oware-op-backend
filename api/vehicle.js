@@ -92,14 +92,16 @@ router.get('/relations', async (req, res, next) => {
     const drivers = await Driver.findAll({
         include: [{ model: Vehicle, include: [{ model: Car, include: [CarMake, CarModel] }] }],
     });
-    const vendor = await Company.findAll(
+    const vendors = await Company.findAll(
         { as: 'Vendor' }
     )
+    const makes = await CarMake.findAll()
+    const models = await CarModel.findAll()
     const vehicleTypes = VEHICLE_TYPES;
     res.json({
         success: true,
         message: 'respond with a resource',
-        drivers, vehicleTypes, vendor
+        drivers, vehicleTypes, vendors, models, makes
     });
 });
 
