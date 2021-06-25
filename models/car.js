@@ -19,6 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       Car.hasMany(models.Vehicle, {
         foreignKey: "carId"
       })
+      // Car.belongsTo(models.VehicleType, {
+      //   foreignKey: "vehicleTypeId"
+      // })
     }
   }
   Car.init(
@@ -33,6 +36,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: { notEmpty: { msg: "Please enter model name" } },
       },
+      vehicleTypeId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please enter vehicle type name" } },
+      }
     },
     {
       sequelize,

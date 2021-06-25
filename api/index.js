@@ -15,6 +15,7 @@ const inventoryRouter = require('./inventory');
 const customerInquiryRouter = require('./customerInquiry');
 const driver = require('./driver');
 const vehicle = require('./vehicle');
+const imageUpload = require('./imageUpload');
 
 const { isLoggedIn, checkPermission } = require('../services/auth.service');
 const { PERMISSIONS } = require('../enums');
@@ -42,6 +43,8 @@ router.use('/product-outward', isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODU
 router.use('/inventory', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), inventoryRouter);
 router.use('/driver', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), driver);
 router.use('/vehicle', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicle);
+router.use('/imageUpload', isLoggedIn,imageUpload);
+
 
 
 module.exports = router;
