@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const multer = require('multer')
 const multerS3 = require('multer-s3')
+const env = require('dotenv').config();
 
 exports.fileUploading = (Bucket,upload)=>{
 var s3 = new AWS.S3({ 

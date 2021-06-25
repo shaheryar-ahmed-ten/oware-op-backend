@@ -89,14 +89,17 @@ router.delete('/:id', async (req, res, next) => {
 })
 
 router.get('/relations', async (req, res, next) => {
-    const driver = await Driver.findAll({
+    const drivers = await Driver.findAll({
         include: [{ model: Vehicle, include: [{ model: Car, include: [CarMake, CarModel] }] }],
     });
+    const vendor = await Company.findAll(
+        { as: 'Vendor' }
+    )
     const vehicleTypes = VEHICLE_TYPES;
     res.json({
         success: true,
         message: 'respond with a resource',
-        driver, vehicleTypes
+        drivers, vehicleTypes, vendor
     });
 });
 
