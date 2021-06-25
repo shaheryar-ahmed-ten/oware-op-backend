@@ -31,8 +31,17 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
     let message = 'New vehicle registered';
     let vehicle;
+    let car
+    car = await Car.findOne({where:{ makeId: req.body.makeId, modelId: req.body.modelId }})
     try {
+        if(!car){
+            car = await Car.create({
+                makeId: req.body.makeId,
+                modelId: req.body.modelId
+            })
+        }
         vehicle = await Vehicle.create({
+            carId: car.id,
             registrationNumber: req.body.registrationNumber.toUpperCase(),
             ...req.body
         });

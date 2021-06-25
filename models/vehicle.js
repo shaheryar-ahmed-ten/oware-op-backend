@@ -64,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       carId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         validate: { notEmpty: { msg: "Please enter car" } },
       },
       photoId: {
