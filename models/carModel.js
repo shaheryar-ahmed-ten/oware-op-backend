@@ -10,26 +10,35 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      CarModel.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
       CarModel.hasMany(models.Car, {
         foreignKey: "modelId",
       });
     }
   }
-  CarModel.init(
-    {
-      name: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter a Model name" } },
-      },
+  CarModel.init({
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: true }
     },
-    {
-      sequelize,
-      paranoid: true,
-      modelName: "CarModel",
-      timestamps: true,
+    name: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+      validate: { notEmpty: { msg: "Please enter a Model name" } },
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
     }
-  );
+  }, {
+    sequelize,
+    paranoid: true,
+    modelName: "CarModel",
+    timestamps: true,
+  });
   return CarModel;
 };

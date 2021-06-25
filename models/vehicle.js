@@ -10,16 +10,19 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Vehicle.belongsTo(models.User, {
+        foreignKey: "userId"
+      });
       Vehicle.hasOne(models.ProductOutward, {
         foreignKey: "vehicleId",
       });
       Vehicle.belongsTo(models.Driver, {
         foreignKey: "driverId"
-      }),
-        Vehicle.belongsTo(models.File, {
-          foreignKey: "runningPaperId",
-          as: 'runningPaper'
-        });
+      });
+      Vehicle.belongsTo(models.File, {
+        foreignKey: "runningPaperId",
+        as: 'runningPaper'
+      });
       Vehicle.belongsTo(models.File, {
         foreignKey: "routePermitId",
         as: 'routePermit'
@@ -34,52 +37,60 @@ module.exports = (sequelize, DataTypes) => {
       });
       Vehicle.belongsTo(models.Car, {
         foreignKey: "carId"
-      })
+      });
     }
   }
-  Vehicle.init(
-    {
-      companyId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter vendor name" } },
-      },
-      driverId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter driver name" } },
-      },
-      type: {
-        type: DataTypes.ENUM({
-          values: Object.keys(VEHICLE_TYPES),
-        }),
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please select vehicle type" } },
-      },
-      registrationNumber: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter a vehicle number" } },
-      },
-      carId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please enter car" } },
-      },
-      photoId: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-      },
-      runningPaperId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      routePermitId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      }
+  Vehicle.init({
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: true }
     },
+    companyId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: { msg: "Please enter vendor name" } },
+    },
+    driverId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: { msg: "Please enter driver name" } },
+    },
+    type: {
+      type: DataTypes.ENUM({
+        values: Object.keys(VEHICLE_TYPES),
+      }),
+      allowNull: false,
+      validate: { notEmpty: { msg: "Please select vehicle type" } },
+    },
+    registrationNumber: {
+      type: DataTypes.STRING,
+      unique: true,
+      allowNull: false,
+      validate: { notEmpty: { msg: "Please enter a vehicle number" } },
+    },
+    carId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: { msg: "Please enter car" } },
+    },
+    photoId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    runningPaperId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    routePermitId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    }
+  },
     {
       sequelize,
       paranoid: true,
