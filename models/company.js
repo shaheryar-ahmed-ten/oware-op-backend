@@ -41,9 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       }),
       defaultValue: RELATION_TYPES.CUSTOMER
     },
-    type: {
-      type: DataTypes.STRING
-    },
+    type: DataTypes.STRING,
     contactId: {
       type: DataTypes.INTEGER,
       allowNull: false,

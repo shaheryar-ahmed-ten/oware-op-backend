@@ -31,7 +31,7 @@ router.get('/', (req, res, next) => {
 
 router.use('/user', userRouter);
 router.use('/public', publicRouter);
-router.use('/customer', isLoggedIn, checkPermission(PERMISSIONS.OPS_CUSTOMER_FULL), companyRouter);
+router.use('/company', isLoggedIn, checkPermission(PERMISSIONS.OPS_CUSTOMER_FULL), companyRouter);
 router.use('/category', isLoggedIn, checkPermission(PERMISSIONS.OPS_CATEGORY_FULL), categoryRouter);
 router.use('/customer-inquiry', isLoggedIn, checkPermission(PERMISSIONS.OPS_CUSTOMERINQUIRY_FULL), customerInquiryRouter);
 router.use('/uom', isLoggedIn, checkPermission(PERMISSIONS.OPS_UOM_FULL), uomRouter);
