@@ -4,7 +4,6 @@ const { Vehicle, Driver, Car, CarMake, CarModel, Company } = require('../models'
 const config = require('../config');
 const { Op } = require("sequelize");
 const VEHICLE_TYPES = require('../enums/vehicleTypes');
-const { fileUploading } = require('../services/fileUpload.service');
 
 /* GET vehicles listing. */
 router.get('/', async (req, res, next) => {

@@ -21,9 +21,9 @@ module.exports = (sequelize, DataTypes) => {
       Car.hasMany(models.Vehicle, {
         foreignKey: "carId"
       })
-      // Car.belongsTo(models.VehicleType, {
-      //   foreignKey: "vehicleTypeId"
-      // })
+      Car.belongsTo(models.VehicleType, {
+        foreignKey: "vehicleTypeId"
+      })
     }
   }
   Car.init({

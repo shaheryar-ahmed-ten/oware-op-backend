@@ -30,8 +30,6 @@
       "Wholesaler",
       "Retailer"
     ],
-    "vehicleBucket":"owaredevuploads/vehicle/",
-    "driverBucket":"owaredevuploads/driver/",
     "dbLogging": false
   }
 }

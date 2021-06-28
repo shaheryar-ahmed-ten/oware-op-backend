@@ -45,6 +45,6 @@ router.use('/inventory', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_F
 router.use('/driver', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), driverRouter);
 router.use('/vehicle', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleRouter);
 router.use('/ride', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), rideRouter);
-router.use('/imageUpload', isLoggedIn,imageUpload);
+router.use('/imageUpload', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL),imageUpload);
 
 module.exports = router;
