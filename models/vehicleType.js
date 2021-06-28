@@ -17,12 +17,21 @@ module.exports = (sequelize, DataTypes) => {
   }
   VehicleType.init(
     {
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: true }
+      },
       name: {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,
         validate: { notEmpty: { msg: "Please enter a make name" } },
       },
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+      }
     },
     {
       sequelize,
