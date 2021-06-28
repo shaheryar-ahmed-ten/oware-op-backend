@@ -59,6 +59,7 @@ router.put('/:id', async (req, res, next) => {
     vehicle.registrationNumber = req.body.registrationNumber;
     vehicle.companyId = req.body.companyId;
     vehicle.driverId = req.body.driverId;
+    vehicle.runningPaperId = req.body.runningPaperId;
     vehicle.carId = req.body.carId;
 
     try {
