@@ -8,8 +8,8 @@ const path = require('path')
 require('dotenv').config();
 const { File } = require('../models');
 const s3 = new aws.S3({
-    secretAccessKey: process.env.IAM_USER_SECRET,
-    accessKeyId: process.env.IAM_USER_KEY,
+    secretAccessKey: process.env.S3_UPLOAD_IAM_USER_SECRET,
+    accessKeyId: process.env.S3_UPLOAD_IAM_USER_KEY,
 });
 const { maxSize, bucket } = require('../config');
 
