@@ -12,9 +12,9 @@ router.get('/', async (req, res, next) => {
     let where = {
         // userId: req.userId
     };
-    if (req.query.search) where[Op.or] = ['registrationNumber','$Vendor.name$','$Car.CarMake.name$','$Car.CarModel.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+    if (req.query.search) where[Op.or] = ['registrationNumber', '$Vendor.name$', '$Car.CarMake.name$', '$Car.CarModel.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
     const response = await Vehicle.findAndCountAll({
-        include: [Driver, { model: Car, include: [CarMake, CarModel] },{model: Company, as: 'Vendor',}],
+        include: [Driver, { model: Car, include: [CarMake, CarModel] }, { model: Company, as: 'Vendor', }],
         order: [['updatedAt', 'DESC']],
         where, limit, offset
     });
@@ -58,10 +58,11 @@ router.put('/:id', async (req, res, next) => {
     vehicle.registrationNumber = req.body.registrationNumber;
     vehicle.companyId = req.body.companyId;
     vehicle.driverId = req.body.driverId;
+    vehicle.runningPaperId = req.body.runningPaperId;
     vehicle.carId = req.body.carId;
 
     try {
-        const response = await Vehicle.save();
+        const response = await vehicle.save();
         return res.json({
             success: true,
             message: 'vehicle updated',

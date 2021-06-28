@@ -30,6 +30,8 @@
       "Wholesaler",
       "Retailer"
     ],
+    "bucket":"owaredevuploads",
+    "maxUploadSize": 2097152,
     "dbLogging": false
   }
 }

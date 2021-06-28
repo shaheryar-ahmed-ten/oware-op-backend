@@ -2,35 +2,17 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Files', {
+    await queryInterface.createTable('VehicleTypes', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      bucket: {
+      name: {
         type: Sequelize.STRING,
         allowNull: false,
-      },
-      key: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      originalName: {
-        type: Sequelize.STRING,
-      },
-      encoding: {
-        type: Sequelize.STRING,
-      },
-      mimeType: {
-        type: Sequelize.STRING,
-      },
-      size: {
-        type: Sequelize.STRING,
-      },
-      location: {
-        type: Sequelize.STRING,
+        validate: { notEmpty: { msg: "Please enter name" } },
       },
       createdAt: {
         allowNull: false,
@@ -47,7 +29,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Files');
-
+    await queryInterface.dropTable('VehicleTypes');
   }
 };
