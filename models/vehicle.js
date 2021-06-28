@@ -10,16 +10,19 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Vehicle.belongsTo(models.User, {
+        foreignKey: "userId"
+      });
       Vehicle.hasOne(models.ProductOutward, {
         foreignKey: "vehicleId",
       });
       Vehicle.belongsTo(models.Driver, {
         foreignKey: "driverId"
-      }),
-        Vehicle.belongsTo(models.File, {
-          foreignKey: "runningPaperId",
-          as: 'runningPaper'
-        });
+      });
+      Vehicle.belongsTo(models.File, {
+        foreignKey: "runningPaperId",
+        as: 'runningPaper'
+      });
       Vehicle.belongsTo(models.File, {
         foreignKey: "routePermitId",
         as: 'routePermit'
@@ -34,11 +37,16 @@ module.exports = (sequelize, DataTypes) => {
       });
       Vehicle.belongsTo(models.Car, {
         foreignKey: "carId"
-      })
+      });
     }
   }
   Vehicle.init(
     {
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: true }
+      },
       companyId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -78,6 +86,17 @@ module.exports = (sequelize, DataTypes) => {
       routePermitId: {
         type: DataTypes.INTEGER,
         allowNull: true,
+      },
+      type: {
+        type: DataTypes.ENUM({
+          values: Object.keys(VEHICLE_TYPES),
+        }),
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please select vehicle type" } },
+      },
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
       }
     },
     {
