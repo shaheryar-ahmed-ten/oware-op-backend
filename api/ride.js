@@ -13,6 +13,7 @@ router.get('/', async (req, res, next) => {
   let where = {};
   if (req.query.search) where[Op.or] = ['pickupArea', 'dropoffArea', '$Vehicle.Car.CarModel.name$', '$Vehicle.Car.CarModel.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  if (req.query.status) where['status'] = req.query.status;
   const response = await Ride.findAndCountAll({
     include: [{
       model: User
