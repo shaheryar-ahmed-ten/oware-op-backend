@@ -1,6 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { Ride, User, Vehicle, Driver, Company, Area, Zone, City, Category } = require('../models')
+const {
+  Ride,
+  RideProduct,
+  User,
+  Vehicle,
+  Driver,
+  Company,
+  Area,
+  Zone,
+  City,
+  Category,
+  File
+} = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const RIDE_STATUS = require('../enums/rideStatus');
@@ -21,8 +33,8 @@ router.get('/', async (req, res, next) => {
       model: Company,
       as: 'Customer'
     }, {
-      model: Category,
-      as: 'ProductCategory'
+      model: RideProduct,
+      include: [Category, File]
     }, {
       model: Area,
       include: [{ model: Zone, include: [City] }],
@@ -53,11 +65,19 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   let message = 'New ride registered';
   let ride;
+  let products = req.body.products;
+  delete req.body.products;
   try {
     ride = await Ride.create({
       userId: req.userId,
       ...req.body
     });
+    products = await RideProduct.bulkCreate(products.map(product => ({
+      userId: req.userId,
+      ...product,
+      rideId: ride.id
+     })))
+
   } catch (err) {
     return res.json({
       success: false,

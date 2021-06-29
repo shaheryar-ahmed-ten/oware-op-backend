@@ -32,13 +32,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "customerId",
         as: 'Customer'
       });
-      Ride.belongsTo(models.File, {
-        foreignKey: "productManifestId",
-        as: 'ProductManifest'
-      });
-      Ride.belongsTo(models.Category, {
-        foreignKey: "productCategoryId",
-        as: 'ProductCategory'
+      Ride.hasMany(models.RideProduct, {
+        foreignKey: "rideId"
       });
     }
   }
@@ -51,10 +46,6 @@ module.exports = (sequelize, DataTypes) => {
     customerId: DataTypes.INTEGER,
     vehicleId: DataTypes.INTEGER,
     driverId: DataTypes.INTEGER,
-    productManifestId: { type: DataTypes.INTEGER, allowNull: true },
-    productCategoryId: DataTypes.INTEGER,
-    productName: DataTypes.STRING,
-    productQuantity: DataTypes.INTEGER,
     pickupDate: {
       type: DataTypes.DATE,
       allowNull: false,
