@@ -60,6 +60,8 @@ module.exports = (sequelize, DataTypes) => {
     pickupAreaId: DataTypes.INTEGER,
     dropoffAddress: DataTypes.STRING,
     dropoffAreaId: DataTypes.INTEGER,
+    cancellationReason: DataTypes.STRING,
+    cancellationComment: DataTypes.STRING,
     status: {
       type: DataTypes.ENUM({
         values: Object.keys(RIDE_STATUS)

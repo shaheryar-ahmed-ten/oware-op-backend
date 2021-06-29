@@ -76,7 +76,7 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...product,
       rideId: ride.id
-     })))
+    })))
 
   } catch (err) {
     return res.json({
@@ -104,7 +104,21 @@ router.put('/:id', async (req, res, next) => {
   ride.dropoffDate = req.body.dropoffDate;
   ride.pickupArea = req.body.pickupArea;
   ride.dropoffArea = req.body.dropoffArea;
+  ride.cancellationReason = req.body.cancellationReason;
+  ride.cancellationComment = req.body.cancellationComment;
   ride.status = req.body.status;
+
+  await RideProduct.destroy({ where: { rideId: ride.id } });
+  products = await RideProduct.bulkCreate(req.body.products.map(product => ({
+    userId: req.userId,
+    categoryId: product.categoryId,
+    name: product.name,
+    quantity: product.quantity,
+    rideId: ride.id
+  })));
+
+
+  console.log();
   try {
     const response = await ride.save();
     return res.json({
