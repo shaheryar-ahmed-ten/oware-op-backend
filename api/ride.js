@@ -161,7 +161,7 @@ router.get('/relations', async (req, res, next) => {
   });
 });
 
-router.get('/stats', async (req,res)=>{
+router.get('/stats', async (req, res) => {
   const rideStats = {
     total: await Ride.aggregate('id', 'count'),
     assigned: await Ride.aggregate('id', 'count', {
