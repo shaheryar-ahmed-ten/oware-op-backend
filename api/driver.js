@@ -58,8 +58,10 @@ router.put('/:id', async (req, res, next) => {
   driver.name = req.body.name;
   driver.companyId = req.body.companyId;
   driver.phone = req.body.phone;
-  driver.cnicNumber = req.body.cnicNumber
-  driver.drivingLicenseNumber = req.body.drivingLicenseNumber
+  driver.cnicNumber = req.body.cnicNumber;
+  driver.cnicId = req.body.cnicNumberId;
+  driver.drivingLicenseNumber = req.body.drivingLicenseNumber;
+  driver.drivingLicenseId = req.body.drivingLicenseId;
   try {
     const response = await driver.save();
     return res.json({
