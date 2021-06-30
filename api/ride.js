@@ -23,7 +23,7 @@ router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
-  if (req.query.search) where[Op.or] = ['pickupArea', 'dropoffArea', '$Vehicle.Car.CarModel.name$', '$Vehicle.Car.CarModel.name$','$Vehicle.registrationNumber$','id','$Customer.name$','$Driver.name$']
+  if (req.query.search) where[Op.or] = ['pickupArea', 'dropoffArea', '$Vehicle.Car.CarModel.name$', '$Vehicle.Car.CarModel.name$', '$Vehicle.registrationNumber$', 'id', '$Customer.name$', '$Driver.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   if (req.query.status) where['status'] = req.query.status;
   const response = await Ride.findAndCountAll({
@@ -148,8 +148,6 @@ router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
   const vehicles = await Vehicle.findAll({ where });
   const drivers = await Driver.findAll({ where });
-  const areas = await Area.findAll({ where });
-  const zones = await Zone.findAll({ where });
   const cities = await City.findAll({ where, include: [{ model: Zone, include: [Area] }] });
   const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
   const productCategories = await Category.findAll({ where });
@@ -157,7 +155,7 @@ router.get('/relations', async (req, res, next) => {
   res.json({
     success: true,
     message: 'respond with a resource',
-    vehicles, drivers, statuses, cities, zones, areas, companies, productCategories
+    vehicles, drivers, statuses, cities, companies, productCategories
   });
 });
 

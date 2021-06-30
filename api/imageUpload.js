@@ -25,7 +25,7 @@ router.post('/:folder', async (req, res, next) => {
             }
         }),
         limits: { fileSize: maxSize }
-    }).single('image')
+    }).single('image');
 
     upload(req, res, async function (err) {
         if (err instanceof multer.MulterError) {
@@ -37,8 +37,11 @@ router.post('/:folder', async (req, res, next) => {
             originalName: req.file.originalname,
             ...req.file
         })
-        res.json(file)
-    })
+        res.json({
+            success: true,
+            file
+        });
+    });
 })
 
 module.exports = router;

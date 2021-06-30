@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Vehicle, Driver, Car, CarMake, CarModel, Company } = require('../models')
+const { Vehicle, Driver, Car, CarMake, CarModel, Company, File } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const VEHICLE_TYPES = require('../enums/vehicleTypes');
@@ -15,7 +15,7 @@ router.get('/', async (req, res, next) => {
   };
   if (req.query.search) where[Op.or] = ['registrationNumber', '$Vendor.name$', '$Car.CarMake.name$', '$Car.CarModel.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Vehicle.findAndCountAll({
-    include: [Driver, { model: Car, include: [CarMake, CarModel] }, { model: Company, as: 'Vendor', }],
+    include: [Driver, { model: File, as: 'RoutePermit' }, { model: File, as: 'RunningPaper' }, { model: Car, include: [CarMake, CarModel] }, { model: Company, as: 'Vendor' }],
     order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
@@ -60,6 +60,7 @@ router.put('/:id', async (req, res, next) => {
   vehicle.registrationNumber = req.body.registrationNumber;
   vehicle.companyId = req.body.companyId;
   vehicle.driverId = req.body.driverId;
+  vehicle.routePermitId = req.body.routePermitId;
   vehicle.runningPaperId = req.body.runningPaperId;
   vehicle.carId = req.body.carId;
 

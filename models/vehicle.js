@@ -21,11 +21,11 @@ module.exports = (sequelize, DataTypes) => {
       });
       Vehicle.belongsTo(models.File, {
         foreignKey: "runningPaperId",
-        as: 'runningPaper'
+        as: 'RunningPaper'
       });
       Vehicle.belongsTo(models.File, {
         foreignKey: "routePermitId",
-        as: 'routePermit'
+        as: 'RoutePermit'
       });
       Vehicle.belongsTo(models.File, {
         foreignKey: "photoId",
