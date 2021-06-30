@@ -117,8 +117,6 @@ router.put('/:id', async (req, res, next) => {
     rideId: ride.id
   })));
 
-
-  console.log();
   try {
     const response = await ride.save();
     return res.json({
@@ -150,14 +148,16 @@ router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
   const vehicles = await Vehicle.findAll({ where });
   const drivers = await Driver.findAll({ where });
-  const areas = await Area.findAll({ where, include: [{ model: Zone, include: [City] }] });
+  const areas = await Area.findAll({ where });
+  const zones = await Zone.findAll({ where });
+  const cities = await City.findAll({ where, include: [{ model: Zone, include: [Area] }] });
   const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
   const productCategories = await Category.findAll({ where });
   const statuses = RIDE_STATUS;
   res.json({
     success: true,
     message: 'respond with a resource',
-    vehicles, drivers, statuses, areas, companies, productCategories
+    vehicles, drivers, statuses, cities, zones, areas, companies, productCategories
   });
 });
 

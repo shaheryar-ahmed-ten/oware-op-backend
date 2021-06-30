@@ -10,7 +10,8 @@ module.exports = {
     const makeIdMap = {};
     const modelIdMap = {};
 
-    data.forEach(async area => {
+    for (let index in data) {
+      let area = data[index];
       try {
         vehicleTypeIdMap[area.vehicleType] = vehicleTypeIdMap[area.vehicleType] || (await VehicleType.create({
           userId: defaultAdminUser.id,
@@ -33,7 +34,7 @@ module.exports = {
       } catch (err) {
         console.log(err);
       }
-    });
+    }
   },
 
   down: async (queryInterface, Sequelize) => {

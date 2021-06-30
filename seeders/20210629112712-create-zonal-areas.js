@@ -9,9 +9,9 @@ module.exports = {
     const cityIdMap = {};
     const zoneIdMap = {};
 
-    data.forEach(async area => {
+    for (let index in data) {
+      let area = data[index];
       try {
-
         cityIdMap[area.city] = cityIdMap[area.city] || (await City.create({
           userId: defaultAdminUser.id,
           name: area.city
@@ -30,7 +30,7 @@ module.exports = {
       } catch (err) {
         console.log(err);
       }
-    });
+    }
   },
 
   down: async (queryInterface, Sequelize) => {
