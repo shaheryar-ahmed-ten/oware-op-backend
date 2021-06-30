@@ -161,4 +161,36 @@ router.get('/relations', async (req, res, next) => {
   });
 });
 
+router.get('/stats', async (req,res)=>{
+  const rideStats = {
+    total: await Ride.aggregate('id', 'count'),
+    assigned: await Ride.aggregate('id', 'count', {
+      where: {
+        status: 'ASSIGNED'
+      }
+    }),
+    unassigned: await Ride.aggregate('id', 'count', {
+      where: {
+        status: 'UNASSIGNED'
+      }
+    }),
+    inProgress: await Ride.aggregate('id', 'count', {
+      where: {
+        status: 'INPROGRESS'
+      }
+    }),
+    completed: await Ride.aggregate('id', 'count', {
+      where: {
+        status: 'COMPLETED'
+      }
+    }),
+    cancelled: await Ride.aggregate('id', 'count', {
+      where: {
+        status: 'CANCELLED'
+      }
+    }),
+  }
+  return res.json(rideStats)
+})
+
 module.exports = router;
