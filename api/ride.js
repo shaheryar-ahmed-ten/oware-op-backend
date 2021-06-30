@@ -163,34 +163,15 @@ router.get('/relations', async (req, res, next) => {
 
 router.get('/stats', async (req, res) => {
   const rideStats = {
-    total: await Ride.aggregate('id', 'count'),
-    assigned: await Ride.aggregate('id', 'count', {
-      where: {
-        status: 'ASSIGNED'
-      }
-    }),
-    unassigned: await Ride.aggregate('id', 'count', {
-      where: {
-        status: 'UNASSIGNED'
-      }
-    }),
-    inProgress: await Ride.aggregate('id', 'count', {
-      where: {
-        status: 'INPROGRESS'
-      }
-    }),
-    completed: await Ride.aggregate('id', 'count', {
-      where: {
-        status: 'COMPLETED'
-      }
-    }),
-    cancelled: await Ride.aggregate('id', 'count', {
-      where: {
-        status: 'CANCELLED'
-      }
-    }),
+    TOTAL: await Ride.aggregate('id', 'count')
   }
-  return res.json(rideStats)
+  for (let index in Object.keys(RIDE_STATUS)) {
+    let status = Object.keys(RIDE_STATUS)[index];
+    stats[status] = await Ride.aggregate('id', 'count', { where: { status } })
+  }
+  return res.json({
+    success: true, rideStats
+  })
 })
 
 module.exports = router;
