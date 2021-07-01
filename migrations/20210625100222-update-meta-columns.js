@@ -12,6 +12,7 @@ module.exports = {
       type: Sequelize.BOOLEAN,
       defaultValue: true
     });
+    await queryInterface.removeColumn('Vehicles', 'type');
     await queryInterface.addColumn('Cars', 'isActive', {
       type: Sequelize.BOOLEAN,
       defaultValue: true
@@ -99,6 +100,9 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     await queryInterface.removeColumn('Drivers', 'isActive');
     await queryInterface.removeColumn('Vehicles', 'isActive');
+    await queryInterface.addColumn('Vehicles', 'type', {
+      type: Sequelize.STRING
+    });
     await queryInterface.removeColumn('Cars', 'isActive');
     await queryInterface.removeColumn('CarMakes', 'isActive');
     await queryInterface.removeColumn('CarModels', 'isActive');

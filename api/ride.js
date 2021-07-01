@@ -148,6 +148,8 @@ router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
   const vehicles = await Vehicle.findAll({ where });
   const drivers = await Driver.findAll({ where });
+  const areas = await Area.findAll({ where, include: [{ model: Zone, include: [City] }] });
+  const zones = await Zone.findAll({ where });
   const cities = await City.findAll({ where, include: [{ model: Zone, include: [Area] }] });
   const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
   const productCategories = await Category.findAll({ where });
@@ -155,7 +157,7 @@ router.get('/relations', async (req, res, next) => {
   res.json({
     success: true,
     message: 'respond with a resource',
-    vehicles, drivers, statuses, cities, companies, productCategories
+    vehicles, drivers, statuses, cities, zones, areas, companies, productCategories
   });
 });
 

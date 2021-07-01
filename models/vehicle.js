@@ -57,13 +57,6 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: { notEmpty: { msg: "Please enter driver name" } },
       },
-      type: {
-        type: DataTypes.ENUM({
-          values: Object.keys(VEHICLE_TYPES),
-        }),
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please select vehicle type" } },
-      },
       registrationNumber: {
         type: DataTypes.STRING,
         unique: true,
@@ -86,13 +79,6 @@ module.exports = (sequelize, DataTypes) => {
       routePermitId: {
         type: DataTypes.INTEGER,
         allowNull: true,
-      },
-      type: {
-        type: DataTypes.ENUM({
-          values: Object.keys(VEHICLE_TYPES),
-        }),
-        allowNull: false,
-        validate: { notEmpty: { msg: "Please select vehicle type" } },
       },
       isActive: {
         type: DataTypes.BOOLEAN,
