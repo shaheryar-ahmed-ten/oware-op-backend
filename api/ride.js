@@ -119,10 +119,6 @@ router.put('/:id', async (req, res, next) => {
     .filter(product => oldProductIds.indexOf(product.id) < 0)
     .map(product => product.id);
 
-  console.log(newProducts)
-  console.log(oldProductIds)
-  console.log(deletedProductIds)
-
   await RideProduct.destroy({ where: { id: { [Op.in]: deletedProductIds } } });
   await RideProduct.bulkCreate(newProducts.map(product => ({
     userId: req.userId,
