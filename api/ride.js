@@ -34,7 +34,7 @@ router.get('/', async (req, res, next) => {
       as: 'Customer'
     }, {
       model: RideProduct,
-      include: [Category, File]
+      include: [Category, { model: File, as: 'Manifest' }]
     }, {
       model: Area,
       include: [{ model: Zone, include: [City] }],
@@ -93,7 +93,10 @@ router.post('/', async (req, res, next) => {
 
 /* PUT update existing ride. */
 router.put('/:id', async (req, res, next) => {
-  let ride = await Ride.findOne({ where: { id: req.params.id } });
+  let ride = await Ride.findOne({
+    where: { id: req.params.id },
+    include: [RideProduct]
+  });
   if (!ride) return res.status(400).json({
     success: false,
     message: 'No ride found!'
@@ -108,10 +111,23 @@ router.put('/:id', async (req, res, next) => {
   ride.cancellationComment = req.body.cancellationComment;
   ride.status = req.body.status;
 
-  await RideProduct.destroy({ where: { rideId: ride.id } });
-  products = await RideProduct.bulkCreate(req.body.products.map(product => ({
+  let newProducts = req.body.products.filter(product => !product.id);
+  const oldProductIds = req.body.products
+    .filter(product => product.id)
+    .map(product => product.id);
+  const deletedProductIds = ride.RideProducts
+    .filter(product => oldProductIds.indexOf(product.id) < 0)
+    .map(product => product.id);
+
+  console.log(newProducts)
+  console.log(oldProductIds)
+  console.log(deletedProductIds)
+
+  await RideProduct.destroy({ where: { id: { [Op.in]: deletedProductIds } } });
+  await RideProduct.bulkCreate(newProducts.map(product => ({
     userId: req.userId,
     categoryId: product.categoryId,
+    manifestId: product.manifestId,
     name: product.name,
     quantity: product.quantity,
     rideId: ride.id

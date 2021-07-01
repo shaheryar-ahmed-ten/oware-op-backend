@@ -18,7 +18,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'categoryId'
       });
       RideProduct.belongsTo(models.File, {
-        foreignKey: "manifestId"
+        foreignKey: "manifestId",
+        as: 'Manifest'
       });
       RideProduct.belongsTo(models.Ride, {
         foreignKey: 'rideId'
