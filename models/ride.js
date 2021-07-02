@@ -68,7 +68,23 @@ module.exports = (sequelize, DataTypes) => {
       }),
       allowNull: false,
       defaultValue: RIDE_STATUS.UNASSIGNED
-    }
+    },
+    price: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    cost: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    customerDiscount: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    driverIncentive: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   }, {
     sequelize,
     paranoid: true,
