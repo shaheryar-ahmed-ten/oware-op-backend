@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['name', '$Company.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  if (req.query.search) where[Op.or] = ['name', '$Vendor.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Driver.findAndCountAll({
     include: [{ model: Company, as: 'Vendor' }],
     order: [['updatedAt', 'DESC']],
