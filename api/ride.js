@@ -180,6 +180,7 @@ router.get('/relations', async (req, res, next) => {
 
 router.get('/stats', async (req, res) => {
   const stats = [{
+    key: 'ALL',
     label: 'All',
     value: await Ride.aggregate('id', 'count')
   }];
@@ -187,6 +188,7 @@ router.get('/stats', async (req, res) => {
   for (let index in statusList) {
     let status = statusList[index];
     stats.push({
+      key: status,
       label: RIDE_STATUS[status],
       value: await Ride.aggregate('id', 'count', { where: { status } })
     })
