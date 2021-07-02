@@ -100,9 +100,9 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     await queryInterface.removeColumn('Drivers', 'isActive');
     await queryInterface.removeColumn('Vehicles', 'isActive');
-    // await queryInterface.addColumn('Vehicles', 'type', {
-    //   type: Sequelize.STRING
-    // });
+    await queryInterface.addColumn('Vehicles', 'type', {
+      type: Sequelize.STRING
+    });
     await queryInterface.removeColumn('Cars', 'isActive');
     await queryInterface.removeColumn('CarMakes', 'isActive');
     await queryInterface.removeColumn('CarModels', 'isActive');
