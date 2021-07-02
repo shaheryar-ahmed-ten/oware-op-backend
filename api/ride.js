@@ -110,6 +110,11 @@ router.put('/:id', async (req, res, next) => {
   ride.cancellationReason = req.body.cancellationReason;
   ride.cancellationComment = req.body.cancellationComment;
   ride.status = req.body.status;
+  ride.price = req.body.price;
+  ride.cost = req.body.cost;
+  ride.customerDiscount = req.body.customerDiscount;
+  ride.driverIncentive = req.body.driverIncentive;
+
 
   let newProducts = req.body.products.filter(product => !product.id);
   const oldProductIds = req.body.products
