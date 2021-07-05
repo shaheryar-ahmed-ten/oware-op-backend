@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Company, Driver } = require('../models')
+const { Company, Driver, File } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const { RELATION_TYPES } = require('../enums');
@@ -14,7 +14,16 @@ router.get('/', async (req, res, next) => {
   };
   if (req.query.search) where[Op.or] = ['name', '$Vendor.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Driver.findAndCountAll({
-    include: [{ model: Company, as: 'Vendor' }],
+    include: [{
+      model: Company,
+      as: 'Vendor'
+    }, {
+      model: File,
+      as: 'DrivingLicense'
+    }, {
+      model: File,
+      as: 'Cnic'
+    }],
     order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
