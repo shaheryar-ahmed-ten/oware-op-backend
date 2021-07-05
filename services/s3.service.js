@@ -12,11 +12,11 @@ module.exports.s3 = new aws.S3({
   accessKeyId: S3_UPLOAD_IAM_USER_KEY,
 });
 
-module.exports.previewFile = async(Bucket,Key) => {
+module.exports.previewFile = async (Bucket, Key) => {
   const url = await this.s3.getSignedUrl('getObject', {
     Bucket,
     Key,
     ResponseContentType: 'image/png'
   });
-  return url
+  return url;
 }

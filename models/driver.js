@@ -16,6 +16,9 @@ module.exports = (sequelize, DataTypes) => {
       Driver.hasMany(models.Vehicle, {
         foreignKey: "driverId"
       });
+      Driver.hasMany(models.Ride, {
+        foreignKey: "driverId"
+      });
       Driver.belongsTo(models.File, {
         foreignKey: "drivingLicenseId",
         as: 'DrivingLicense'

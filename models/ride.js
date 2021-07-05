@@ -1,7 +1,7 @@
-"use strict";
-const { Model } = require("sequelize");
-const config = require("../config");
-const { RIDE_STATUS } = require("../enums");
+'use strict';
+const { Model } = require('sequelize');
+const config = require('../config');
+const { RIDE_STATUS } = require('../enums');
 module.exports = (sequelize, DataTypes) => {
   class Ride extends Model {
     /**
@@ -12,28 +12,29 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Ride.belongsTo(models.User, {
-        foreignKey: "userId",
+        foreignKey: 'userId'
       });
       Ride.belongsTo(models.Vehicle, {
-        foreignKey: "vehicleId",
+        foreignKey: 'vehicleId'
       });
       Ride.belongsTo(models.Driver, {
-        foreignKey: "vehicleId",
+        foreignKey: 'driverId'
       });
       Ride.belongsTo(models.Area, {
-        foreignKey: "pickupAreaId",
+        foreignKey: 'pickupAreaId',
         as: 'PickupArea'
       });
       Ride.belongsTo(models.Area, {
-        foreignKey: "dropoffAreaId",
+        foreignKey: 'dropoffAreaId',
         as: 'DropoffArea'
       });
       Ride.belongsTo(models.Company, {
-        foreignKey: "customerId",
+        foreignKey: 'customerId',
         as: 'Customer'
       });
       Ride.hasMany(models.RideProduct, {
-        foreignKey: "rideId"
+        foreignKey: 'rideId',
+        sourceKey: 'id'
       });
     }
   }
@@ -43,9 +44,18 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: { notEmpty: true }
     },
-    customerId: DataTypes.INTEGER,
-    vehicleId: DataTypes.INTEGER,
-    driverId: DataTypes.INTEGER,
+    customerId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    vehicleId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    driverId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
     pickupDate: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -57,9 +67,15 @@ module.exports = (sequelize, DataTypes) => {
       validate: { notEmpty: { msg: 'Please select dropoff date' } }
     },
     pickupAddress: DataTypes.STRING,
-    pickupAreaId: DataTypes.INTEGER,
+    pickupAreaId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
     dropoffAddress: DataTypes.STRING,
-    dropoffAreaId: DataTypes.INTEGER,
+    dropoffAreaId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
     cancellationReason: DataTypes.STRING,
     cancellationComment: DataTypes.STRING,
     status: {
@@ -88,7 +104,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     paranoid: true,
-    modelName: "Ride",
+    modelName: 'Ride',
     timestamps: true,
   });
   return Ride;

@@ -11,6 +11,10 @@ const {
   Zone,
   City,
   Category,
+  Car,
+  CarModel,
+  CarMake,
+  VehicleType,
   File
 } = require('../models')
 const config = require('../config');
@@ -23,13 +27,24 @@ router.get('/', async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
-  if (req.query.search) where[Op.or] = ['pickupArea', 'dropoffArea', '$Vehicle.Car.CarModel.name$', '$Vehicle.Car.CarModel.name$', '$Vehicle.registrationNumber$', 'id', '$Customer.name$', '$Driver.name$']
-    .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  if (req.query.search)
+    where[Op.or] = [
+      '$PickupArea.name$',
+      '$DropoffArea.name$',
+      'pickupAddress',
+      'dropoffAddress',
+      '$Vehicle.Car.CarModel.name$',
+      '$Vehicle.registrationNumber$',
+      'id',
+      '$Customer.name$',
+      '$Driver.Vendor.name$',
+      '$Driver.name$'
+    ].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   if (req.query.status) where['status'] = req.query.status;
   const response = await Ride.findAndCountAll({
+    distinct: true,
+    subQuery: false,
     include: [{
-      model: User
-    }, {
       model: Company,
       as: 'Customer'
     }, {
@@ -45,7 +60,11 @@ router.get('/', async (req, res, next) => {
       as: 'DropoffArea'
     }, {
       model: Vehicle,
-      include: [{ model: Company, as: 'Vendor' }]
+      include: [{
+        model: Company, as: 'Vendor'
+      }, {
+        model: Car, include: [CarModel, CarMake, VehicleType]
+      }]
     }, {
       model: Driver,
       include: [{ model: Company, as: 'Vendor' }]
@@ -105,8 +124,10 @@ router.put('/:id', async (req, res, next) => {
   ride.driverId = req.body.driverId;
   ride.pickupDate = req.body.pickupDate;
   ride.dropoffDate = req.body.dropoffDate;
-  ride.pickupArea = req.body.pickupArea;
-  ride.dropoffArea = req.body.dropoffArea;
+  ride.pickupAreaId = req.body.pickupAreaId;
+  ride.pickupAddress = req.body.pickupAddress;
+  ride.dropoffAreaId = req.body.dropoffAreaId;
+  ride.dropoffAddress = req.body.dropoffAddress;
   ride.cancellationReason = req.body.cancellationReason;
   ride.cancellationComment = req.body.cancellationComment;
   ride.status = req.body.status;
