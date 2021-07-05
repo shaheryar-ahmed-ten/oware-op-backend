@@ -5,7 +5,7 @@ const multerS3 = require('multer-s3');
 const { v4 } = require('uuid');
 const path = require('path')
 const { File } = require('../models');
-const { s3, previewFile } = require('../services/s3.service');
+const { s3 } = require('../services/s3.service');
 const {
   maxSize,
   bucket
@@ -28,16 +28,13 @@ router.post('/:folder', async (req, res, next) => {
   }).single('image');
 
   upload(req, res, async function (err) {
-    delete req.file.location
     if (err) {
       res.status(400).json({
         success: false,
         message: err.message
       });
     }
-    const signedLocation = await previewFile(bucket,req.file.key)
     const file = await File.create({
-      location: signedLocation,
       originalName: req.file.originalname,
       ...req.file
     })

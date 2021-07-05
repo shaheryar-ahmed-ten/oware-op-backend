@@ -17,6 +17,7 @@ const driverRouter = require('./driver');
 const vehicleRouter = require('./vehicle');
 const rideRouter = require('./ride');
 const uploadRouter = require('./upload');
+const previewRouter = require('./preview');
 
 const { isLoggedIn, checkPermission } = require('../services/auth.service');
 const { PERMISSIONS } = require('../enums');
@@ -46,5 +47,6 @@ router.use('/driver', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL
 router.use('/vehicle', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleRouter);
 router.use('/ride', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), rideRouter);
 router.use('/upload', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), uploadRouter);
+router.use('/preview', previewRouter);
 
 module.exports = router;
