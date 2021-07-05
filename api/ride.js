@@ -163,7 +163,7 @@ router.delete('/:id', async (req, res, next) => {
 
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
-  const vehicles = await Vehicle.findAll({ where });
+  const vehicles = await Vehicle.findAll({ where, include: [Driver] });
   const drivers = await Driver.findAll({ where });
   const areas = await Area.findAll({ where, include: [{ model: Zone, include: [City] }] });
   const zones = await Zone.findAll({ where });
