@@ -61,6 +61,7 @@ router.put('/:relationType/:id', async (req, res, next) => {
   customer.name = req.body.name;
   customer.type = req.body.type;
   customer.relationType = req.body.relationType;
+  customer.internalIdForBusiness = req.body.internalIdForBusiness;
   customer.contactId = req.body.contactId;
   customer.notes = req.body.notes;
   customer.isActive = req.body.isActive;

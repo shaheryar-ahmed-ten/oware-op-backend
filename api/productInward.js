@@ -4,7 +4,7 @@ const { Inventory, ProductInward, User, Company, Warehouse, Product, UOM } = req
 const config = require('../config');
 const { Op } = require("sequelize");
 const authService = require('../services/auth.service');
-const { digitizie } = require('../services/common.services');
+const { digitize } = require('../services/common.services');
 
 /* GET productInwards listing. */
 router.get('/', async (req, res, next) => {
@@ -35,7 +35,7 @@ router.post('/', async (req, res, next) => {
     userId: req.userId,
     ...req.body
   });
-  const numberOfinternalIdForBusiness = digitizie(productInward.id, 6);
+  const numberOfinternalIdForBusiness = digitize(productInward.id, 6);
   productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
   productInward.save();
   let inventory = await Inventory.findOne({
