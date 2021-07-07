@@ -68,7 +68,7 @@ router.put('/:id', async (req, res, next) => {
   driver.companyId = req.body.companyId;
   driver.phone = req.body.phone;
   driver.cnicNumber = req.body.cnicNumber;
-  driver.cnicId = req.body.cnicNumberId;
+  driver.cnicId = req.body.cnicId;
   driver.drivingLicenseNumber = req.body.drivingLicenseNumber;
   driver.drivingLicenseId = req.body.drivingLicenseId;
   try {
