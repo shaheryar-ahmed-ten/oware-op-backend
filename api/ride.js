@@ -48,8 +48,10 @@ router.get('/', async (req, res, next) => {
       model: Company,
       as: 'Customer'
     }, {
+      model: File, as: 'Manifest'
+    }, {
       model: RideProduct,
-      include: [Category, { model: File, as: 'Manifest' }]
+      include: [Category]
     }, {
       model: Area,
       include: [{ model: Zone, include: [City] }],
@@ -126,6 +128,7 @@ router.put('/:id', async (req, res, next) => {
   ride.dropoffDate = req.body.dropoffDate;
   ride.pickupAreaId = req.body.pickupAreaId;
   ride.pickupAddress = req.body.pickupAddress;
+  ride.manifestId = req.body.manifestId;
   ride.dropoffAreaId = req.body.dropoffAreaId;
   ride.dropoffAddress = req.body.dropoffAddress;
   ride.cancellationReason = req.body.cancellationReason;
@@ -149,7 +152,6 @@ router.put('/:id', async (req, res, next) => {
   await RideProduct.bulkCreate(newProducts.map(product => ({
     userId: req.userId,
     categoryId: product.categoryId,
-    manifestId: product.manifestId,
     name: product.name,
     quantity: product.quantity,
     rideId: ride.id

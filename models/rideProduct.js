@@ -17,10 +17,6 @@ module.exports = (sequelize, DataTypes) => {
       RideProduct.belongsTo(models.Category, {
         foreignKey: 'categoryId'
       });
-      RideProduct.belongsTo(models.File, {
-        foreignKey: "manifestId",
-        as: 'Manifest'
-      });
       RideProduct.belongsTo(models.Ride, {
         foreignKey: 'rideId'
       });
@@ -51,11 +47,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: { msg: 'Category cannot be empty' } }
-    },
-    manifestId: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
+    }
   }, {
     sequelize,
     paranoid: true,
