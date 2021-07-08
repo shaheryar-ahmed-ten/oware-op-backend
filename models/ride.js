@@ -64,6 +64,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    internalIdForBusiness: DataTypes.STRING,
     pickupDate: {
       type: DataTypes.DATE,
       allowNull: false,

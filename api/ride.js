@@ -129,6 +129,7 @@ router.put('/:id', async (req, res, next) => {
   ride.pickupAreaId = req.body.pickupAreaId;
   ride.pickupAddress = req.body.pickupAddress;
   ride.manifestId = req.body.manifestId;
+  ride.internalIdForBusiness = req.body.internalIdForBusiness;
   ride.dropoffAreaId = req.body.dropoffAreaId;
   ride.dropoffAddress = req.body.dropoffAddress;
   ride.cancellationReason = req.body.cancellationReason;
