@@ -1,6 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Company, Warehouse, Product, UOM } = require('../models')
+const { Inventory,
+  ProductOutward,
+  Vehicle,
+  Car,
+  CarMake,
+  CarModel,
+  DispatchOrder,
+  ProductInward,
+  Company,
+  Warehouse,
+  Product,
+  UOM
+} = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const { digitize } = require('../services/common.services');
@@ -24,7 +36,8 @@ router.get('/', async (req, res, next) => {
           include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
         }]
       }, {
-        model: Vehicle
+        model: Vehicle,
+        include: [{ model: Car, include: [CarMake, CarModel] }]
       }
     ],
     order: [['updatedAt', 'DESC']],
@@ -128,11 +141,11 @@ router.get('/relations', async (req, res, next) => {
     }]
   });
 
-  const vehicle = await Vehicle.findAll();
+  const vehicles = await Vehicle.findAll({ where: { isActive: true } });
   res.json({
     success: true,
     message: 'respond with a resource',
-    dispatchOrders, vehicle
+    dispatchOrders, vehicles
   });
 });
 

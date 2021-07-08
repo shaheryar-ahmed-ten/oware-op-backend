@@ -21,6 +21,7 @@ const config = require('../config');
 const { Op } = require("sequelize");
 const RIDE_STATUS = require('../enums/rideStatus');
 const { RELATION_TYPES } = require('../enums');
+const { digitize } = require('../services/common.services');
 
 /* GET rides listing. */
 router.get('/', async (req, res, next) => {
@@ -97,8 +98,9 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...product,
       rideId: ride.id
-    })))
-
+    })));
+    ride.internalIdForBusiness = digitize(ride.id, 6);
+    ride.save();
   } catch (err) {
     return res.json({
       success: false,
@@ -129,7 +131,7 @@ router.put('/:id', async (req, res, next) => {
   ride.pickupAreaId = req.body.pickupAreaId;
   ride.pickupAddress = req.body.pickupAddress;
   ride.manifestId = req.body.manifestId;
-  ride.internalIdForBusiness = req.body.internalIdForBusiness;
+  // ride.internalIdForBusiness = req.body.internalIdForBusiness;
   ride.dropoffAreaId = req.body.dropoffAreaId;
   ride.dropoffAddress = req.body.dropoffAddress;
   ride.cancellationReason = req.body.cancellationReason;
