@@ -18,7 +18,11 @@ router.get('/', async (req, res, next) => {
   const response = await DispatchOrder.findAndCountAll({
     include: [{
       model: Inventory,
-      include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+      include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
+    }, {
+      model: Product,
+      as: 'Products',
+      include: [{ model: UOM }]
     }],
     order: [['updatedAt', 'DESC']],
     where, limit, offset
@@ -110,7 +114,12 @@ router.delete('/:id', async (req, res, next) => {
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  const customers = await Company.findAll({ where });
+  const customers = await Company.findAll({
+    where: {
+      ...where,
+      relationType: RELATION_TYPES.CUSTOMER
+    }
+  });
   res.json({
     success: true,
     message: 'respond with a resource',

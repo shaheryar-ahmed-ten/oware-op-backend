@@ -15,7 +15,13 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId'
       });
       ProductInward.belongsTo(models.Product, {
-        foreignKey: 'productId'
+        foreignKey: 'productId',
+        as: 'Product'
+      });
+      ProductInward.belongsToMany(models.Product, {
+        through: models.InwardGroup,
+        foreignKey: 'inwardId',
+        as: 'Products'
       });
       ProductInward.belongsTo(models.Warehouse, {
         foreignKey: 'warehouseId'
@@ -51,9 +57,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: { notEmpty: { msg: 'Company cannot be empty' } }
     },
-    referenceId:{
+    referenceId: {
       type: DataTypes.STRING(30),
-      allowNull:true,
+      allowNull: true,
     },
     warehouseId: {
       type: DataTypes.INTEGER,
@@ -64,6 +70,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     paranoid: true,
     modelName: 'ProductInward',
+    sync: true
   });
 
   return ProductInward;
