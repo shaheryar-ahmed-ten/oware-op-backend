@@ -11,11 +11,11 @@ module.exports = {
       quantity: {
         type: Sequelize.INTEGER
       },
-      productId: {
+      inventoryId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Products', // name of Target model
+          model: 'Inventories', // name of Target model
           key: 'id', // key in Target model that we're referencing
         },
         onUpdate: 'CASCADE',
@@ -25,7 +25,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'ProductOutwards', // name of Target model
+          model: 'DispatchOrders', // name of Target model
           key: 'id', // key in Target model that we're referencing
         },
         onUpdate: 'CASCADE',

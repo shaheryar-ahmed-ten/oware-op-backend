@@ -5,6 +5,7 @@ const config = require('../config');
 const { Op, fn, col } = require("sequelize");
 const authService = require('../services/auth.service');
 const { digitize } = require('../services/common.services');
+const { RELATION_TYPES } = require('../enums');
 
 /* GET dispatchOrders listing. */
 router.get('/', async (req, res, next) => {
@@ -20,9 +21,9 @@ router.get('/', async (req, res, next) => {
       model: Inventory,
       include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
     }, {
-      model: Product,
-      as: 'Products',
-      include: [{ model: UOM }]
+      model: Inventory,
+      as: 'Inventories',
+      include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse]
     }],
     order: [['updatedAt', 'DESC']],
     where, limit, offset
