@@ -45,12 +45,9 @@ router.post('/', async (req, res, next) => {
     ...req.body
   });
 
-  console.log(req.body.products.map(product => ({
-    userId: req.userId,
-    inwardId: productInward.id,
-    productId: product.id,
-    quantity: product.quantity
-  })));
+  const numberOfinternalIdForBusiness = digitize(productInward.id, 6);
+  productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
+  await productInward.save();
 
   await InwardGroup.bulkCreate(req.body.products.map(product => ({
     userId: req.userId,
@@ -59,35 +56,34 @@ router.post('/', async (req, res, next) => {
     quantity: product.quantity
   })));
 
-  const numberOfinternalIdForBusiness = digitize(productInward.id, 6);
-  productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
-  productInward.save();
-  let inventory = await Inventory.findOne({
-    where: {
-      customerId: req.body.customerId,
-      warehouseId: req.body.warehouseId,
-      productId: req.body.productId
-    }
-  });
-  try {
-    if (!inventory) await Inventory.create({
-      customerId: req.body.customerId,
-      warehouseId: req.body.warehouseId,
-      productId: req.body.productId,
-      availableQuantity: req.body.quantity,
-      referenceId: req.body.referenceId,
-      totalInwardQuantity: req.body.quantity
-    })
-    else {
-      inventory.availableQuantity += (+req.body.quantity);
-      inventory.totalInwardQuantity += (+req.body.quantity);
-      inventory.save();
-    }
-  } catch (err) {
-    return res.json({
-      success: false,
-      message: err.message
+  for (let product of req.body.products) {
+    let inventory = await Inventory.findOne({
+      where: {
+        customerId: req.body.customerId,
+        warehouseId: req.body.warehouseId,
+        productId: product.id
+      }
     });
+    try {
+      if (!inventory) Inventory.create({
+        customerId: req.body.customerId,
+        warehouseId: req.body.warehouseId,
+        productId: product.id,
+        availableQuantity: product.quantity,
+        referenceId: req.body.referenceId,
+        totalInwardQuantity: product.quantity
+      })
+      else {
+        inventory.availableQuantity += (+product.quantity);
+        inventory.totalInwardQuantity += (+product.quantity);
+        inventory.save();
+      }
+    } catch (err) {
+      return res.json({
+        success: false,
+        message: err.message
+      });
+    }
   }
   res.json({
     success: true,

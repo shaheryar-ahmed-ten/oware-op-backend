@@ -39,34 +39,44 @@ router.get('/', async (req, res, next) => {
 /* POST create new dispatchOrder. */
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
+  req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
 
+  dispatchOrder = await DispatchOrder.create({
+    userId: req.userId,
+    ...req.body
+  });
+  const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
+  dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+  dispatchOrder.save();
 
-  let inventory = await Inventory.findByPk(req.body.inventoryId);
-  if (!inventory && !req.body.inventoryId) return res.json({
-    success: false,
-    message: 'Inventory is not available'
-  });
-  if (req.body.quantity > inventory.availableQuantity) return res.json({
-    success: false,
-    message: 'Cannot create orders above available quantity'
-  });
-  let dispatchOrder;
-  try {
-    dispatchOrder = await DispatchOrder.create({
-      userId: req.userId,
-      ...req.body
-    });
-    const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
-    dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
-    dispatchOrder.save();
-    inventory.committedQuantity += (+req.body.quantity);
-    inventory.availableQuantity -= (+req.body.quantity);
-    inventory.save();
-  } catch (err) {
-    return res.json({
+  await OrderGroup.bulkCreate(req.body.inventories.map(inventory => ({
+    userId: req.userId,
+    orderId: inventoryInward.id,
+    inventoryId: inventory.id,
+    quantity: inventory.quantity
+  })));
+
+  for (let _inventory of req.body.inventories) {
+    let inventory = await Inventory.findByPk(_inventory.id);
+    if (!inventory && !_inventory.id) return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: 'Inventory is not available'
     });
+    if (_inventory.quantity > inventory.availableQuantity) return res.json({
+      success: false,
+      message: 'Cannot create orders above available quantity'
+    });
+    let dispatchOrder;
+    try {
+      inventory.committedQuantity += (+_inventory.quantity);
+      inventory.availableQuantity -= (+_inventory.quantity);
+      inventory.save();
+    } catch (err) {
+      return res.json({
+        success: false,
+        message: err.errors.pop().message
+      });
+    }
   }
   res.json({
     success: true,
