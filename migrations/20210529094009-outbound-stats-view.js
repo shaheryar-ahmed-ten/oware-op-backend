@@ -11,8 +11,9 @@ module.exports = {
           Inventories.warehouseId,
           Inventories.productId,
           Product.name AS product,
-          Product.weight AS weight,
-          Product.dimensionsCBM AS dimensionsCBM,
+          PO.quantity * Product.weight AS weight,
+          PO.quantity * Product.dimensionsCBM AS dimensionsCBM,
+          COALESCE(PO.quantity, 0) AS productOutwardQuantity,
           UOM.name AS uom,
           Warehouse.name AS warehouse,
           Company.name AS customer,
@@ -23,10 +24,9 @@ module.exports = {
           DO.quantity AS dispatchOrderQuantity,
           PO.vehicleId AS vehicleId,
           PO.id AS productOutwardId,
-          COALESCE(PO.quantity, 0) AS productOutwardQuantity,
           DO.createdAt AS dispatchOrderCreatedAt,
-          PO.createdAt AS deletedAt,
-          PO.createdAt AS updatedAt,
+          PO.deletedAt AS deletedAt,
+          PO.updatedAt AS updatedAt,
           PO.createdAt AS createdAt
           FROM ProductOutwards AS PO
           RIGHT JOIN DispatchOrders AS DO ON PO.dispatchOrderId = DO.id

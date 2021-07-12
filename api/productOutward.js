@@ -1,9 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, ProductOutward, Vehicle, DispatchOrder, ProductInward, User, Company, Warehouse, Product, UOM } = require('../models')
+const { Inventory,
+  ProductOutward,
+  Vehicle,
+  Car,
+  CarMake,
+  CarModel,
+  DispatchOrder,
+  ProductInward,
+  Company,
+  Warehouse,
+  Product,
+  UOM
+} = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
-const { digitizie } = require('../services/common.services');
+const { digitize } = require('../services/common.services');
 
 
 /* GET productOutwards listing. */
@@ -24,10 +36,11 @@ router.get('/', async (req, res, next) => {
           include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
         }]
       }, {
-        model: Vehicle
+        model: Vehicle,
+        include: [{ model: Car, include: [CarMake, CarModel] }]
       }
     ],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
   res.json({
@@ -56,21 +69,12 @@ router.post('/', async (req, res, next) => {
     message: 'Cannot dispatch above available inventory quantity'
   })
   let productOutward;
-  let vehicle;
-  vehicle = await Vehicle.findOne({ where: { [Op.and]: [{ type: req.body.vehicle.type }, { number: req.body.vehicle.number }] } })
   try {
-    if (!vehicle) {
-      vehicle = await Vehicle.create({
-        type: req.body.vehicle.type,
-        number: req.body.vehicle.number.toUpperCase()
-      })
-    }
     productOutward = await ProductOutward.create({
       userId: req.userId,
-      vehicleId: vehicle.id,
       ...req.body
     });
-    const numberOfInternalIdForBusiness = digitizie(productOutward.id, 6);
+    const numberOfInternalIdForBusiness = digitize(productOutward.id, 6);
     productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
     productOutward.save();
     dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
@@ -137,11 +141,11 @@ router.get('/relations', async (req, res, next) => {
     }]
   });
 
-  const vehicleTypes = config.vehicleTypes;
+  const vehicles = await Vehicle.findAll({ where: { isActive: true } });
   res.json({
     success: true,
     message: 'respond with a resource',
-    dispatchOrders, vehicleTypes
+    dispatchOrders, vehicles
   });
 });
 

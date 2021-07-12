@@ -18,7 +18,7 @@ router.get('/', async (req, res, next) => {
 
   const response = await Inventory.findAndCountAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
   res.json({
@@ -44,7 +44,7 @@ router.get('/export', async (req, res, next) => {
 
   let response = await Inventory.findAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where
   });
 
@@ -65,7 +65,7 @@ router.get('/export', async (req, res, next) => {
   where = {};
   response = await Product.findAll({
     include: [{ model: UOM }, { model: Category }, { model: Brand }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where
   });
 
@@ -86,7 +86,7 @@ router.get('/export', async (req, res, next) => {
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
   response = await Company.findAll({
     include: [{ model: User, as: 'Contact' }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where
   });
 
@@ -106,7 +106,7 @@ router.get('/export', async (req, res, next) => {
 
   where = {};
   response = await Warehouse.findAll({
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where
   });
 
@@ -126,7 +126,7 @@ router.get('/export', async (req, res, next) => {
   worksheet.columns = getColumnsConfig(['CUSTOMER', 'PRODUCT', 'WAREHOUSE', 'UOM', 'QUANTITY', 'DATE']);
   response = await ProductInward.findAll({
     include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where
   });
 
@@ -148,7 +148,7 @@ router.get('/export', async (req, res, next) => {
       model: Inventory,
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where
   });
 
@@ -176,7 +176,7 @@ router.get('/export', async (req, res, next) => {
           include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
         }]
       }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where
   });
 

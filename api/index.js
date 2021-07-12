@@ -13,6 +13,11 @@ const dispatchOrderRouter = require('./dispatchOrder');
 const productOutwardRouter = require('./productOutward');
 const inventoryRouter = require('./inventory');
 const customerInquiryRouter = require('./customerInquiry');
+const driverRouter = require('./driver');
+const vehicleRouter = require('./vehicle');
+const rideRouter = require('./ride');
+const uploadRouter = require('./upload');
+const previewRouter = require('./preview');
 
 const { isLoggedIn, checkPermission } = require('../services/auth.service');
 const { PERMISSIONS } = require('../enums');
@@ -27,7 +32,7 @@ router.get('/', (req, res, next) => {
 
 router.use('/user', userRouter);
 router.use('/public', publicRouter);
-router.use('/customer', isLoggedIn, checkPermission(PERMISSIONS.OPS_CUSTOMER_FULL), companyRouter);
+router.use('/company', isLoggedIn, checkPermission(PERMISSIONS.OPS_CUSTOMER_FULL), companyRouter);
 router.use('/category', isLoggedIn, checkPermission(PERMISSIONS.OPS_CATEGORY_FULL), categoryRouter);
 router.use('/customer-inquiry', isLoggedIn, checkPermission(PERMISSIONS.OPS_CUSTOMERINQUIRY_FULL), customerInquiryRouter);
 router.use('/uom', isLoggedIn, checkPermission(PERMISSIONS.OPS_UOM_FULL), uomRouter);
@@ -38,5 +43,10 @@ router.use('/product-inward', isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUC
 router.use('/dispatch-order', isLoggedIn, checkPermission(PERMISSIONS.OPS_DISPATCHORDER_FULL), dispatchOrderRouter);
 router.use('/product-outward', isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCTOUTWARD_FULL), productOutwardRouter);
 router.use('/inventory', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), inventoryRouter);
+router.use('/driver', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), driverRouter);
+router.use('/vehicle', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleRouter);
+router.use('/ride', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), rideRouter);
+router.use('/upload', isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), uploadRouter);
+router.use('/preview', previewRouter);
 
 module.exports = router;

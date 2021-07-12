@@ -5,7 +5,7 @@ const { User, Role, PermissionAccess, Permission, Company } = require('../models
 const config = require('../config');
 const { isLoggedIn, checkPermission, isSuperAdmin } = require('../services/auth.service');
 const { Op } = require("sequelize");
-const { PERMISSIONS, PORTALS } = require('../enums');
+const { PERMISSIONS, PORTALS, RELATION_TYPES } = require('../enums');
 const PORTALS_LABELS = require('../enums/portals');
 
 async function updateUser(req, res, next) {
@@ -51,7 +51,7 @@ router.get('/', isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (r
       model: Company,
       as: 'Company'
     }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     limit, offset, where
   });
   res.json({
@@ -151,7 +151,7 @@ router.get('/relations', isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL),
   const portals = Object.keys(PORTALS_LABELS).map(portal => ({ id: portal, label: PORTALS_LABELS[portal] }));
   let where = {};
   if (!isSuperAdmin(req)) where.contactId = req.userId;
-  const customers = await Company.findAll({ where });
+  const customers = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
   res.json({
     success: true,
     message: 'respond with a resource',

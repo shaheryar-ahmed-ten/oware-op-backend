@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const fs = require('fs')
+const morganBody = require('morgan-body')
 
 
 // const { isLoggedIn, checkPermission } = require('./services/auth.service');
@@ -14,8 +15,11 @@ const apiRouter = require('./api');
 const app = express();
 
 var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
-// setup the logger
-app.use(logger('combined', { stream: accessLogStream }))
+morganBody(app, {
+  // .. other settings
+  noColors: true,
+  stream: accessLogStream,
+});
 
 // view engine setup (not required as we're only serving rest APIs)
 // app.set('views', path.join(__dirname, 'views'));

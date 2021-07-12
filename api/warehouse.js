@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
   if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Warehouse.findAndCountAll({
     include: [{ model: User }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
   res.json({

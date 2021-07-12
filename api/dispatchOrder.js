@@ -4,7 +4,7 @@ const { Inventory, DispatchOrder, Company, Warehouse, Product, UOM } = require('
 const config = require('../config');
 const { Op, fn, col } = require("sequelize");
 const authService = require('../services/auth.service');
-const { digitizie } = require('../services/common.services');
+const { digitize } = require('../services/common.services');
 
 /* GET dispatchOrders listing. */
 router.get('/', async (req, res, next) => {
@@ -20,7 +20,7 @@ router.get('/', async (req, res, next) => {
       model: Inventory,
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
   res.json({
@@ -51,7 +51,7 @@ router.post('/', async (req, res, next) => {
       userId: req.userId,
       ...req.body
     });
-    const numberOfInternalIdForBusiness = digitizie(dispatchOrder.id, 6);
+    const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
     dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
     dispatchOrder.save();
     inventory.committedQuantity += (+req.body.quantity);

@@ -30,13 +30,8 @@
       "Wholesaler",
       "Retailer"
     ],
-    "vehicleTypes": [
-      "Bike",
-      "Mini Truck",
-      "Light Truck",
-      "Heavy Truck",
-      "Refregerated Truck"
-    ],
+    "bucket":"owaredevuploads",
+    "maxUploadSize": 2097152,
     "dbLogging": false
   }
 }
