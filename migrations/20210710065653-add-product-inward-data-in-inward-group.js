@@ -3,7 +3,7 @@ const { ProductInward } = require('../models');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const inwardGroup= []
+    const inwardGroup = [];
     const productInwards = await ProductInward.findAll();
     productInwards.forEach(element => {
       const inwardObj = {
@@ -13,12 +13,11 @@ module.exports = {
         quantity: element.quantity,
         createdAt: element.createdAt,
         updatedAt: element.updatedAt
-      }
-      inwardGroup.push(inwardObj)
+      };
+      inwardGroup.push(inwardObj);
     });
-    await queryInterface.bulkInsert('InwardGroups', 
-    inwardGroup
-    );
+    if (productInwards.length)
+      await queryInterface.bulkInsert('InwardGroups', inwardGroup);
   },
 
   down: async (queryInterface, Sequelize) => {
