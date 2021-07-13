@@ -39,6 +39,7 @@ router.get('/', async (req, res, next) => {
 /* POST create new dispatchOrder. */
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
+  let dispatchOrder;
   req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
 
   dispatchOrder = await DispatchOrder.create({
@@ -66,7 +67,6 @@ router.post('/', async (req, res, next) => {
       success: false,
       message: 'Cannot create orders above available quantity'
     });
-    let dispatchOrder;
     try {
       inventory.committedQuantity += (+_inventory.quantity);
       inventory.availableQuantity -= (+_inventory.quantity);

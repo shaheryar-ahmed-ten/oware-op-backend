@@ -36,6 +36,10 @@ router.get('/', async (req, res, next) => {
           include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
         }]
       }, {
+        model: Inventory,
+        as: 'Inventories',
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+      }, {
         model: Vehicle,
         include: [{ model: Car, include: [CarMake, CarModel] }]
       }

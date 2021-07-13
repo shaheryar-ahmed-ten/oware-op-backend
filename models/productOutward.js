@@ -20,10 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       ProductOutward.belongsTo(models.DispatchOrder, {
         foreignKey: 'dispatchOrderId'
       });
-      ProductOutward.belongsToMany(models.Product, {
+      ProductOutward.belongsToMany(models.Inventory, {
         through: models.OutwardGroup,
         foreignKey: 'outwardId',
-        as: 'Products'
+        as: 'Inventories'
       });
     };
   };

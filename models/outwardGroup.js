@@ -14,8 +14,8 @@ module.exports = (sequelize, DataTypes) => {
       OutwardGroup.belongsTo(models.User, {
         foreignKey: 'userId'
       });
-      OutwardGroup.belongsTo(models.Product, {
-        foreignKey: 'productId'
+      OutwardGroup.belongsTo(models.Inventory, {
+        foreignKey: 'inventoryId'
       });
       OutwardGroup.belongsTo(models.ProductOutward, {
         foreignKey: 'outwardId'
@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
         isInt: { msg: 'Please enter quantity' }
       }
     },
-    productId: {
+    inventoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: { msg: 'Product cannot be empty' } }
