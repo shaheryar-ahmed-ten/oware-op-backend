@@ -16,7 +16,7 @@ module.exports = {
     });
     await queryInterface.removeColumn('RideProducts', 'manifestId');
   },
-  down: async (queryInterface) => {
+  down: async (queryInterface, Sequelize) => {
     await queryInterface.removeColumn('Rides', 'manifestId');
     await queryInterface.addColumn('RideProducts', 'manifestId', {
       type: Sequelize.INTEGER,

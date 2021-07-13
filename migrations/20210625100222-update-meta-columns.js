@@ -31,7 +31,7 @@ module.exports = {
     });
     await queryInterface.addColumn('Drivers', 'userId', {
       type: Sequelize.INTEGER,
-      defaultValue: defaultAdminUser.id,
+      defaultValue: (defaultAdminUser || { id: 0}).id,
       allowNull: false,
       references: {
         model: 'Users', // name of Target model
@@ -42,7 +42,7 @@ module.exports = {
     });
     await queryInterface.addColumn('Vehicles', 'userId', {
       type: Sequelize.INTEGER,
-      defaultValue: defaultAdminUser.id,
+      defaultValue: (defaultAdminUser || { id: 0}).id,
       allowNull: false,
       references: {
         model: 'Users', // name of Target model
@@ -53,7 +53,7 @@ module.exports = {
     });
     await queryInterface.addColumn('Cars', 'userId', {
       type: Sequelize.INTEGER,
-      defaultValue: defaultAdminUser.id,
+      defaultValue: (defaultAdminUser || { id: 0}).id,
       allowNull: false,
       references: {
         model: 'Users', // name of Target model
@@ -64,7 +64,7 @@ module.exports = {
     });
     await queryInterface.addColumn('CarMakes', 'userId', {
       type: Sequelize.INTEGER,
-      defaultValue: defaultAdminUser.id,
+      defaultValue: (defaultAdminUser || { id: 0}).id,
       allowNull: false,
       references: {
         model: 'Users', // name of Target model
@@ -75,7 +75,7 @@ module.exports = {
     });
     await queryInterface.addColumn('CarModels', 'userId', {
       type: Sequelize.INTEGER,
-      defaultValue: defaultAdminUser.id,
+      defaultValue: (defaultAdminUser || { id: 0}).id,
       allowNull: false,
       references: {
         model: 'Users', // name of Target model
@@ -86,7 +86,7 @@ module.exports = {
     });
     await queryInterface.addColumn('VehicleTypes', 'userId', {
       type: Sequelize.INTEGER,
-      defaultValue: defaultAdminUser.id,
+      defaultValue: (defaultAdminUser || { id: 0}).id,
       allowNull: false,
       references: {
         model: 'Users', // name of Target model
