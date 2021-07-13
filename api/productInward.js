@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, ProductInward, InwardGroup, User, Company, Warehouse, Product, UOM } = require('../models')
+const { Inventory, ProductInward, InwardGroup, User, Company, Warehouse, Product, UOM, sequelize } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const authService = require('../services/auth.service');
@@ -40,51 +40,46 @@ router.post('/', async (req, res, next) => {
   // Hack for backward compatibility
   req.body.products = req.body.products || [{ id: req.body.productId, quantity: req.body.quantity }];
 
-  productInward = await ProductInward.create({
-    userId: req.userId,
-    ...req.body
-  });
+  let t1 = await sequelize.transaction(async transaction => {
 
-  const numberOfinternalIdForBusiness = digitize(productInward.id, 6);
-  productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
-  await productInward.save();
+    productInward = await ProductInward.create({
+      userId: req.userId,
+      ...req.body
+    }, { transaction });
 
-  await InwardGroup.bulkCreate(req.body.products.map(product => ({
-    userId: req.userId,
-    inwardId: productInward.id,
-    productId: product.id,
-    quantity: product.quantity
-  })));
+    const numberOfinternalIdForBusiness = digitize(productInward.id, 6);
+    productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
+    await productInward.save();
 
-  for (let product of req.body.products) {
-    let inventory = await Inventory.findOne({
+    await InwardGroup.bulkCreate(req.body.products.map(product => ({
+      userId: req.userId,
+      inwardId: productInward.id,
+      productId: product.id,
+      quantity: product.quantity
+    })), { transaction });
+
+    return await Promise.all(req.body.products.map(product => Inventory.findOne({
       where: {
         customerId: req.body.customerId,
         warehouseId: req.body.warehouseId,
         productId: product.id
       }
-    });
-    try {
-      if (!inventory) Inventory.create({
+    }).then(inventory => {
+      if (!inventory) return Inventory.create({
         customerId: req.body.customerId,
         warehouseId: req.body.warehouseId,
         productId: product.id,
         availableQuantity: product.quantity,
         referenceId: req.body.referenceId,
         totalInwardQuantity: product.quantity
-      })
+      }, { transaction })
       else {
         inventory.availableQuantity += (+product.quantity);
         inventory.totalInwardQuantity += (+product.quantity);
-        inventory.save();
+        return inventory.save({ transaction });
       }
-    } catch (err) {
-      return res.json({
-        success: false,
-        message: err.message
-      });
-    }
-  }
+    })))
+  });
   res.json({
     success: true,
     message,
