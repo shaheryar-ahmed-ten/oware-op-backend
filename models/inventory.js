@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
       Inventory.hasMany(models.DispatchOrder, {
         foreignKey: 'inventoryId'
       });
+      Inventory.belongsToMany(models.DispatchOrder, {
+        through: models.OrderGroup,
+        foreignKey: 'inventoryId'
+      });
     };
   };
   Inventory.init({

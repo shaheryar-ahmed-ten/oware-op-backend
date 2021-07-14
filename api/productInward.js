@@ -40,8 +40,7 @@ router.post('/', async (req, res, next) => {
   // Hack for backward compatibility
   req.body.products = req.body.products || [{ id: req.body.productId, quantity: req.body.quantity }];
 
-  let t1 = await sequelize.transaction(async transaction => {
-
+  await sequelize.transaction(async transaction => {
     productInward = await ProductInward.create({
       userId: req.userId,
       ...req.body
@@ -49,7 +48,7 @@ router.post('/', async (req, res, next) => {
 
     const numberOfinternalIdForBusiness = digitize(productInward.id, 6);
     productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
-    await productInward.save();
+    await productInward.save({ transaction });
 
     await InwardGroup.bulkCreate(req.body.products.map(product => ({
       userId: req.userId,

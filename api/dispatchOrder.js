@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, DispatchOrder, Company, Warehouse, Product, UOM } = require('../models');
+const { Inventory, DispatchOrder, OrderGroup, Company, Warehouse, Product, UOM, sequelize } = require('../models');
 const config = require('../config');
 const { Op, fn, col } = require("sequelize");
 const authService = require('../services/auth.service');
@@ -19,6 +19,7 @@ router.get('/', async (req, res, next) => {
   const response = await DispatchOrder.findAndCountAll({
     include: [{
       model: Inventory,
+      as: 'Inventory',
       include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
     }, {
       model: Inventory,
@@ -42,47 +43,48 @@ router.post('/', async (req, res, next) => {
   let dispatchOrder;
   req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
 
-  dispatchOrder = await DispatchOrder.create({
-    userId: req.userId,
-    ...req.body
-  });
-  const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
-  dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
-  dispatchOrder.save();
+  try {
+    await sequelize.transaction(async transaction => {
+      dispatchOrder = await DispatchOrder.create({
+        userId: req.userId,
+        ...req.body
+      }, { transaction });
+      const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
+      dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+      await dispatchOrder.save({ transaction });
 
-  await OrderGroup.bulkCreate(req.body.inventories.map(inventory => ({
-    userId: req.userId,
-    orderId: inventoryInward.id,
-    inventoryId: inventory.id,
-    quantity: inventory.quantity
-  })));
+      await OrderGroup.bulkCreate(req.body.inventories.map(inventory => ({
+        userId: req.userId,
+        orderId: dispatchOrder.id,
+        inventoryId: inventory.id,
+        quantity: inventory.quantity
+      })), { transaction });
 
-  for (let _inventory of req.body.inventories) {
-    let inventory = await Inventory.findByPk(_inventory.id);
-    if (!inventory && !_inventory.id) return res.json({
-      success: false,
-      message: 'Inventory is not available'
+      return Promise.all(req.body.inventories.map(_inventory => {
+        return Inventory.findByPk(_inventory.id, { transaction }).then(inventory => {
+          if (!inventory && !_inventory.id) throw new Error('Inventory is not available');
+          if (_inventory.quantity > inventory.availableQuantity) throw new Error('Cannot create orders above available quantity');
+          try {
+            inventory.committedQuantity += (+_inventory.quantity);
+            inventory.availableQuantity -= (+_inventory.quantity);
+            return inventory.save({ transaction });
+          } catch (err) {
+            throw new Error(err.errors.pop().message);
+          }
+        });
+      }));
     });
-    if (_inventory.quantity > inventory.availableQuantity) return res.json({
-      success: false,
-      message: 'Cannot create orders above available quantity'
+    res.json({
+      success: true,
+      message,
+      data: dispatchOrder
     });
-    try {
-      inventory.committedQuantity += (+_inventory.quantity);
-      inventory.availableQuantity -= (+_inventory.quantity);
-      inventory.save();
-    } catch (err) {
-      return res.json({
-        success: false,
-        message: err.errors.pop().message
-      });
-    }
+  } catch (err) {
+    res.json({
+      success: false,
+      message: err.toString().replace('Error: ', '')
+    });
   }
-  res.json({
-    success: true,
-    message,
-    data: dispatchOrder
-  });
 });
 
 /* PUT update existing dispatchOrder. */
@@ -200,13 +202,14 @@ router.get('/products', async (req, res, next) => {
         include: [{ model: UOM }]
       }],
       group: 'productId'
-    })
+    });
     res.json({
       success: true,
       message: 'respond with a resource',
       products: inventories.map(inventory => inventory.Product)
     });
   } else res.json({
+    products: [],
     success: false,
     message: 'No inventory found'
   })
