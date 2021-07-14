@@ -5,9 +5,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const outwardGroup = [];
     const productOutwards = await ProductOutward.findAll({ include: [DispatchOrder] });
-    console.log(productOutwards)
     productOutwards.forEach(element => {
-      console.log(element.DispatchOrder)
       const outwardObj = {
         outwardId: element.id,
         userId: element.userId,
