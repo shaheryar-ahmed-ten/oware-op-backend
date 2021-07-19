@@ -45,11 +45,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     dimensionsCBM: {
       type: DataTypes.INTEGER,
-      validate: { notEmpty: { msg: 'Please enter dimensionsCBM' } }
     },
     weight: {
       type: DataTypes.INTEGER,
-      validate: { notEmpty: { msg: 'Please enter weight' } }
     },
     categoryId: {
       type: DataTypes.INTEGER,
