@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory,
+const {
+  Inventory,
   ProductOutward,
+  OutwardGroup,
   Vehicle,
   Car,
   CarMake,
@@ -11,10 +13,11 @@ const { Inventory,
   Company,
   Warehouse,
   Product,
-  UOM
+  UOM,
+  sequelize
 } = require('../models')
 const config = require('../config');
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const { digitize } = require('../services/common.services');
 
 
@@ -33,12 +36,13 @@ router.get('/', async (req, res, next) => {
         model: DispatchOrder,
         include: [{
           model: Inventory,
+          as: 'Inventory',
+          include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+        }, {
+          model: Inventory,
+          as: 'Inventories',
           include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
         }]
-      }, {
-        model: Inventory,
-        as: 'Inventories',
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
       }, {
         model: Vehicle,
         include: [{ model: Car, include: [CarMake, CarModel] }]
@@ -58,36 +62,63 @@ router.get('/', async (req, res, next) => {
 /* POST create new productOutward. */
 router.post('/', async (req, res, next) => {
   let message = 'New productOutward registered';
-  let dispatchOrder = await DispatchOrder.findByPk(req.body.dispatchOrderId, { include: [{ model: ProductOutward }, { model: Inventory }] })
+  let dispatchOrder = await DispatchOrder.findByPk(req.body.dispatchOrderId, { include: [ProductOutward] })
   if (!dispatchOrder) return res.json({
     success: false,
     message: 'No dispatch order found'
   });
-  let availableOrderQuantity = dispatchOrder.quantity - dispatchOrder.ProductOutwards.reduce((acc, outward) => acc += outward.quantity, 0);
-  if (req.body.quantity > availableOrderQuantity) return res.json({
-    success: false,
-    message: 'Cannot dispatch above ordered quantity'
-  })
-  if (req.body.quantity > dispatchOrder.Inventory.committedQuantity) return res.json({
-    success: false,
-    message: 'Cannot dispatch above available inventory quantity'
-  })
-  let productOutward;
+  req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
+
   try {
-    productOutward = await ProductOutward.create({
-      userId: req.userId,
-      ...req.body
+    await sequelize.transaction(async transaction => {
+      productOutward = await ProductOutward.create({
+        userId: req.userId,
+        ...req.body
+      }, { transaction });
+      const numberOfInternalIdForBusiness = digitize(productOutward.id, 6);
+      productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+      await productOutward.save({ transaction });
+
+      await OutwardGroup.bulkCreate(req.body.inventories.map(inventory => ({
+        userId: req.userId,
+        outwardId: productOutward.id,
+        inventoryId: inventory.id,
+        quantity: inventory.quantity
+      })), { transaction });
+
+      return Promise.all(req.body.inventories.map(_inventory => {
+        return Inventory.findByPk(_inventory.id, { transaction }).then(inventory => {
+          if (!inventory && !_inventory.id) throw new Error('Inventory is not available');
+          if (_inventory.quantity > inventory.committedQuantity) throw new Error('Cannot create orders above available quantity');
+          try {
+            inventory.dispatcheQuantity += (+_inventory.quantity);
+            inventory.committedQuantity -= (+_inventory.quantity);
+            return inventory.save({ transaction });
+          } catch (err) {
+            throw new Error(err.errors.pop().message);
+          }
+        });
+      }));
     });
-    const numberOfInternalIdForBusiness = digitize(productOutward.id, 6);
-    productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
-    productOutward.save();
-    dispatchOrder.Inventory.dispatchedQuantity += (+req.body.quantity);
-    dispatchOrder.Inventory.committedQuantity -= (+req.body.quantity);
-    dispatchOrder.Inventory.save();
+    res.json({
+      success: true,
+      message,
+      data: productOutward
+    });
+    // TODO: // The following validations needs to be implemented for multi inventory outward
+    // let availableOrderQuantity = dispatchOrder.quantity - dispatchOrder.ProductOutwards.reduce((acc, outward) => acc += outward.quantity, 0);
+    // if (req.body.quantity > availableOrderQuantity) return res.json({
+    //   success: false,
+    //   message: 'Cannot dispatch above ordered quantity'
+    // })
+    // if (req.body.quantity > dispatchOrder.Inventory.committedQuantity) return res.json({
+    //   success: false,
+    //   message: 'Cannot dispatch above available inventory quantity'
+    // })
   } catch (err) {
-    return res.json({
+    res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.toString().replace('Error: ', '')
     });
   }
   res.json({
@@ -138,11 +169,17 @@ router.get('/relations', async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
     include: [{
       model: Inventory,
+      as: 'Inventory',
+      include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+    }, {
+      model: Inventory,
+      as: 'Inventories',
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
     }, {
       model: ProductOutward,
       include: { model: Vehicle }
-    }]
+    }],
+    order: [['updatedAt', 'DESC']]
   });
 
   const vehicles = await Vehicle.findAll({ where: { isActive: true } });
