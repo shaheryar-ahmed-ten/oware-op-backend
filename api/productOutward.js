@@ -51,6 +51,35 @@ router.get('/', async (req, res, next) => {
     order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
+  var acc = []
+  response.rows.forEach(productOutward => {
+    var sum = []
+    productOutward.DispatchOrder.Inventories.forEach((Inventory)=>{
+      sum.push(Inventory.OrderGroup.quantity)
+    })
+    acc.push(sum.reduce((acc,po)=>{
+      return acc + po
+    }))
+  });
+  for (let index = 0; index < acc.length; index++) {
+    response.rows[index].quantity = acc[index];
+  }
+
+  var comittedAcc = []
+  response.rows.forEach(productOutward => {
+    var sumOfComitted = []
+    productOutward.DispatchOrder.Inventories.forEach((Inventory)=>{
+      sumOfComitted.push(Inventory.committedQuantity)
+    })
+    comittedAcc.push(sumOfComitted.reduce((acc,po)=>{
+      return acc + po
+    }))
+  });
+  for (let index = 0; index < comittedAcc.length; index++) {
+    response.rows[index].DispatchOrder.quantity = comittedAcc[index]
+  }
+  
+
   res.json({
     success: true,
     message: 'respond with a resource',
@@ -100,7 +129,7 @@ router.post('/', async (req, res, next) => {
         });
       }));
     });
-    res.json({
+    return res.json({
       success: true,
       message,
       data: productOutward
