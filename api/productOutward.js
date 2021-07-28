@@ -206,7 +206,13 @@ router.get('/relations', async (req, res, next) => {
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
     }, {
       model: ProductOutward,
-      include: [{ model: Vehicle }, { model: OutwardGroup }]
+      include: [{
+        model: Vehicle
+      }, {
+        model: Inventory, as: 'Inventories',
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+
+      }]
     }],
     order: [['updatedAt', 'DESC']]
   });
