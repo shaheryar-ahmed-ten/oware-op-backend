@@ -106,6 +106,16 @@ router.post('/', async (req, res, next) => {
       }, { transaction });
       const numberOfInternalIdForBusiness = digitize(productOutward.id, 6);
       productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+      let sumOfOutwards = [];
+      let outwardAcc;
+      req.body.inventories.forEach((Inventory) => {
+        parseInt(Inventory.quantity);
+        sumOfOutwards.push(Inventory.quantity);
+      })
+      outwardAcc = (sumOfOutwards.reduce((acc, po) => {
+        return acc + po
+      }))
+      productOutward.quantity = outwardAcc;
       await productOutward.save({ transaction });
 
       await OutwardGroup.bulkCreate(req.body.inventories.map(inventory => ({
