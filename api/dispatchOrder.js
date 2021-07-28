@@ -51,6 +51,7 @@ router.post('/', async (req, res, next) => {
       }, { transaction });
       const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
       dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+      
       await dispatchOrder.save({ transaction });
 
       await OrderGroup.bulkCreate(req.body.inventories.map(inventory => ({

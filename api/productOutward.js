@@ -54,10 +54,10 @@ router.get('/', async (req, res, next) => {
   var acc = []
   response.rows.forEach(productOutward => {
     var sum = []
-    productOutward.DispatchOrder.Inventories.forEach((Inventory)=>{
+    productOutward.DispatchOrder.Inventories.forEach((Inventory) => {
       sum.push(Inventory.OrderGroup.quantity)
     })
-    acc.push(sum.reduce((acc,po)=>{
+    acc.push(sum.reduce((acc, po) => {
       return acc + po
     }))
   });
@@ -68,17 +68,17 @@ router.get('/', async (req, res, next) => {
   var comittedAcc = []
   response.rows.forEach(productOutward => {
     var sumOfComitted = []
-    productOutward.DispatchOrder.Inventories.forEach((Inventory)=>{
+    productOutward.DispatchOrder.Inventories.forEach((Inventory) => {
       sumOfComitted.push(Inventory.committedQuantity)
     })
-    comittedAcc.push(sumOfComitted.reduce((acc,po)=>{
+    comittedAcc.push(sumOfComitted.reduce((acc, po) => {
       return acc + po
     }))
   });
   for (let index = 0; index < comittedAcc.length; index++) {
     response.rows[index].quantity = comittedAcc[index]
   }
-  
+
 
   res.json({
     success: true,
@@ -206,7 +206,7 @@ router.get('/relations', async (req, res, next) => {
       include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
     }, {
       model: ProductOutward,
-      include: { model: Vehicle }
+      include: [{ model: Vehicle }, { model: OutwardGroup }]
     }],
     order: [['updatedAt', 'DESC']]
   });
