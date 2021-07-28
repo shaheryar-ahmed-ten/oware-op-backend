@@ -46,6 +46,10 @@ router.get('/', async (req, res, next) => {
       }, {
         model: Vehicle,
         include: [{ model: Car, include: [CarMake, CarModel] }]
+      },
+      {
+        model: Inventory, as: 'Inventories',
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
       }
     ],
     order: [['updatedAt', 'DESC']],
@@ -68,8 +72,8 @@ router.get('/', async (req, res, next) => {
   var comittedAcc = []
   response.rows.forEach(productOutward => {
     var sumOfComitted = []
-    productOutward.DispatchOrder.Inventories.forEach((Inventory) => {
-      sumOfComitted.push(Inventory.committedQuantity)
+    productOutward.Inventories.forEach((Inventory) => {
+      sumOfComitted.push(Inventory.OutwardGroup.quantity)
     })
     comittedAcc.push(sumOfComitted.reduce((acc, po) => {
       return acc + po
