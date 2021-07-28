@@ -62,7 +62,7 @@ router.get('/', async (req, res, next) => {
     }))
   });
   for (let index = 0; index < acc.length; index++) {
-    response.rows[index].quantity = acc[index];
+    response.rows[index].DispatchOrder.quantity = acc[index];
   }
 
   var comittedAcc = []
@@ -76,7 +76,7 @@ router.get('/', async (req, res, next) => {
     }))
   });
   for (let index = 0; index < comittedAcc.length; index++) {
-    response.rows[index].DispatchOrder.quantity = comittedAcc[index]
+    response.rows[index].quantity = comittedAcc[index]
   }
   
 
