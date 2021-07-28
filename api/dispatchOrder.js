@@ -54,8 +54,8 @@ router.post('/', async (req, res, next) => {
       let sumOfComitted = [];
       let comittedAcc;
       req.body.inventories.forEach((Inventory) => {
-        parseInt(Inventory.quantity);
-        sumOfComitted.push(Inventory.quantity);
+       let quantity =  parseInt(Inventory.quantity);
+        sumOfComitted.push(quantity);
       })
       comittedAcc = (sumOfComitted.reduce((acc, po) => {
         return acc + po

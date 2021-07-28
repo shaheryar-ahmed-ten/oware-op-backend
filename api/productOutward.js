@@ -113,8 +113,8 @@ router.post('/', async (req, res, next) => {
       let sumOfOutwards = [];
       let outwardAcc;
       req.body.inventories.forEach((Inventory) => {
-        parseInt(Inventory.quantity);
-        sumOfOutwards.push(Inventory.quantity);
+       let quantity =  parseInt(Inventory.quantity);
+       sumOfOutwards.push(quantity);
       })
       outwardAcc = (sumOfOutwards.reduce((acc, po) => {
         return acc + po
@@ -230,7 +230,6 @@ router.get('/relations', async (req, res, next) => {
     }],
     order: [['updatedAt', 'DESC']]
   });
-
   const vehicles = await Vehicle.findAll({ where: { isActive: true } });
   res.json({
     success: true,
