@@ -201,7 +201,10 @@ router.get('/products', async (req, res, next) => {
     const inventories = await Inventory.findAll({
       where: {
         customerId: req.query.customerId,
-        warehouseId: req.query.warehouseId
+        warehouseId: req.query.warehouseId,
+        availableQuantity: {
+          [Op.ne]: 0
+        }
       },
       attributes: [
         'productId',
