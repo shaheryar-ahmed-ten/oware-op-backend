@@ -63,6 +63,15 @@ router.post('/', async (req, res, next) => {
       dispatchOrder.quantity = comittedAcc;
       await dispatchOrder.save({ transaction });
 
+      const inventoryIds = req.body.inventories.map((inventory)=>{
+        return inventory.id
+      })
+      req.body.inventories.forEach((inventory)=>{
+        if(inventoryIds.some((e)=>e==inventory.id)){
+          throw new Error('Can not add same inventory twice')
+        }
+      })
+
       await OrderGroup.bulkCreate(req.body.inventories.map(inventory => ({
         userId: req.userId,
         orderId: dispatchOrder.id,
