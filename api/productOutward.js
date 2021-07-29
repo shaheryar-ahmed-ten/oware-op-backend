@@ -134,7 +134,7 @@ router.post('/', async (req, res, next) => {
           if (!inventory && !_inventory.id) throw new Error('Inventory is not available');
           if (_inventory.quantity > inventory.committedQuantity) throw new Error('Cannot create orders above available quantity');
           try {
-            inventory.dispatcheQuantity += (+_inventory.quantity);
+            inventory.dispatchedQuantity += (+_inventory.quantity);
             inventory.committedQuantity -= (+_inventory.quantity);
             return inventory.save({ transaction });
           } catch (err) {
