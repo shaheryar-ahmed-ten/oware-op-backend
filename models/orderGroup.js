@@ -3,7 +3,7 @@ const { Model } = require('sequelize');
 const bcrypt = require('bcrypt');
 
 module.exports = (sequelize, DataTypes) => {
-  class RideProduct extends Model {
+  class OrderGroup extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,31 +11,22 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      RideProduct.belongsTo(models.User, {
+      OrderGroup.belongsTo(models.User, {
         foreignKey: 'userId'
       });
-      RideProduct.belongsTo(models.Category, {
-        foreignKey: 'categoryId'
+      OrderGroup.belongsTo(models.Inventory, {
+        foreignKey: 'inventoryId'
       });
-      RideProduct.belongsTo(models.Ride, {
-        foreignKey: 'rideId'
+      OrderGroup.belongsTo(models.DispatchOrder, {
+        foreignKey: 'orderId'
       });
     };
   };
-  RideProduct.init({
+  OrderGroup.init({
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: true }
-    },
-    rideId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: true }
-    },
-    name: {
-      type: DataTypes.STRING,
-      validate: { notEmpty: { msg: 'Please enter name' } }
     },
     quantity: {
       type: DataTypes.INTEGER,
@@ -43,14 +34,21 @@ module.exports = (sequelize, DataTypes) => {
         isInt: { msg: 'Please enter quantity' }
       }
     },
-    categoryId: {
+    inventoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notEmpty: { msg: 'Category cannot be empty' } }
-    }
+      validate: { notEmpty: { msg: 'Inventory cannot be empty' } }
+    },
+    orderId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Order cannot be empty' } }
+    },
   }, {
     sequelize,
     paranoid: true,
-    modelName: 'RideProduct',
-  }); return RideProduct;
+    modelName: 'OrderGroup',
+  });
+
+  return OrderGroup;
 };

@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, ProductInward, User, Company, Warehouse, Product, UOM } = require('../models')
+const { Inventory, ProductInward, InwardGroup, User, Company, Warehouse, Product, UOM, sequelize } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
 const authService = require('../services/auth.service');
-const { digitizie } = require('../services/common.services');
+const { digitize } = require('../services/common.services');
+const { RELATION_TYPES } = require('../enums');
 
 /* GET productInwards listing. */
 router.get('/', async (req, res, next) => {
@@ -15,7 +16,12 @@ router.get('/', async (req, res, next) => {
   };
   if (req.query.search) where[Op.or] = ['$Product.name$', '$Company.name$', '$Warehouse.name$'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await ProductInward.findAndCountAll({
-    include: [{ model: User }, { model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+    distinct: true,
+    include: [{
+      model: Product, as: 'Product', include: [{ model: UOM }]
+    }, {
+      model: Product, as: 'Products', include: [{ model: UOM }]
+    }, User, Company, Warehouse],
     order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
@@ -31,40 +37,48 @@ router.get('/', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   let productInward;
   let message = 'New productInward registered';
-  productInward = await ProductInward.create({
-    userId: req.userId,
-    ...req.body
+  // Hack for backward compatibility
+  req.body.products = req.body.products || [{ id: req.body.productId, quantity: req.body.quantity }];
+
+  await sequelize.transaction(async transaction => {
+    productInward = await ProductInward.create({
+      userId: req.userId,
+      ...req.body
+    }, { transaction });
+
+    const numberOfinternalIdForBusiness = digitize(productInward.id, 6);
+    productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
+    await productInward.save({ transaction });
+
+    await InwardGroup.bulkCreate(req.body.products.map(product => ({
+      userId: req.userId,
+      inwardId: productInward.id,
+      productId: product.id,
+      quantity: product.quantity
+    })), { transaction });
+
+    return await Promise.all(req.body.products.map(product => Inventory.findOne({
+      where: {
+        customerId: req.body.customerId,
+        warehouseId: req.body.warehouseId,
+        productId: product.id
+      }
+    }).then(inventory => {
+      if (!inventory) return Inventory.create({
+        customerId: req.body.customerId,
+        warehouseId: req.body.warehouseId,
+        productId: product.id,
+        availableQuantity: product.quantity,
+        referenceId: req.body.referenceId,
+        totalInwardQuantity: product.quantity
+      }, { transaction })
+      else {
+        inventory.availableQuantity += (+product.quantity);
+        inventory.totalInwardQuantity += (+product.quantity);
+        return inventory.save({ transaction });
+      }
+    })))
   });
-  const numberOfinternalIdForBusiness = digitizie(productInward.id, 6);
-  productInward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfinternalIdForBusiness;
-  productInward.save();
-  let inventory = await Inventory.findOne({
-    where: {
-      customerId: req.body.customerId,
-      warehouseId: req.body.warehouseId,
-      productId: req.body.productId
-    }
-  });
-  try {
-    if (!inventory) await Inventory.create({
-      customerId: req.body.customerId,
-      warehouseId: req.body.warehouseId,
-      productId: req.body.productId,
-      availableQuantity: req.body.quantity,
-      referenceId: req.body.referenceId,
-      totalInwardQuantity: req.body.quantity
-    })
-    else {
-      inventory.availableQuantity += (+req.body.quantity);
-      inventory.totalInwardQuantity += (+req.body.quantity);
-      inventory.save();
-    }
-  } catch (err) {
-    return res.json({
-      success: false,
-      message: err.message
-    });
-  }
   res.json({
     success: true,
     message,
@@ -113,7 +127,12 @@ router.get('/relations', async (req, res, next) => {
   const products = await Product.findAll({ where, include: [{ model: UOM }] });
 
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  const customers = await Company.findAll({ where });
+  const customers = await Company.findAll({
+    where: {
+      ...where,
+      relationType: RELATION_TYPES.CUSTOMER
+    }
+  });
   res.json({
     success: true,
     message: 'respond with a resource',

@@ -3,7 +3,7 @@ const { Model } = require('sequelize');
 const bcrypt = require('bcrypt');
 
 module.exports = (sequelize, DataTypes) => {
-  class RideProduct extends Model {
+  class InwardGroup extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,31 +11,22 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      RideProduct.belongsTo(models.User, {
+      InwardGroup.belongsTo(models.User, {
         foreignKey: 'userId'
       });
-      RideProduct.belongsTo(models.Category, {
-        foreignKey: 'categoryId'
+      InwardGroup.belongsTo(models.Product, {
+        foreignKey: 'productId'
       });
-      RideProduct.belongsTo(models.Ride, {
-        foreignKey: 'rideId'
+      InwardGroup.belongsTo(models.ProductInward, {
+        foreignKey: 'inwardId'
       });
     };
   };
-  RideProduct.init({
+  InwardGroup.init({
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: { notEmpty: true }
-    },
-    rideId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: true }
-    },
-    name: {
-      type: DataTypes.STRING,
-      validate: { notEmpty: { msg: 'Please enter name' } }
     },
     quantity: {
       type: DataTypes.INTEGER,
@@ -43,14 +34,21 @@ module.exports = (sequelize, DataTypes) => {
         isInt: { msg: 'Please enter quantity' }
       }
     },
-    categoryId: {
+    productId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { notEmpty: { msg: 'Category cannot be empty' } }
-    }
+      validate: { notEmpty: { msg: 'Product cannot be empty' } }
+    },
+    inwardId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: { notEmpty: { msg: 'Inward cannot be empty' } }
+    },
   }, {
     sequelize,
     paranoid: true,
-    modelName: 'RideProduct',
-  }); return RideProduct;
+    modelName: 'InwardGroup',
+  });
+
+  return InwardGroup;
 };

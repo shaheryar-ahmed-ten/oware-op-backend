@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { Inventory, DispatchOrder, Company, Warehouse, Product, UOM } = require('../models');
+const { Inventory, DispatchOrder, OrderGroup, Company, Warehouse, Product, UOM, sequelize } = require('../models');
 const config = require('../config');
 const { Op, fn, col } = require("sequelize");
 const authService = require('../services/auth.service');
-const { digitizie } = require('../services/common.services');
+const { digitize } = require('../services/common.services');
+const { RELATION_TYPES } = require('../enums');
 
 /* GET dispatchOrders listing. */
 router.get('/', async (req, res, next) => {
@@ -18,7 +19,12 @@ router.get('/', async (req, res, next) => {
   const response = await DispatchOrder.findAndCountAll({
     include: [{
       model: Inventory,
-      include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+      as: 'Inventory',
+      include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
+    }, {
+      model: Inventory,
+      as: 'Inventories',
+      include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse]
     }],
     order: [['updatedAt', 'DESC']],
     where, limit, offset
@@ -34,40 +40,70 @@ router.get('/', async (req, res, next) => {
 /* POST create new dispatchOrder. */
 router.post('/', async (req, res, next) => {
   let message = 'New dispatchOrder registered';
-
-
-  let inventory = await Inventory.findByPk(req.body.inventoryId);
-  if (!inventory && !req.body.inventoryId) return res.json({
-    success: false,
-    message: 'Inventory is not available'
-  });
-  if (req.body.quantity > inventory.availableQuantity) return res.json({
-    success: false,
-    message: 'Cannot create orders above available quantity'
-  });
   let dispatchOrder;
+  req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
+
   try {
-    dispatchOrder = await DispatchOrder.create({
-      userId: req.userId,
-      ...req.body
+    await sequelize.transaction(async transaction => {
+      dispatchOrder = await DispatchOrder.create({
+        userId: req.userId,
+        ...req.body
+      }, { transaction });
+      const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
+      dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+      let sumOfComitted = [];
+      let comittedAcc;
+      req.body.inventories.forEach((Inventory) => {
+       let quantity =  parseInt(Inventory.quantity);
+        sumOfComitted.push(quantity);
+      })
+      comittedAcc = (sumOfComitted.reduce((acc, po) => {
+        return acc + po
+      }))
+      dispatchOrder.quantity = comittedAcc;
+      await dispatchOrder.save({ transaction });
+
+      const inventoryIds = req.body.inventories.map((inventory)=>{
+        return inventory.id
+      })
+      req.body.inventories.forEach((inventory)=>{
+        if(inventoryIds.some((e)=>e==inventory.id)){
+          throw new Error('Can not add same inventory twice')
+        }
+      })
+
+      await OrderGroup.bulkCreate(req.body.inventories.map(inventory => ({
+        userId: req.userId,
+        orderId: dispatchOrder.id,
+        inventoryId: inventory.id,
+        quantity: inventory.quantity
+      })), { transaction });
+
+      return Promise.all(req.body.inventories.map(_inventory => {
+        return Inventory.findByPk(_inventory.id, { transaction }).then(inventory => {
+          if (!inventory && !_inventory.id) throw new Error('Inventory is not available');
+          if (_inventory.quantity > inventory.availableQuantity) throw new Error('Cannot create orders above available quantity');
+          try {
+            inventory.committedQuantity += (+_inventory.quantity);
+            inventory.availableQuantity -= (+_inventory.quantity);
+            return inventory.save({ transaction });
+          } catch (err) {
+            throw new Error(err.errors.pop().message);
+          }
+        });
+      }));
     });
-    const numberOfInternalIdForBusiness = digitizie(dispatchOrder.id, 6);
-    dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
-    dispatchOrder.save();
-    inventory.committedQuantity += (+req.body.quantity);
-    inventory.availableQuantity -= (+req.body.quantity);
-    inventory.save();
+    res.json({
+      success: true,
+      message,
+      data: dispatchOrder
+    });
   } catch (err) {
-    return res.json({
+    res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.toString().replace('Error: ', '')
     });
   }
-  res.json({
-    success: true,
-    message,
-    data: dispatchOrder
-  });
 });
 
 /* PUT update existing dispatchOrder. */
@@ -110,7 +146,12 @@ router.delete('/:id', async (req, res, next) => {
 router.get('/relations', async (req, res, next) => {
   let where = { isActive: true };
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  const customers = await Company.findAll({ where });
+  const customers = await Company.findAll({
+    where: {
+      ...where,
+      relationType: RELATION_TYPES.CUSTOMER
+    }
+  });
   res.json({
     success: true,
     message: 'respond with a resource',
@@ -169,7 +210,10 @@ router.get('/products', async (req, res, next) => {
     const inventories = await Inventory.findAll({
       where: {
         customerId: req.query.customerId,
-        warehouseId: req.query.warehouseId
+        warehouseId: req.query.warehouseId,
+        availableQuantity: {
+          [Op.ne]: 0
+        }
       },
       attributes: [
         'productId',
@@ -180,13 +224,14 @@ router.get('/products', async (req, res, next) => {
         include: [{ model: UOM }]
       }],
       group: 'productId'
-    })
+    });
     res.json({
       success: true,
       message: 'respond with a resource',
       products: inventories.map(inventory => inventory.Product)
     });
   } else res.json({
+    products: [],
     success: false,
     message: 'No inventory found'
   })

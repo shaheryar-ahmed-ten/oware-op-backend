@@ -36,6 +36,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'rideId',
         sourceKey: 'id'
       });
+      Ride.belongsTo(models.File, {
+        foreignKey: "manifestId",
+        as: 'Manifest'
+      });
     }
   }
   Ride.init({
@@ -56,6 +60,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
+    manifestId: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
+    internalIdForBusiness: DataTypes.STRING,
     pickupDate: {
       type: DataTypes.DATE,
       allowNull: false,
