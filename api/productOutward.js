@@ -28,7 +28,7 @@ router.get('/', async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['$DispatchOrder.Inventory.Product.name$', '$DispatchOrder.Inventory.Company.name$', '$DispatchOrder.Inventory.Warehouse.name$']
+  if (req.query.search) where[Op.or] = ['$DispatchOrder.Inventories.Product.name$', '$DispatchOrder.Inventories.Company.name$', '$DispatchOrder.Inventories.Warehouse.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await ProductOutward.findAndCountAll({
     include: [
@@ -53,7 +53,7 @@ router.get('/', async (req, res, next) => {
       }
     ],
     order: [['updatedAt', 'DESC']],
-    where, limit, offset
+    where
   });
   var acc = []
   response.rows.forEach(productOutward => {
@@ -83,12 +83,37 @@ router.get('/', async (req, res, next) => {
     response.rows[index].quantity = comittedAcc[index]
   }
 
+  const count = await ProductOutward.count({
+    include: [
+      {
+        model: DispatchOrder,
+        include: [{
+          model: Inventory,
+          as: 'Inventory',
+          include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+        }, {
+          model: Inventory,
+          as: 'Inventories',
+          include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+        }]
+      }, {
+        model: Vehicle,
+        include: [{ model: Car, include: [CarMake, CarModel] }]
+      },
+      {
+        model: Inventory, as: 'Inventories',
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+      }
+    ],
+    order: [['updatedAt', 'DESC']],
+    where, limit, offset
+  })
 
   res.json({
     success: true,
     message: 'respond with a resource',
     data: response.rows,
-    pages: Math.ceil(response.count / limit)
+    pages: Math.ceil(count / limit)
   });
 });
 
