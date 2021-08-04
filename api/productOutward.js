@@ -28,11 +28,13 @@ router.get('/', async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['$DispatchOrder.Inventories.Product.name$', '$DispatchOrder.Inventories.Company.name$', '$DispatchOrder.Inventories.Warehouse.name$']
+  if (req.query.search) where[Op.or] = ['$Inventories.Product.name$', '$Inventories.Company.name$', '$Inventories.Warehouse.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await ProductOutward.findAndCountAll({
+    duplicating: false,
     include: [
       {
+        duplicating: false,
         model: DispatchOrder,
         include: [{
           model: Inventory,
@@ -53,7 +55,8 @@ router.get('/', async (req, res, next) => {
       }
     ],
     order: [['updatedAt', 'DESC']],
-    where
+    //subQuery: false,
+    where, limit, offset,
   });
   var acc = []
   response.rows.forEach(productOutward => {
@@ -108,12 +111,13 @@ router.get('/', async (req, res, next) => {
     order: [['updatedAt', 'DESC']],
     where, limit, offset
   })
+  console.log(response.count / limit)
 
   res.json({
     success: true,
     message: 'respond with a resource',
     data: response.rows,
-    pages: Math.ceil(count / limit)
+    pages: Math.ceil(response.count / limit)
   });
 });
 
@@ -138,8 +142,8 @@ router.post('/', async (req, res, next) => {
       let sumOfOutwards = [];
       let outwardAcc;
       req.body.inventories.forEach((Inventory) => {
-       let quantity =  parseInt(Inventory.quantity);
-       sumOfOutwards.push(quantity);
+        let quantity = parseInt(Inventory.quantity);
+        sumOfOutwards.push(quantity);
       })
       outwardAcc = (sumOfOutwards.reduce((acc, po) => {
         return acc + po
