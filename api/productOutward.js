@@ -22,15 +22,20 @@ const { digitize } = require("../services/common.services");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
-  const limit = req.query.rowsPerPage || config.rowsPerPage;
-  const offset = (req.query.page - 1 || 0) * limit;
-  let where = {
-    // userId: req.userId
+  // const limit = req.query.rowsPerPage || config.rowsPerPage;
+  // const offset = (req.query.page - 1 || 0) * limit;
+  const { limit, offset, ...filters } = req.query;
+  // let where = removeFromObject(filters, ["to", "from"])[0];
+  where = makeFilterQuery({ ...where });
+  const params = {
+    filters,
+    limit: limit ? Number(limit) : 0,
+    offset: offset ? Number(offset) : 0
   };
-  if (req.query.search)
-    where[Op.or] = ["$Inventories.Product.name$", "$Inventories.Company.name$", "$Inventories.Warehouse.name$"].map(key => ({
-      [key]: { [Op.like]: "%" + req.query.search + "%" }
-    }));
+  // if (req.query.search)
+  //   where[Op.or] = ["$Inventories.Product.name$", "$Inventories.Company.name$", "$Inventories.Warehouse.name$"].map(key => ({
+  //     [key]: { [Op.like]: "%" + req.query.search + "%" }
+  //   }));
   const response = await ProductOutward.findAndCountAll({
     duplicating: false,
     include: [
