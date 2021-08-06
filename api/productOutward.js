@@ -26,7 +26,9 @@ router.get("/", async (req, res, next) => {
     const { rowsPerPage, page, ...filters } = req.query;
     const limit = Number(rowsPerPage || config.rowsPerPage);
     const offset = Number((page - 1 || 0) * limit);
+    // attachDateFilter = (filters, query);
     where = sanitizeFilters({ ...filters });
+    console.log(`removeChildModelFilters({ ...where })`, removeChildModelFilters({ ...where }));
     // let where = removeFromObject(filters, ["to", "from"])[0];
     // const params = {
     //   filters,
@@ -38,7 +40,8 @@ router.get("/", async (req, res, next) => {
     //     [key]: { [Op.like]: "%" + req.query.search + "%" }
     //   }));
     const response = await ProductOutward.findAndCountAll({
-      duplicating: false,
+      subQuery: false,
+      // duplicating: false,
       include: [
         {
           duplicating: false,
@@ -54,7 +57,8 @@ router.get("/", async (req, res, next) => {
               as: "Inventories",
               include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
             }
-          ]
+          ],
+          where: modelWiseFilters(where, "DispatchOrder")
         },
         {
           model: Vehicle,
@@ -109,7 +113,8 @@ router.get("/", async (req, res, next) => {
     for (let index = 0; index < comittedAcc.length; index++) {
       response.rows[index].quantity = comittedAcc[index];
     }
-
+    console.log("response.count", response.count);
+    console.log("limit", limit);
     res.json({
       success: true,
       message: "respond with a resource",
@@ -388,9 +393,12 @@ const removeFromObject = (obj, keys = []) => {
 };
 
 const removeChildModelFilters = where => {
+  console.log("where1", where);
   for (const key in where) {
     if (key.includes(".")) delete where[key];
   }
+  return where;
+  console.log("where2", where);
 };
 
 module.exports = router;
