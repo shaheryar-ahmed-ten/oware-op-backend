@@ -33,21 +33,11 @@ router.get("/", async (req, res, next) => {
     const { rowsPerPage, page, ...filters } = req.query;
     const limit = Number(rowsPerPage || config.rowsPerPage);
     const offset = Number((page - 1 || 0) * limit);
-    // attachDateFilter = (filters, query);
     where = sanitizeFilters({ ...filters });
-    // let where = removeFromObject(filters, ["to", "from"])[0];
-    // const params = {
-    //   filters,
-    //   limit: limit ? Number(limit) : 0,
-    //   offset: offset ? Number(offset) : 0
-    // };
-    // if (req.query.search)
-    //   where[Op.or] = ["$Inventories.Product.name$", "$Inventories.Company.name$", "$Inventories.Warehouse.name$"].map(key => ({
-    //     [key]: { [Op.like]: "%" + req.query.search + "%" }
-    //   }));
+
     const response = await ProductOutward.findAndCountAll({
       subQuery: false,
-      // duplicating: false,
+      duplicating: false,
       include: [
         {
           duplicating: false,
