@@ -17,16 +17,17 @@ const {
   sequelize
 } = require("../models");
 const config = require("../config");
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const { digitize } = require("../services/common.services");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
-  // const limit = req.query.rowsPerPage || config.rowsPerPage;
-  // const offset = (req.query.page - 1 || 0) * limit;
-  const { limit, offset, ...filters } = req.query;
+  const { rowsPerPage, page, ...filters } = req.query;
+  const limit = req.query.rowsPerPage || config.rowsPerPage;
+  const offset = (req.query.page - 1 || 0) * limit;
+  where = sanitizeFilters({ ...filters });
+  console.log(`modelWiseFilters(where, "DispatchOrder")`, modelWiseFilters(where, "Product"));
   // let where = removeFromObject(filters, ["to", "from"])[0];
-  where = makeFilterQuery({ ...where });
   const params = {
     filters,
     limit: limit ? Number(limit) : 0,
@@ -62,12 +63,16 @@ router.get("/", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventories",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+        include: [
+          { model: Product, include: [{ model: UOM }], where: modelWiseFilters(where, "Product") },
+          { model: Company, where: modelWiseFilters(where, "Company") },
+          { model: Warehouse, where: modelWiseFilters(where, "Warehouse") }
+        ]
       }
     ],
     order: [["updatedAt", "DESC"]],
     //subQuery: false,
-    where,
+    where: removeChildModelFilters({ ...where }),
     limit,
     offset
   });
@@ -93,11 +98,13 @@ router.get("/", async (req, res, next) => {
     productOutward.Inventories.forEach(Inventory => {
       sumOfComitted.push(Inventory.OutwardGroup.quantity);
     });
-    comittedAcc.push(
-      sumOfComitted.reduce((acc, po) => {
-        return acc + po;
-      })
-    );
+    if (sumOfComitted.length > 0) {
+      comittedAcc.push(
+        sumOfComitted.reduce((acc, po) => {
+          return acc + po;
+        })
+      );
+    }
   });
   for (let index = 0; index < comittedAcc.length; index++) {
     response.rows[index].quantity = comittedAcc[index];
@@ -277,7 +284,7 @@ router.get("/relations", async (req, res, next) => {
   });
 });
 
-const makeFilterQuery = (whereClause, transform = {}) => {
+const sanitizeFilters = (whereClause, transform = {}) => {
   for (let item in whereClause) {
     if (whereClause[item] === "true") {
       whereClause[item] = true;
