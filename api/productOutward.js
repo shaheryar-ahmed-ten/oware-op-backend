@@ -86,33 +86,6 @@ router.get('/', async (req, res, next) => {
     response.rows[index].quantity = comittedAcc[index]
   }
 
-  const count = await ProductOutward.count({
-    include: [
-      {
-        model: DispatchOrder,
-        include: [{
-          model: Inventory,
-          as: 'Inventory',
-          include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-        }, {
-          model: Inventory,
-          as: 'Inventories',
-          include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-        }]
-      }, {
-        model: Vehicle,
-        include: [{ model: Car, include: [CarMake, CarModel] }]
-      },
-      {
-        model: Inventory, as: 'Inventories',
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-      }
-    ],
-    order: [['updatedAt', 'DESC']],
-    where, limit, offset
-  })
-  console.log(response.count / limit)
-
   res.json({
     success: true,
     message: 'respond with a resource',
