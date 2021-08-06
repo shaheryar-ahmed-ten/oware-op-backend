@@ -18,7 +18,14 @@ const {
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
-const { digitize } = require("../services/common.services");
+const {
+  digitize,
+  removeFromObject,
+  sanitizeFilters,
+  removeChildModelFilters,
+  attachDateFilter,
+  modelWiseFilters
+} = require("../services/common.services");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
@@ -28,7 +35,6 @@ router.get("/", async (req, res, next) => {
     const offset = Number((page - 1 || 0) * limit);
     // attachDateFilter = (filters, query);
     where = sanitizeFilters({ ...filters });
-    console.log(`removeChildModelFilters({ ...where })`, removeChildModelFilters({ ...where }));
     // let where = removeFromObject(filters, ["to", "from"])[0];
     // const params = {
     //   filters,
@@ -113,8 +119,6 @@ router.get("/", async (req, res, next) => {
     for (let index = 0; index < comittedAcc.length; index++) {
       response.rows[index].quantity = comittedAcc[index];
     }
-    console.log("response.count", response.count);
-    console.log("limit", limit);
     res.json({
       success: true,
       message: "respond with a resource",
@@ -297,108 +301,5 @@ router.get("/relations", async (req, res, next) => {
     vehicles
   });
 });
-
-const sanitizeFilters = (whereClause, transform = {}) => {
-  for (let item in whereClause) {
-    if (whereClause[item] === "true") {
-      whereClause[item] = true;
-    } else if (whereClause[item] === "false") {
-      whereClause[item] = false;
-    } else if (!isNaN(Number(whereClause[item]))) {
-      whereClause[item] = Number(whereClause[item]);
-    }
-    if (typeof whereClause[item] === "string") {
-      whereClause[item] = { [Op.like]: "%" + whereClause[item] + "%" };
-    }
-  }
-  return whereClause;
-};
-
-const modelWiseFilters = (filters, modelname) => {
-  const filterObj = {};
-
-  for (const key in filters) {
-    // if(key.split(".")[1] != ('to' || 'from')){
-
-    // }
-    model = key.split(".")[0];
-    if (filterObj[model] == undefined) {
-      filterObj[model] = { [key.split(".")[1]]: filters[key] }; //if user model doesn't exist: users = {name:"shaheryar"}
-    } else {
-      filterObj[model][key.split(".")[1]] = filters[key]; //if user model exist: users.name = "shaheryar"
-    }
-  }
-
-  let obj = Object.keys(filterObj)
-    .map(function (key, index) {
-      if (key == modelname) {
-        return filterObj[key];
-      }
-    })
-    .filter(function (x) {
-      return x !== undefined;
-    })[0];
-
-  if (obj) {
-    const { to, from } = obj;
-    if (to && from) {
-      obj = removeFromObject(obj, ["to", "from"])[0];
-      obj["createdAt"] = {
-        [Op.gte]: moment().set("hour", 0).set("minute", 0).set("second", 0),
-        [Op.lte]: moment().set("hour", 0).set("minute", 0).set("second", 0)
-      };
-    }
-    return obj;
-  } else
-    return {
-      //include all elements
-      id: {
-        [Op.gt]: 0
-      }
-    };
-};
-
-const attachDateFilter = (filters, query) => {
-  const { to, from } = query;
-  if (to && from) {
-    createdAt = {
-      [Op.gte]: moment(from).toISOString(),
-      [Op.lte]: moment(to).add(1, "seconds").toISOString()
-    };
-    filters["createdAt"] = createdAt;
-  }
-  return filters;
-};
-
-const removeFromObject = (obj, keys = []) => {
-  if (Array.isArray(obj)) {
-    return Object.assign([], obj).map(item => {
-      keys.forEach(key => {
-        if (item.hasOwnProperty(key)) {
-          delete item[key];
-        }
-      });
-      return item;
-    });
-  } else {
-    return [Object.assign({}, obj)].map(item => {
-      keys.forEach(key => {
-        if (item.hasOwnProperty(key)) {
-          delete item[key];
-        }
-      });
-      return item;
-    });
-  }
-};
-
-const removeChildModelFilters = where => {
-  console.log("where1", where);
-  for (const key in where) {
-    if (key.includes(".")) delete where[key];
-  }
-  return where;
-  console.log("where2", where);
-};
 
 module.exports = router;
