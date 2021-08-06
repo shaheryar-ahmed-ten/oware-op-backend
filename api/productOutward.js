@@ -22,100 +22,109 @@ const { digitize } = require("../services/common.services");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
-  const { rowsPerPage, page, ...filters } = req.query;
-  const limit = req.query.rowsPerPage || config.rowsPerPage;
-  const offset = (req.query.page - 1 || 0) * limit;
-  where = sanitizeFilters({ ...filters });
-  console.log(`modelWiseFilters(where, "DispatchOrder")`, modelWiseFilters(where, "Product"));
-  // let where = removeFromObject(filters, ["to", "from"])[0];
-  const params = {
-    filters,
-    limit: limit ? Number(limit) : 0,
-    offset: offset ? Number(offset) : 0
-  };
-  // if (req.query.search)
-  //   where[Op.or] = ["$Inventories.Product.name$", "$Inventories.Company.name$", "$Inventories.Warehouse.name$"].map(key => ({
-  //     [key]: { [Op.like]: "%" + req.query.search + "%" }
-  //   }));
-  const response = await ProductOutward.findAndCountAll({
-    duplicating: false,
-    include: [
-      {
-        duplicating: false,
-        model: DispatchOrder,
-        include: [
-          {
-            model: Inventory,
-            as: "Inventory",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-          },
-          {
-            model: Inventory,
-            as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-          }
-        ]
-      },
-      {
-        model: Vehicle,
-        include: [{ model: Car, include: [CarMake, CarModel] }]
-      },
-      {
-        model: Inventory,
-        as: "Inventories",
-        include: [
-          { model: Product, include: [{ model: UOM }], where: modelWiseFilters(where, "Product") },
-          { model: Company, where: modelWiseFilters(where, "Company") },
-          { model: Warehouse, where: modelWiseFilters(where, "Warehouse") }
-        ]
-      }
-    ],
-    order: [["updatedAt", "DESC"]],
-    //subQuery: false,
-    where: removeChildModelFilters({ ...where }),
-    limit,
-    offset
-  });
-  var acc = [];
-  response.rows.forEach(productOutward => {
-    var sum = [];
-    productOutward.DispatchOrder.Inventories.forEach(Inventory => {
-      sum.push(Inventory.OrderGroup.quantity);
+  try {
+    const { rowsPerPage, page, ...filters } = req.query;
+    const limit = Number(rowsPerPage || config.rowsPerPage);
+    const offset = Number((page - 1 || 0) * limit);
+    where = sanitizeFilters({ ...filters });
+    // let where = removeFromObject(filters, ["to", "from"])[0];
+    // const params = {
+    //   filters,
+    //   limit: limit ? Number(limit) : 0,
+    //   offset: offset ? Number(offset) : 0
+    // };
+    // if (req.query.search)
+    //   where[Op.or] = ["$Inventories.Product.name$", "$Inventories.Company.name$", "$Inventories.Warehouse.name$"].map(key => ({
+    //     [key]: { [Op.like]: "%" + req.query.search + "%" }
+    //   }));
+    const response = await ProductOutward.findAndCountAll({
+      duplicating: false,
+      include: [
+        {
+          duplicating: false,
+          model: DispatchOrder,
+          include: [
+            {
+              model: Inventory,
+              as: "Inventory",
+              include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+            },
+            {
+              model: Inventory,
+              as: "Inventories",
+              include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+            }
+          ]
+        },
+        {
+          model: Vehicle,
+          include: [{ model: Car, include: [CarMake, CarModel] }]
+        },
+        {
+          model: Inventory,
+          as: "Inventories",
+          include: [
+            { model: Product, include: [{ model: UOM }], where: modelWiseFilters(where, "Product") },
+            { model: Company, where: modelWiseFilters(where, "Company") },
+            { model: Warehouse, where: modelWiseFilters(where, "Warehouse") }
+          ]
+        }
+      ],
+      order: [["updatedAt", "DESC"]],
+      //subQuery: false,
+      where: removeChildModelFilters({ ...where }),
+      limit,
+      offset
     });
-    acc.push(
-      sum.reduce((acc, po) => {
-        return acc + po;
-      })
-    );
-  });
-  for (let index = 0; index < acc.length; index++) {
-    response.rows[index].DispatchOrder.quantity = acc[index];
-  }
-
-  var comittedAcc = [];
-  response.rows.forEach(productOutward => {
-    var sumOfComitted = [];
-    productOutward.Inventories.forEach(Inventory => {
-      sumOfComitted.push(Inventory.OutwardGroup.quantity);
-    });
-    if (sumOfComitted.length > 0) {
-      comittedAcc.push(
-        sumOfComitted.reduce((acc, po) => {
+    var acc = [];
+    response.rows.forEach(productOutward => {
+      var sum = [];
+      productOutward.DispatchOrder.Inventories.forEach(Inventory => {
+        sum.push(Inventory.OrderGroup.quantity);
+      });
+      acc.push(
+        sum.reduce((acc, po) => {
           return acc + po;
         })
       );
+    });
+    for (let index = 0; index < acc.length; index++) {
+      response.rows[index].DispatchOrder.quantity = acc[index];
     }
-  });
-  for (let index = 0; index < comittedAcc.length; index++) {
-    response.rows[index].quantity = comittedAcc[index];
-  }
 
-  res.json({
-    success: true,
-    message: "respond with a resource",
-    data: response.rows,
-    pages: Math.ceil(response.count / limit)
-  });
+    var comittedAcc = [];
+    response.rows.forEach(productOutward => {
+      var sumOfComitted = [];
+      productOutward.Inventories.forEach(Inventory => {
+        sumOfComitted.push(Inventory.OutwardGroup.quantity);
+      });
+      if (sumOfComitted.length > 0) {
+        comittedAcc.push(
+          sumOfComitted.reduce((acc, po) => {
+            return acc + po;
+          })
+        );
+      }
+    });
+    for (let index = 0; index < comittedAcc.length; index++) {
+      response.rows[index].quantity = comittedAcc[index];
+    }
+
+    res.json({
+      success: true,
+      message: "respond with a resource",
+      data: response.rows,
+      pages: Math.ceil(response.count / limit)
+    });
+  } catch (err) {
+    console.log("error", err);
+    res.json({
+      success: true,
+      message: "respond with an error",
+      data: null,
+      err: err
+    });
+  }
 });
 
 /* POST create new productOutward. */
@@ -379,11 +388,9 @@ const removeFromObject = (obj, keys = []) => {
 };
 
 const removeChildModelFilters = where => {
-  console.log("where1", where);
   for (const key in where) {
     if (key.includes(".")) delete where[key];
   }
-  console.log("where2", where);
 };
 
 module.exports = router;
