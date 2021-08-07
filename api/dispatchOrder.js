@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['$Inventory.Product.name$', '$Inventory.Company.name$', '$Inventory.Warehouse.name$']
+  if (req.query.search) where[Op.or] = ['$Inventories.Product.name$', '$Inventories.Company.name$', '$Inventories.Warehouse.name$']
     .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await DispatchOrder.findAndCountAll({
     include: [{
@@ -27,6 +27,7 @@ router.get('/', async (req, res, next) => {
       include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse]
     }],
     order: [['updatedAt', 'DESC']],
+    subQuery:false,
     where, limit, offset
   });
   res.json({
