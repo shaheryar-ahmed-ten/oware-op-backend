@@ -36,7 +36,6 @@ router.get("/", async (req, res, next) => {
     where = sanitizeFilters({ ...filters });
 
     const response = await ProductOutward.findAndCountAll({
-      subQuery: false,
       duplicating: false,
       include: [
         {
@@ -71,7 +70,6 @@ router.get("/", async (req, res, next) => {
         }
       ],
       order: [["updatedAt", "DESC"]],
-      //subQuery: false,
       where: removeChildModelFilters({ ...where }),
       limit,
       offset
