@@ -34,7 +34,7 @@ router.get("/", async (req, res, next) => {
     const limit = Number(rowsPerPage || config.rowsPerPage);
     const offset = Number((page - 1 || 0) * limit);
     where = sanitizeFilters({ ...filters });
-
+    console.log(`modelWiseFilters(where, "Warehouse")`, modelWiseFilters(where, "Warehouse"));
     const response = await ProductOutward.findAndCountAll({
       duplicating: false,
       include: [
@@ -45,7 +45,11 @@ router.get("/", async (req, res, next) => {
             {
               model: Inventory,
               as: "Inventory",
-              include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+              include: [
+                { model: Product, include: [{ model: UOM }] },
+                { model: Company, where: modelWiseFilters(where, "Company"), required: true },
+                { model: Warehouse, where: modelWiseFilters(where, "Warehouse"), required: true }
+              ]
             },
             {
               model: Inventory,
@@ -63,14 +67,15 @@ router.get("/", async (req, res, next) => {
           model: Inventory,
           as: "Inventories",
           include: [
-            { model: Product, include: [{ model: UOM }], where: modelWiseFilters(where, "Product") },
-            { model: Company, where: modelWiseFilters(where, "Company") },
-            { model: Warehouse, where: modelWiseFilters(where, "Warehouse") }
+            { model: Product, include: [{ model: UOM }], where: modelWiseFilters(where, "Product"), required: true },
+            { model: Company },
+            { model: Warehouse }
           ]
         }
       ],
       order: [["updatedAt", "DESC"]],
       where: removeChildModelFilters({ ...where }),
+      distinct: true,
       limit,
       offset
     });
@@ -107,6 +112,8 @@ router.get("/", async (req, res, next) => {
     for (let index = 0; index < comittedAcc.length; index++) {
       response.rows[index].quantity = comittedAcc[index];
     }
+    console.log("count", response.count);
+    console.log("Math.ceil(response.count / limit)", Math.ceil(response.count / limit));
     res.json({
       success: true,
       message: "respond with a resource",
@@ -172,7 +179,8 @@ router.post("/", async (req, res, next) => {
         req.body.inventories.map(_inventory => {
           return Inventory.findByPk(_inventory.id, { transaction }).then(inventory => {
             if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
-            if (_inventory.quantity > inventory.committedQuantity) throw new Error("Cannot create orders above available quantity");
+            if (_inventory.quantity > inventory.committedQuantity)
+              throw new Error("Cannot create orders above available quantity");
             try {
               inventory.dispatchedQuantity += +_inventory.quantity;
               inventory.committedQuantity -= +_inventory.quantity;
@@ -214,7 +222,10 @@ router.post("/", async (req, res, next) => {
 
 /* PUT update existing productOutward. */
 router.put("/:id", async (req, res, next) => {
-  let productOutward = await ProductOutward.findOne({ where: { id: req.params.id }, include: [{ model: ProductInward }] });
+  let productOutward = await ProductOutward.findOne({
+    where: { id: req.params.id },
+    include: [{ model: ProductInward }]
+  });
   if (!productOutward)
     return res.status(400).json({
       success: false,

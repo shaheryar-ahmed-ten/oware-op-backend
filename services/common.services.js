@@ -11,9 +11,11 @@ exports.sanitizeFilters = (whereClause, transform = {}) => {
       whereClause[item] = true;
     } else if (whereClause[item] === "false") {
       whereClause[item] = false;
-    } else if (!isNaN(Number(whereClause[item]))) {
-      whereClause[item] = Number(whereClause[item]);
     }
+    //disbaling integer complete search,uncomment to enable again
+    // else if (!isNaN(Number(whereClause[item]))) {
+    //   whereClause[item] = Number(whereClause[item]);
+    // }
     if (typeof whereClause[item] === "string") {
       whereClause[item] = { [Op.like]: "%" + whereClause[item] + "%" };
     }
