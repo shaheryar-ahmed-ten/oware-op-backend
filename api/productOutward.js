@@ -31,7 +31,7 @@ const {
 router.get("/", async (req, res, next) => {
   try {
     const { rowsPerPage, page, ...filters } = req.query;
-    const limit = Number(rowsPerPage || config.rowsPerPage);
+    const limit = page ? Number(rowsPerPage || config.rowsPerPage) : 1000;
     const offset = Number((page - 1 || 0) * limit);
     where = sanitizeFilters({ ...filters });
     console.log(`modelWiseFilters(where, "Warehouse")`, modelWiseFilters(where, "Warehouse"));
@@ -47,7 +47,7 @@ router.get("/", async (req, res, next) => {
               as: "Inventory",
               include: [
                 { model: Product, include: [{ model: UOM }] },
-                { model: Company, where: modelWiseFilters(where, "Company"), required: true },
+                { model: Company, where: modelWiseFilters(where, "Company"), required: true, distinct: true },
                 { model: Warehouse, where: modelWiseFilters(where, "Warehouse"), required: true }
               ]
             },
@@ -112,7 +112,7 @@ router.get("/", async (req, res, next) => {
     for (let index = 0; index < comittedAcc.length; index++) {
       response.rows[index].quantity = comittedAcc[index];
     }
-    console.log("count", response.count);
+    console.log("limit", limit, "count", response.count);
     console.log("Math.ceil(response.count / limit)", Math.ceil(response.count / limit));
     res.json({
       success: true,
