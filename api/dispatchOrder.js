@@ -49,10 +49,10 @@ router.get("/", async (req, res, next) => {
       }
     ],
     order: [["updatedAt", "DESC"]],
-    subQuery: false,
     where,
     limit,
-    offset
+    offset,
+    distinct:true
   });
   res.json({
     success: true,
