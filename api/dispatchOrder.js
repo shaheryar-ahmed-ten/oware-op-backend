@@ -25,9 +25,9 @@ router.get("/", async (req, res, next) => {
     // userId: req.userId
   };
   if (req.query.search)
-    where[Op.or] = ["$Inventories.Product.name$", "$Inventories.Company.name$", "$Inventories.Warehouse.name$"].map(
-      key => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } })
-    );
+    where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$"].map(key => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" }
+    }));
   const response = await DispatchOrder.findAndCountAll({
     include: [
       {
@@ -39,21 +39,23 @@ router.get("/", async (req, res, next) => {
         model: Inventory,
         as: "Inventories",
         include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse]
-      },
-      {
-        model: ProductOutward,
-        as: "ProductOutwards",
-        include: ["OutwardGroups", "Vehicle"],
-        attributes: ["quantity", "referenceId", "internalIdForBusiness"],
-        required: false
       }
     ],
     order: [["updatedAt", "DESC"]],
-    subQuery: false,
+    distinct: true,
     where,
     limit,
     offset
   });
+
+  for (const { dataValues } of response.rows) {
+    dataValues["ProductOutwards"] = await ProductOutward.findAll({
+      include: ["OutwardGroups", "Vehicle"],
+      attributes: ["quantity", "referenceId", "internalIdForBusiness"],
+      required: false,
+      where: { dispatchOrderId: dataValues.id }
+    });
+  }
   res.json({
     success: true,
     message: "respond with a resource",
