@@ -34,7 +34,7 @@ router.get("/", async (req, res, next) => {
     const limit = page ? Number(rowsPerPage || config.rowsPerPage) : 1000;
     const offset = Number((page - 1 || 0) * limit);
     where = sanitizeFilters({ ...filters });
-    console.log(`modelWiseFilters(where, "Warehouse")`, modelWiseFilters(where, "Warehouse"));
+    console.log(`modelWiseFilters(where, "Company")`, modelWiseFilters(where, "Company"));
     const response = await ProductOutward.findAndCountAll({
       duplicating: false,
       include: [
@@ -118,7 +118,8 @@ router.get("/", async (req, res, next) => {
       success: true,
       message: "respond with a resource",
       data: response.rows,
-      pages: Math.ceil(response.count / limit)
+      pages: Math.ceil(response.count / limit),
+      count: response.count
     });
   } catch (err) {
     console.log("error", err);
