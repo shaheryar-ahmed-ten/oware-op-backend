@@ -112,7 +112,6 @@ router.get("/", async (req, res, next) => {
     response.rows[index].quantity = comittedAcc[index];
   }
 
-  console.log("count", response.count);
   res.json({
     success: true,
     message: "respond with a resource",
