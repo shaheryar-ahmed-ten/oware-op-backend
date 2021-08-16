@@ -29,107 +29,98 @@ const {
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
-  try {
-    const { rowsPerPage, page, ...filters } = req.query;
-    const limit = page ? Number(rowsPerPage || config.rowsPerPage) : 1000;
-    const offset = Number((page - 1 || 0) * limit);
-    where = sanitizeFilters({ ...filters });
-    console.log(`modelWiseFilters(where, "Company")`, modelWiseFilters(where, "Company"));
-    const response = await ProductOutward.findAndCountAll({
-      duplicating: false,
-      include: [
-        {
-          duplicating: false,
-          model: DispatchOrder,
-          include: [
-            {
-              model: Inventory,
-              as: "Inventory",
-              include: [
-                { model: Product, include: [{ model: UOM }] },
-                { model: Company, where: modelWiseFilters(where, "Company"), required: true, distinct: true },
-                { model: Warehouse, where: modelWiseFilters(where, "Warehouse"), required: true }
-              ]
-            },
-            {
-              model: Inventory,
-              as: "Inventories",
-              include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-            }
-          ],
-          where: modelWiseFilters(where, "DispatchOrder")
-        },
-        {
-          model: Vehicle,
-          include: [{ model: Car, include: [CarMake, CarModel] }]
-        },
-        {
-          model: Inventory,
-          as: "Inventories",
-          include: [
-            { model: Product, include: [{ model: UOM }], where: modelWiseFilters(where, "Product"), required: true },
-            { model: Company },
-            { model: Warehouse }
-          ]
-        }
-      ],
-      order: [["updatedAt", "DESC"]],
-      where: removeChildModelFilters({ ...where }),
-      distinct: true,
-      limit,
-      offset
-    });
-    var acc = [];
-    response.rows.forEach(productOutward => {
-      var sum = [];
-      productOutward.DispatchOrder.Inventories.forEach(Inventory => {
-        sum.push(Inventory.OrderGroup.quantity);
-      });
-      acc.push(
-        sum.reduce((acc, po) => {
-          return acc + po;
-        })
-      );
-    });
-    for (let index = 0; index < acc.length; index++) {
-      response.rows[index].DispatchOrder.quantity = acc[index];
-    }
-
-    var comittedAcc = [];
-    response.rows.forEach(productOutward => {
-      var sumOfComitted = [];
-      productOutward.Inventories.forEach(Inventory => {
-        sumOfComitted.push(Inventory.OutwardGroup.quantity);
-      });
-      if (sumOfComitted.length > 0) {
-        comittedAcc.push(
-          sumOfComitted.reduce((acc, po) => {
-            return acc + po;
-          })
-        );
+  const limit = req.query.rowsPerPage || config.rowsPerPage;
+  const offset = (req.query.page - 1 || 0) * limit;
+  let where = {
+    // userId: req.userId
+  };
+  if (req.query.search)
+    where[Op.or] = ["$DispatchOrder.Inventory.Company.name$", "$DispatchOrder.Inventory.Warehouse.name$"].map(key => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" }
+    }));
+  const response = await ProductOutward.findAndCountAll({
+    duplicating: false,
+    include: [
+      {
+        duplicating: false,
+        model: DispatchOrder,
+        required: true,
+        include: [
+          {
+            model: Inventory,
+            required: true,
+            as: "Inventory",
+            include: [
+              { model: Product, include: [{ model: UOM }] },
+              { model: Company, required: true },
+              { model: Warehouse, required: true }
+            ]
+          },
+          {
+            model: Inventory,
+            required: true,
+            as: "Inventories",
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+          }
+        ]
+      },
+      {
+        model: Vehicle,
+        include: [{ model: Car, include: [CarMake, CarModel] }]
+      },
+      {
+        model: Inventory,
+        as: "Inventories",
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
       }
+    ],
+    order: [["updatedAt", "DESC"]],
+    where,
+    limit,
+    offset,
+    distinct: true
+  });
+  var acc = [];
+  response.rows.forEach(productOutward => {
+    var sum = [];
+    productOutward.DispatchOrder.Inventories.forEach(Inventory => {
+      sum.push(Inventory.OrderGroup.quantity);
     });
-    for (let index = 0; index < comittedAcc.length; index++) {
-      response.rows[index].quantity = comittedAcc[index];
-    }
-    console.log("limit", limit, "count", response.count);
-    console.log("Math.ceil(response.count / limit)", Math.ceil(response.count / limit));
-    res.json({
-      success: true,
-      message: "respond with a resource",
-      data: response.rows,
-      pages: Math.ceil(response.count / limit),
-      count: response.count
-    });
-  } catch (err) {
-    console.log("error", err);
-    res.json({
-      success: true,
-      message: "respond with an error",
-      data: null,
-      err: err
-    });
+    acc.push(
+      sum.reduce((acc, po) => {
+        return acc + po;
+      })
+    );
+  });
+  for (let index = 0; index < acc.length; index++) {
+    response.rows[index].DispatchOrder.quantity = acc[index];
   }
+
+  var comittedAcc = [];
+  response.rows.forEach(productOutward => {
+    var sumOfComitted = [];
+    productOutward.Inventories.forEach(Inventory => {
+      sumOfComitted.push(Inventory.OutwardGroup.quantity);
+    });
+    comittedAcc.push(
+      sumOfComitted.reduce((acc, po) => {
+        return acc + po;
+      })
+    );
+  });
+  for (let index = 0; index < comittedAcc.length; index++) {
+    response.rows[index].quantity = comittedAcc[index];
+  }
+
+  console.log("count", response.count);
+  res.json({
+    success: true,
+    message: "respond with a resource",
+    data: response.rows,
+    pages: Math.ceil(response.count / limit),
+    count: response.count,
+    limit
+  });
 });
 
 /* POST create new productOutward. */
