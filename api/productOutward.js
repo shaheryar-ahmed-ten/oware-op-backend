@@ -18,14 +18,7 @@ const {
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
-const {
-  digitize,
-  removeFromObject,
-  sanitizeFilters,
-  removeChildModelFilters,
-  attachDateFilter,
-  modelWiseFilters
-} = require("../services/common.services");
+const { digitize } = require("../services/common.services");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
@@ -35,7 +28,11 @@ router.get("/", async (req, res, next) => {
     // userId: req.userId
   };
   if (req.query.search)
-    where[Op.or] = ["$DispatchOrder.Inventory.Company.name$", "$DispatchOrder.Inventory.Warehouse.name$"].map(key => ({
+    where[Op.or] = [
+      "$DispatchOrder.Inventory.Company.name$",
+      "$DispatchOrder.Inventory.Warehouse.name$"
+      // "$Inventories->Product.name$"
+    ].map(key => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" }
     }));
   const response = await ProductOutward.findAndCountAll({
@@ -71,7 +68,11 @@ router.get("/", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventories",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+        include: [
+          { model: Product, as: "Product", include: [{ model: UOM }] },
+          { model: Company },
+          { model: Warehouse }
+        ]
       }
     ],
     order: [["updatedAt", "DESC"]],
@@ -79,6 +80,7 @@ router.get("/", async (req, res, next) => {
     limit,
     offset,
     distinct: true
+    // subQuery: false
   });
   var acc = [];
   response.rows.forEach(productOutward => {
@@ -117,8 +119,7 @@ router.get("/", async (req, res, next) => {
     message: "respond with a resource",
     data: response.rows,
     pages: Math.ceil(response.count / limit),
-    count: response.count,
-    limit
+    count: response.count
   });
 });
 
@@ -161,10 +162,15 @@ router.post("/", async (req, res, next) => {
           userId: req.userId,
           outwardId: productOutward.id,
           inventoryId: inventory.id,
-          quantity: inventory.quantity
+          quantity: inventory.quantity,
+          availableQuantity: inventory.availableQuantity
         })),
         { transaction }
       );
+
+      for (const inventory of req.body.inventories) {
+        console.log("inventory.availableQuantity", inventory.availableQuantity);
+      }
 
       return Promise.all(
         req.body.inventories.map(_inventory => {
@@ -199,6 +205,7 @@ router.post("/", async (req, res, next) => {
     //   message: 'Cannot dispatch above available inventory quantity'
     // })
   } catch (err) {
+    console.log("err", err);
     res.json({
       success: false,
       message: err.toString().replace("Error: ", "")
