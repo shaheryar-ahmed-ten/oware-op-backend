@@ -1,5 +1,8 @@
 const { Op } = require("sequelize");
-
+const { Inventory, ProductOutward, OutwardGroup, DispatchOrder, ProductInward, OrderGroup } = require("../models");
+const {
+  DISPATCH_ORDER: { STATUS }
+} = require("../enums");
 exports.digitize = (value, places) => {
   let strValue = value + "";
   return new Array(places - strValue.length).fill("0").join("") + strValue;
@@ -106,4 +109,20 @@ exports.removeChildModelFilters = where => {
     if (key.includes(".")) delete where[key];
   }
   return where;
+};
+
+exports.checkOrderStatusAndUpdate = async dispatchOrderId => {
+  const order = await DispatchOrder.findOne({
+    where: { id: dispatchOrderId },
+    attributes: ["id"],
+    include: [{ model: Inventory, as: "Inventories" }]
+  });
+
+  for (const inventory of order.Inventories) {
+    dispatchedOrderStatus = STATUS.FULFILLED;
+    if (inventory.committedQuantity > 0) {
+      dispatchedOrderStatus = STATUS.PARTIALLY_FULFILLED;
+    }
+    await order.save();
+  }
 };

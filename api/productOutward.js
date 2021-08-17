@@ -18,7 +18,7 @@ const {
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
-const { digitize } = require("../services/common.services");
+const { digitize, checkOrderStatusAndUpdate } = require("../services/common.services");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
@@ -168,9 +168,7 @@ router.post("/", async (req, res, next) => {
         { transaction }
       );
 
-      for (const inventory of req.body.inventories) {
-        console.log("inventory.availableQuantity", inventory.availableQuantity);
-      }
+      await checkOrderStatusAndUpdate(req.body.dispatchOrderId);
 
       return Promise.all(
         req.body.inventories.map(_inventory => {
