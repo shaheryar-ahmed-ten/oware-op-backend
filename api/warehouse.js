@@ -3,6 +3,7 @@ const router = express.Router();
 const { Warehouse, User } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
+const { errorHandler } = require('../services/error.service');
 
 /* GET warehouses listing. */
 router.get('/', async (req, res, next) => {
@@ -36,9 +37,10 @@ router.post('/', async (req, res, next) => {
     });
     warehouse.save();
   } catch (err) {
+    errorHandler(err)
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.message
     });
   }
   res.json({
