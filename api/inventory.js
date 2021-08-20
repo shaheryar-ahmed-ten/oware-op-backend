@@ -191,7 +191,7 @@ router.get("/export", async (req, res, next) => {
       row.Warehouse.name,
       //row.Product.UOM.name,
       row.quantity,
-      moment(row.createdAt).format("DD-MM-yyyy hh:mm A")
+      moment(row.createdAt).format("DD/MM/yy HH:mm")
     ])
   );
 
@@ -234,7 +234,7 @@ router.get("/export", async (req, res, next) => {
       row.receiverName,
       row.receiverPhone,
       row.quantity,
-      moment(row.shipmentDate).format("DD-MM-yyyy hh:mm A")
+      moment(row.shipmentDate).format("DD/MM/yy HH:mm")
     ])
   );
 
@@ -285,8 +285,8 @@ router.get("/export", async (req, res, next) => {
       row.DispatchOrder.receiverPhone,
       row.DispatchOrder.quantity,
       row.quantity,
-      moment(row.DispatchOrder.shipmentDate).format("DD-MM-yyyy hh:mm A"),
-      moment(row.createdAt).format("DD-MM-yyyy hh:mm A")
+      moment(row.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
+      moment(row.createdAt).format("DD/MM/yy HH:mm")
     ])
   );
 
