@@ -68,6 +68,7 @@ router.get("/", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventories",
+        required: true,
         include: [
           { model: Product, as: "Product", include: [{ model: UOM }] },
           { model: Company },
@@ -168,7 +169,7 @@ router.post("/", async (req, res, next) => {
         { transaction }
       );
 
-      await checkOrderStatusAndUpdate(req.body.dispatchOrderId);
+      await checkOrderStatusAndUpdate(req.body.dispatchOrderId, productOutward.quantity, transaction);
 
       return Promise.all(
         req.body.inventories.map(_inventory => {

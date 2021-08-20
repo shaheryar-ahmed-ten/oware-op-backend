@@ -1,5 +1,13 @@
-const { Op } = require("sequelize");
-const { Inventory, ProductOutward, OutwardGroup, DispatchOrder, ProductInward, OrderGroup } = require("../models");
+const { Op, or } = require("sequelize");
+const {
+  Inventory,
+  ProductOutward,
+  OutwardGroup,
+  DispatchOrder,
+  ProductInward,
+  OrderGroup,
+  sequelize
+} = require("../models");
 const {
   DISPATCH_ORDER: { STATUS }
 } = require("../enums");
@@ -111,18 +119,34 @@ exports.removeChildModelFilters = where => {
   return where;
 };
 
-exports.checkOrderStatusAndUpdate = async dispatchOrderId => {
-  const order = await DispatchOrder.findOne({
-    where: { id: dispatchOrderId },
-    attributes: ["id"],
-    include: [{ model: Inventory, as: "Inventories" }]
-  });
+exports.checkOrderStatusAndUpdate = async (dispatchOrderId, currentOutwardQty, transaction) => {
+  try {
+    const order = await DispatchOrder.findOne({
+      where: { id: dispatchOrderId },
+      attributes: ["id", ["quantity", "orderQty"]],
+      include: [
+        {
+          model: ProductOutward,
+          attributes: ["id", ["quantity", "outwardQty"]]
+        }
+      ]
+    });
 
-  for (const inventory of order.Inventories) {
-    dispatchedOrderStatus = STATUS.FULFILLED;
-    if (inventory.committedQuantity > 0) {
-      dispatchedOrderStatus = STATUS.PARTIALLY_FULFILLED;
+    let orderStatus,
+      totalOutwardQty = currentOutwardQty;
+    for (const {
+      dataValues: { outwardQty }
+    } of order.ProductOutwards) {
+      totalOutwardQty += outwardQty;
     }
-    await order.save();
+
+    if (Number(order.dataValues.orderQty) === Number(totalOutwardQty)) orderStatus = STATUS.FULFILLED;
+    else if (Number(order.dataValues.orderQty) > Number(totalOutwardQty) && Number(totalOutwardQty) > 0)
+      orderStatus = STATUS.PARTIALLY_FULFILLED;
+    order.status = orderStatus;
+    await order.save({ transaction });
+  } catch (err) {
+    console.log("err", err);
+    throw new Error(err);
   }
 };
