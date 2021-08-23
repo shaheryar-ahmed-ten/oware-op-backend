@@ -3,9 +3,8 @@ const { Inventory, ProductInward, OutboundStat, InboundStat, sequelize, Product 
 const { Op, where, Sequelize } = require('sequelize');
 
 exports.customerStatistics = async (companyId) => {
-  const currentDate = moment().format("YYYY-MM-DD HH:mm:ss");;
+  const currentDate = moment();
   const previousDate = moment().subtract(7, 'days');
-  const formattedPreviousDate = previousDate.format("YYYY-MM-DD HH:mm:ss");
   const whereClauseWithDate = dateKey => ({ customerId: companyId, [dateKey]: { [Op.between]: [previousDate, currentDate] } });
   const whereClauseWithoutDate = { customerId: companyId };
   const whereClauseForStorageDetails = {
@@ -18,16 +17,12 @@ exports.customerStatistics = async (companyId) => {
     total: await InboundStat.aggregate('id', 'count', {
       where: whereClauseWithDate('createdAt')
     }),
-    ...(await sequelize.query(`
-    select sum(weight*InwardGroups.quantity) as weight,
-    sum(dimensionsCBM*InwardGroups.quantity) as dimensionsCBM 
-    from InwardGroups 
-    join ProductInwards as ProductInwards on inwardId = ProductInwards.id 
-    join Products as Products on Products.id = InwardGroups.productId where customerId = ${req.companyId} 
-    and (ProductInwards.createdAt BETWEEN '${formattedPreviousDate}' AND '${currentDate}') 
-    `, {
-      plain: true
-    }))
+    weight: await InboundStat.aggregate('weight', 'sum', {
+      where: whereClauseWithDate('createdAt')
+    }),
+    dimensionsCBM: await InboundStat.aggregate('dimensionsCBM', 'sum', {
+      where: whereClauseWithDate('createdAt')
+    })
   }
 
   const outboundStats = {
@@ -54,12 +49,12 @@ exports.customerStatistics = async (companyId) => {
       where availableQuantity > 0 and customerId = ${companyId} group by customerId;;
     `, { plain: true })),
     ...(await sequelize.query(`
-      select count(*) as pendingOrders from
-      (select dispatchOrderId as id,
-        count(id) as totalOutwards,
-        dispatchOrderQuantity > sum(productOutwardQuantity) as isPendingOrder
-        from OutboundStats where customerId = ${companyId} group by dispatchOrderId)
-        as orders where isPendingOrder = 1;
+    select count(*) as pendingOrders from
+    (select dispatchOrderId as id,
+      count(id) as totalOutwards,
+      dispatchOrderQuantity > sum(productOutwardQuantity) as isPendingOrder
+      from OutboundQueryForPending where customerId = ${req.companyId} group by dispatchOrderId)
+      as orders where isPendingOrder = 1;
     `, {
       plain: true
     }))
