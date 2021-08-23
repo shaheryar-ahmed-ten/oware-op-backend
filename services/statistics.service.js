@@ -54,12 +54,12 @@ exports.customerStatistics = async (companyId) => {
       where availableQuantity > 0 and customerId = ${companyId} group by customerId;;
     `, { plain: true })),
     ...(await sequelize.query(`
-      select count(*) as pendingOrders from
-      (select dispatchOrderId as id,
-        count(id) as totalOutwards,
-        dispatchOrderQuantity > sum(productOutwardQuantity) as isPendingOrder
-        from OutboundStats where customerId = ${companyId} group by dispatchOrderId)
-        as orders where isPendingOrder = 1;
+    select count(*) as pendingOrders from
+    (select dispatchOrderId as id,
+      count(id) as totalOutwards,
+      dispatchOrderQuantity > sum(productOutwardQuantity) as isPendingOrder
+      from OutboundQueryForPending where customerId = ${companyId} group by dispatchOrderId)
+      as orders where isPendingOrder = 1;
     `, {
       plain: true
     }))
