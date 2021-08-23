@@ -58,7 +58,7 @@ exports.customerStatistics = async (companyId) => {
     (select dispatchOrderId as id,
       count(id) as totalOutwards,
       dispatchOrderQuantity > sum(productOutwardQuantity) as isPendingOrder
-      from OutboundQueryForPending where customerId = ${req.companyId} group by dispatchOrderId)
+      from OutboundQueryForPending where customerId = ${companyId} group by dispatchOrderId)
       as orders where isPendingOrder = 1;
     `, {
       plain: true
