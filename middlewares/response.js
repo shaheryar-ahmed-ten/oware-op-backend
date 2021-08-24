@@ -9,7 +9,7 @@ module.exports = function (req, res, next) {
   // const lang = (req.get('LANG') || req.headers['LANG'] || 'en').toString();
   // req.setLocale(lang == 'ar' ? 'ur' : lang)
   res.sendJson = (data, msg = null) => {
-    let resObj = { status: true, message: msg ? req.__(msg) : msg, error: null };
+    let resObj = { status: true, message: msg, error: null };
     if (typeof data == "object") {
       resObj.data = data;
     } else {

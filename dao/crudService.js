@@ -8,7 +8,7 @@ class CrudServiceDao {
 
   async findOne(key) {
     const record = await this.model.findOne({
-      where: { ...key, deletedAt: null },
+      where: { ...key },
       include: [{ all: true }]
     });
     return record;
@@ -21,7 +21,6 @@ class CrudServiceDao {
     if (includeAll) _params.include = [{ all: true }];
     if (include) _params.include = include;
     if (attributes) _params.attributes = attributes;
-    _params.where.deletedAt = null;
     const { count, rows } = await this.model.findAndCountAll(_params);
     if (!rows) return [];
     return { count, records: rows };

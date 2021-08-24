@@ -21,9 +21,6 @@ app.set("port", port);
 
 const server = http.createServer(app);
 
-//success and error response formatter
-app.use(require("../middlewares/response"));
-
 /**
  * Listen on provided port, on all network interfaces.
  */

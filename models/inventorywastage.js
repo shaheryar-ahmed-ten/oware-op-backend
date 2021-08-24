@@ -22,7 +22,12 @@ module.exports = (sequelize, DataTypes) => {
         validate: { notEmpty: { msg: "inventoryId cannot be empty" } }
       },
       type: DataTypes.STRING,
-      reason: DataTypes.STRING
+      reason: DataTypes.STRING,
+      adjustmentQuantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "adjustmentQuantity cannot be empty" } }
+      }
     },
     {
       sequelize,
