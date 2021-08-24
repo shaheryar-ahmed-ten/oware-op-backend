@@ -1,9 +1,9 @@
 const httpStatus = require("http-status");
-const Dao = require("../../Dao");
+const Dao = require("../../dao");
 
 async function getWastages(params) {
   try {
-    const records = await Dao.WarehouseWastage.findAndCountAll(params);
+    const records = await Dao.InventoryWastage.findAndCountAll(params);
     if (records.count) return { status: httpStatus.OK, message: "Data Found", data: records };
     else return { status: httpStatus.OK, message: "Data not Found", data: null };
   } catch (err) {
@@ -17,7 +17,7 @@ async function addWastages(params) {
     // const isValid = await AddValidation.validateAsync(params);
     // if (isValid) {
 
-    data = await Dao.WarehouseWastage.create(params);
+    data = await Dao.InventoryWastage.create(params);
     return { status: httpStatus.OK, message: "Wastages added", data: data };
     // } else {
     //   return { status: httpStatus.UNPROCESSABLE_ENTITY, message: isValid, code: "save token failed" };

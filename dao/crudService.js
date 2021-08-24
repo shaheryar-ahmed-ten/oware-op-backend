@@ -1,5 +1,4 @@
 const models = require("../models");
-const { encrypt } = require("../library/encryption");
 
 class CrudServiceDao {
   constructor(modelName) {
@@ -29,7 +28,7 @@ class CrudServiceDao {
   }
 
   async create(params) {
-    params.password = params.password ? encrypt(params.password) : undefined;
+    console.log("this.model", this.model);
     const record = await this.model.create(params);
     return record;
   }

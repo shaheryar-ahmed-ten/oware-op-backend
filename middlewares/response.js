@@ -1,8 +1,6 @@
 const debug = require("debug")("oware-backend:server");
-
-const { limit } = require("../../config/app").pagination;
+const limit = require("../config").rowsPerPage;
 module.exports = function (req, res, next) {
-  // Just for temp impl
   if (req.query.hasOwnProperty("page")) {
     req.query.offset = req.query.page ? req.query.page : 0;
   }
