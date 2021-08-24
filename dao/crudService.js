@@ -6,11 +6,8 @@ class CrudServiceDao {
     this.model = models[modelName];
   }
 
-  async findOne(key) {
-    const record = await this.model.findOne({
-      where: { ...key },
-      include: [{ all: true }]
-    });
+  async findOne(params) {
+    const record = await this.model.findOne(params);
     return record;
   }
 
@@ -70,10 +67,8 @@ class CrudServiceDao {
     const record = await this.model.destroy({ where: { id } });
   }
 
-  async find(term) {
-    const record = await this.model.findOne({
-      where: { id: term }
-    });
+  async findByPk(id) {
+    const record = await this.model.findByPk(id);
     return record ? record : [];
   }
 }

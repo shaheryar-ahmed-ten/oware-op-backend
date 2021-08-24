@@ -18,42 +18,61 @@ async function addWastages(params) {
     await sequelize.transaction(async transaction => {
       const { warehouseId, customerId, adjustment_products } = params;
       for (const product of adjustment_products) {
-        return Inventory.findOne(
+        const inventory = await Inventory.findOne(
           {
             where: { productId: product.productId, customerId, warehouseId }
           },
           { transaction }
-        )
-          .then(inventory => {
-            console.log("inventory", inventory);
-            if (!inventory) throw new Error("Product doesn't exist in inventory");
-            else {
-              inventory.availableQuantity = inventory.availableQuantity - product.adjustmentQuantity;
-              inventory.save({ transaction });
-              return inventory;
-            }
-          })
-          .then(inventory => {
-            console.log("---------- debug 2-------------------------", inventory);
-            Dao.InventoryWastage.create(
-              {
-                inventoryId: inventory.id,
-                type: product.type ? product.type : null,
-                reason: product.reason ? product.reason : null,
-                adjustmentQuantity: product.adjustmentQuantity
-              },
-              { transaction }
-            );
-            return inventory;
-          });
+        );
+        if (!inventory) throw new Error("Product doesn't exist in inventory");
+        else {
+          inventory.availableQuantity = inventory.availableQuantity - product.adjustmentQuantity;
+          inventory.save({ transaction });
+        }
+
+        await Dao.InventoryWastage.create(
+          {
+            inventoryId: inventory.id,
+            type: product.type ? product.type : null,
+            reason: product.reason ? product.reason : null,
+            adjustmentQuantity: product.adjustmentQuantity
+          },
+          { transaction }
+        );
       }
-      console.log("--------------- debug 3 --------------------------");
-      return { status: httpStatus.OK, message: "Wastages added", data: null };
     });
+    return { status: httpStatus.OK, message: "Wastages added", data: null };
   } catch (err) {
     console.log("ERROR:", err);
     return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to add Wastages" };
   }
 }
 
-module.exports = { getWastages, addWastages };
+async function getWastageById(params) {
+  try {
+    const record = await Dao.InventoryWastage.findOne(params);
+    if (record) return { status: httpStatus.OK, message: "Data Found", data: record };
+    else return { status: httpStatus.OK, message: "Data not Found", data: null };
+  } catch (err) {
+    console.log("ERROR:", err);
+    return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to get data" };
+  }
+}
+
+async function updateWastage(params) {
+  try {
+    const inventoryWastage = await Dao.InventoryWastage.findOne(params);
+    console.log("inventoryWastage", inventoryWastage);
+    const inventory = await Inventory.findByPk(inventoryWastage.inventoryId);
+    console.log("inventory", inventory);
+    // inventory.availableQuantity += inventory;
+    // const record = await Dao.InventoryWastage.update(params, id);
+    if (record) return { status: httpStatus.OK, message: "Data Found", data: [] };
+    else return { status: httpStatus.OK, message: "Data not Found", data: null };
+  } catch (err) {
+    console.log("err", err);
+    return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to get data" };
+  }
+}
+
+module.exports = { getWastages, addWastages, getWastageById, updateWastage };

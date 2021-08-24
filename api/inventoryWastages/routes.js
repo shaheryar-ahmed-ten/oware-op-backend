@@ -18,8 +18,31 @@ router.get("/", async (req, res) => {
   else res.sendError(response.status, response.message, response.error);
 });
 
+router.get("/:id", async (req, res) => {
+  const params = {
+    include: ["Inventory"],
+    attributes: [["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity"],
+    where: { id: req.params.id }
+  };
+  const response = await controller.getWastageById(params);
+  if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.status);
+  else res.sendError(response.status, response.message, response.error);
+});
+
+router.put("/:id", async (req, res) => {
+  const params = {
+    include: ["Inventory"],
+    attributes: [["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity"],
+    where: { id: req.params.id }
+  };
+  const response = await controller.updateWastage(params);
+  if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.status);
+  else res.sendError(response.status, response.message, response.error);
+});
+
 router.post("/", async (req, res) => {
   const response = await controller.addWastages(req.body);
+  console.log("response", response);
   if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.status);
   else res.sendError(response.status, response.message, response.code);
 });
