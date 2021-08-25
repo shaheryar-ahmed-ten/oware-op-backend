@@ -8,8 +8,8 @@ module.exports = function (req, res, next) {
   req.query.limit = req.query.limit ? req.query.limit : limit;
   // const lang = (req.get('LANG') || req.headers['LANG'] || 'en').toString();
   // req.setLocale(lang == 'ar' ? 'ur' : lang)
-  res.sendJson = (data, msg = null) => {
-    let resObj = { status: true, message: msg, error: null };
+  res.sendJson = (data, msg = null, success, pages) => {
+    let resObj = { status: true, message: msg, error: null, pages: pages };
     if (typeof data == "object") {
       resObj.data = data;
     } else {

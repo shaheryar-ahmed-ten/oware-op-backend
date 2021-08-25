@@ -4,12 +4,23 @@ const { Inventory, sequelize } = require("../../models");
 
 async function getWastages(params) {
   try {
-    const records = await Dao.InventoryWastage.findAndCountAll(params);
-    if (records.count) return { status: httpStatus.OK, message: "Data Found", data: records };
-    else return { status: httpStatus.OK, message: "Data not Found", data: null };
+    const response = await Dao.InventoryWastage.findAndCountAll(params);
+    // console.log("response.records", response.records);
+    if (response.count)
+      return {
+        success: httpStatus.OK,
+        message: "Data Found",
+        data: response.records,
+        pages: Math.ceil(response.count / params.limit)
+      };
+    else return { success: httpStatus.OK, message: "Data not Found", data: [] };
   } catch (err) {
     console.log("ERROR:", err);
-    return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to get data" };
+    return {
+      success: httpStatus.CONFLICT,
+      message: err.message,
+      code: "Failed to get data"
+    };
   }
 }
 
@@ -41,18 +52,18 @@ async function addWastages(params) {
         );
       }
     });
-    return { status: httpStatus.OK, message: "Wastages added", data: null };
+    return { success: httpStatus.OK, message: "Wastages added", data: [] };
   } catch (err) {
     console.log("ERROR:", err);
-    return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to add Wastages" };
+    return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to add Wastages" };
   }
 }
 
 async function getWastageById(params) {
   try {
-    const record = await Dao.InventoryWastage.findOne(params);
-    if (record) return { status: httpStatus.OK, message: "Data Found", data: record };
-    else return { status: httpStatus.OK, message: "Data not Found", data: null };
+    const response = await Dao.InventoryWastage.findOne(params);
+    if (response) return { status: httpStatus.OK, message: "Data Found", data: response };
+    else return { status: httpStatus.OK, message: "Data not Found", data: [] };
   } catch (err) {
     console.log("ERROR:", err);
     return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to get data" };
