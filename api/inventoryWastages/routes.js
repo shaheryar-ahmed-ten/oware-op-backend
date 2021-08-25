@@ -14,10 +14,11 @@ router.get("/", async (req, res) => {
       [key]: { [Op.like]: "%" + req.query.search + "%" }
     }));
 
-  // if (req.query.warehouse)
-  //   where[Op.or] = ["$Inventory.Warehouse.name$"].map(key => ({
-  //     [key]: { [Op.eq]: req.query.warehouse }
-  //   }));
+  if (req.query.warehouse) where["$Inventory.Warehouse.id$"] = { [Op.eq]: req.query.warehouse };
+
+  if (req.query.company) where["$Inventory.Company.id$"] = { [Op.eq]: req.query.company };
+
+  if (req.query.product) where["$Inventory.Product.id$"] = { [Op.eq]: req.query.product };
 
   // if (req.query.company)
   //   where[Op.or].push(
