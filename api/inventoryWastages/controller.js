@@ -24,7 +24,7 @@ async function getWastages(params) {
   }
 }
 
-async function addWastages(params) {
+async function addWastages(params, adminId) {
   try {
     await sequelize.transaction(async transaction => {
       const { warehouseId, customerId, adjustment_products } = params;
@@ -46,7 +46,8 @@ async function addWastages(params) {
             inventoryId: inventory.id,
             type: product.type ? product.type : null,
             reason: product.reason ? product.reason : null,
-            adjustmentQuantity: product.adjustmentQuantity
+            adjustmentQuantity: product.adjustmentQuantity,
+            adminId
           },
           { transaction }
         );
@@ -74,18 +75,22 @@ async function updateWastage(params, req_body) {
   try {
     const inventoryWastage = await Dao.InventoryWastage.findOne(params);
     if (inventoryWastage) {
-      inventoryWastage.Inventory.availableQuantity =
-        inventoryWastage.Inventory.availableQuantity +
-        inventoryWastage.adjustmentQuantity -
-        req_body.adjustmentQuantity;
-      inventoryWastage.adjustmentQuantity = req_body.adjustmentQuantity;
+      if (req_body.adjustmentQuantity) {
+        inventoryWastage.Inventory.availableQuantity =
+          inventoryWastage.Inventory.availableQuantity +
+          inventoryWastage.adjustmentQuantity -
+          req_body.adjustmentQuantity;
+        inventoryWastage.adjustmentQuantity = req_body.adjustmentQuantity;
+      }
+      if (req_body.reason) inventoryWastage.reason = req_body.reason;
+      if (req_body.type) inventoryWastage.type = req_body.type;
       await inventoryWastage.save();
       await inventoryWastage.Inventory.save();
-      return { status: httpStatus.OK, message: "Data Found", data: inventoryWastage };
+      return { status: httpStatus.OK, message: "Data Updated", data: inventoryWastage };
     } else return { status: httpStatus.OK, message: "Data not Found", data: null };
   } catch (err) {
     console.log("err", err);
-    return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to get data" };
+    return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to update data" };
   }
 }
 

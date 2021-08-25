@@ -2,7 +2,7 @@ const router = require("express").Router();
 const controller = require("./controller");
 const httpStatus = require("http-status");
 const config = require("../../config");
-const { Inventory, Company, Warehouse, Product, UOM } = require("../../models");
+const { Inventory, Company, Warehouse, Product, UOM, User } = require("../../models");
 const { Op, fn, col } = require("sequelize");
 
 router.get("/", async (req, res) => {
@@ -20,22 +20,6 @@ router.get("/", async (req, res) => {
 
   if (req.query.product) where["$Inventory.Product.id$"] = { [Op.eq]: req.query.product };
 
-  // if (req.query.company)
-  //   where[Op.or].push(
-  //     ["$Inventory.Company.name$"].map(key => ({
-  //       [key]: { [Op.eq]: req.query.company }
-  //     }))
-  //   );
-  // where[Op.or] = ["$Inventory.Company.name$"].map(key => ({
-  //   [key]: { [Op.eq]: req.query.company }
-  // }));
-
-  // if (req.query.product)
-  //   where[Op.or].push(
-  //     ["$Inventory.P roduct.name$"].map(key => ({
-  //       [key]: { [Op.eq]: req.query.product }
-  //     }))
-  //   );
   console.log("where", where);
   const params = {
     limit,
@@ -45,7 +29,8 @@ router.get("/", async (req, res) => {
         model: Inventory,
         as: "Inventory",
         include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
-      }
+      },
+      { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
     ],
     attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
     where
@@ -63,7 +48,8 @@ router.get("/:id", async (req, res) => {
         model: Inventory,
         as: "Inventory",
         include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
-      }
+      },
+      { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
     ],
     attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
     where: { id: req.params.id }
@@ -85,7 +71,7 @@ router.put("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const response = await controller.addWastages(req.body);
+  const response = await controller.addWastages(req.body, req.userId);
   if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.code);
 });

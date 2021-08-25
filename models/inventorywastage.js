@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
       InventoryWastage.belongsTo(models.Inventory, {
         foreignKey: "inventoryId"
       });
+      InventoryWastage.belongsTo(models.User, {
+        foreignKey: "adminId",
+        as: "Admin"
+      });
     }
   }
   InventoryWastage.init(
@@ -27,6 +31,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: { notEmpty: { msg: "adjustmentQuantity cannot be empty" } }
+      },
+      adminId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Admin cannot be empty" } }
       }
     },
     {
