@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
     limit,
     offset,
     include: ["Inventory"],
-    attributes: [["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity"]
+    attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity"]
   };
   const response = await controller.getWastages(params);
   if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.status);
@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const params = {
     include: ["Inventory"],
-    attributes: [["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity"],
+    // attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity"],
     where: { id: req.params.id }
   };
   const response = await controller.getWastageById(params);
@@ -31,11 +31,11 @@ router.get("/:id", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const params = {
-    include: ["Inventory"],
-    attributes: [["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity"],
+    include: [{ model: Inventory, as: "Inventory" }],
+    attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity"],
     where: { id: req.params.id }
   };
-  const response = await controller.updateWastage(params);
+  const response = await controller.updateWastage(params, req.body);
   if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.status);
   else res.sendError(response.status, response.message, response.error);
 });

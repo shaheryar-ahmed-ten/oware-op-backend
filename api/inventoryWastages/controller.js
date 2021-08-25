@@ -59,16 +59,19 @@ async function getWastageById(params) {
   }
 }
 
-async function updateWastage(params) {
+async function updateWastage(params, req_body) {
   try {
     const inventoryWastage = await Dao.InventoryWastage.findOne(params);
-    console.log("inventoryWastage", inventoryWastage);
-    const inventory = await Inventory.findByPk(inventoryWastage.inventoryId);
-    console.log("inventory", inventory);
-    // inventory.availableQuantity += inventory;
-    // const record = await Dao.InventoryWastage.update(params, id);
-    if (record) return { status: httpStatus.OK, message: "Data Found", data: [] };
-    else return { status: httpStatus.OK, message: "Data not Found", data: null };
+    if (inventoryWastage) {
+      inventoryWastage.Inventory.availableQuantity =
+        inventoryWastage.Inventory.availableQuantity +
+        inventoryWastage.adjustmentQuantity -
+        req_body.adjustmentQuantity;
+      inventoryWastage.adjustmentQuantity = req_body.adjustmentQuantity;
+      await inventoryWastage.save();
+      await inventoryWastage.Inventory.save();
+      return { status: httpStatus.OK, message: "Data Found", data: inventoryWastage };
+    } else return { status: httpStatus.OK, message: "Data not Found", data: null };
   } catch (err) {
     console.log("err", err);
     return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to get data" };
