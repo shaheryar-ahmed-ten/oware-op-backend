@@ -89,4 +89,19 @@ async function updateWastage(params, req_body) {
   }
 }
 
-module.exports = { getWastages, addWastages, getWastageById, updateWastage };
+async function deleteWastage(id) {
+  try {
+    const response = await Dao.InventoryWastage.findByPk(id);
+    if (response) {
+      body = await Dao.InventoryWastage.delete(id);
+      return { success: httpStatus.OK, message: "Adjustment deleted", data: response };
+    } else {
+      return { success: httpStatus.OK, message: "Adjustment doesn't exist", data: null };
+    }
+  } catch (err) {
+    console.log("ERROR:", err);
+    return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to delete" };
+  }
+}
+
+module.exports = { getWastages, addWastages, getWastageById, updateWastage, deleteWastage };
