@@ -9,7 +9,7 @@ module.exports = function (req, res, next) {
   // const lang = (req.get('LANG') || req.headers['LANG'] || 'en').toString();
   // req.setLocale(lang == 'ar' ? 'ur' : lang)
   res.sendJson = (data, msg = null, success, pages) => {
-    let resObj = { status: true, message: msg, error: null, pages: pages };
+    let resObj = { success: true, message: msg, error: null, pages: pages };
     if (typeof data == "object") {
       resObj.data = data;
     } else {
@@ -25,7 +25,7 @@ module.exports = function (req, res, next) {
     debug(errMsg);
     debug(`==================================================================================\n`);
     // writeLog({"scheme": req.protocol, "url": req.originalUrl, "RequestMethod": req.method, "IP": req.ip, "headers": req.headers, "body": req.body, "query": req.query, "res": res.statusCode}, msg)
-    res.status(status).json({ status: false, message: message, data: null, error: errMsg });
+    res.status(status).json({ success: false, message: message, data: null, error: errMsg });
   };
   next();
 };
