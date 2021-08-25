@@ -58,7 +58,11 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const params = {
     include: [
-      { model: Inventory, as: "Inventory", include: [{ model: "Product", include: ["UOM"] }, "Company", "Warehouse"] }
+      {
+        model: Inventory,
+        as: "Inventory",
+        include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
+      }
     ],
     attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
     where: { id: req.params.id }
