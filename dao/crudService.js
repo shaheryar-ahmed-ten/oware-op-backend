@@ -23,6 +23,18 @@ class CrudServiceDao {
     return { count, records: rows };
   }
 
+  async findAll(params) {
+    const { where } = params;
+    let { includeAll = false, include, attributes } = params;
+    const _params = { where };
+    if (includeAll) _params.include = [{ all: true }];
+    if (include) _params.include = include;
+    if (attributes) _params.attributes = attributes;
+    const { count, rows } = await this.model.findAndCountAll(_params);
+    if (!rows) return [];
+    return { count, records: rows };
+  }
+
   async create(params) {
     console.log("this.model", this.model);
     const record = await this.model.create(params);
