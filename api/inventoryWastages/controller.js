@@ -115,7 +115,10 @@ async function getRelations(params) {
   try {
     console.log("------------error----------------------");
     const company = await Dao.Company.findAll(params);
-    return { success: httpStatus.OK, message: "company added", data: company };
+    const warehouse = await Dao.Warehouse.findAll(params);
+    const product = await Dao.Product.findAll(params);
+    const records = { company, warehouse, product };
+    return { success: httpStatus.OK, message: "company added", data: records };
   } catch (err) {
     console.log("err", err);
     return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to add Wastages" };

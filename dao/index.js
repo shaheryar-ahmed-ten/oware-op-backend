@@ -1,5 +1,7 @@
 module.exports = {
   InventoryWastage: require("./inventoryWastage"),
   Company: require("./Company"),
-  Inventory: require("./Inventory")
+  Inventory: require("./Inventory"),
+  Warehouse: require("./Warehouse"),
+  Product: require("./Product")
 };

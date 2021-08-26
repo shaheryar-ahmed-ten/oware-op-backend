@@ -45,7 +45,16 @@ router.get("/", async (req, res) => {
 router.get("/relations", async (req, res) => {
   const params = {
     where: {},
-    include: [{ model: Inventory, as: "Inventories", include: ["InventoryWastage"] }]
+    include: [
+      {
+        model: Inventory,
+        as: "Inventories",
+        include: [{ model: InventoryWastage, as: "InventoryWastage", required: true }],
+        required: true
+      }
+    ],
+    group: ["id", "name"],
+    attributes: ["id", "name"]
   };
   const response = await controller.getRelations(params);
   if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);

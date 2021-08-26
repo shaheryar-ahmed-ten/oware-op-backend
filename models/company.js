@@ -1,7 +1,7 @@
-'use strict';
-const { Model } = require('sequelize');
-const config = require('../config');
-const { PORTALS, RELATION_TYPES } = require('../enums');
+"use strict";
+const { Model } = require("sequelize");
+const config = require("../config");
+const { PORTALS, RELATION_TYPES } = require("../enums");
 
 module.exports = (sequelize, DataTypes) => {
   class Company extends Model {
@@ -13,69 +13,73 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Company.belongsTo(models.User, {
-        foreignKey: 'userId'
+        foreignKey: "userId"
       });
       Company.belongsTo(models.User, {
-        foreignKey: 'contactId',
-        as: 'Contact'
+        foreignKey: "contactId",
+        as: "Contact"
       });
       Company.hasMany(models.User, {
-        foreignKey: 'companyId',
-        as: 'Employees'
+        foreignKey: "companyId",
+        as: "Employees"
       });
       Company.hasMany(models.Driver, {
-        foreignKey: 'companyId',
-        as: 'Drivers'
+        foreignKey: "companyId",
+        as: "Drivers"
       });
-    };
-  };
-  Company.init({
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: true }
-    },
-    relationType: {
-      type: DataTypes.ENUM({
-        values: Object.keys(RELATION_TYPES)
-      }),
-      defaultValue: RELATION_TYPES.CUSTOMER
-    },
-    internalIdForBusiness: DataTypes.STRING,
-    type: DataTypes.STRING,
-    contactId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Please select a contact' } }
-    },
-    name: {
+      Company.hasMany(models.Inventory, { foreignKey: "customerId" });
+    }
+  }
+  Company.init(
+    {
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: true }
+      },
+      relationType: {
+        type: DataTypes.ENUM({
+          values: Object.keys(RELATION_TYPES)
+        }),
+        defaultValue: RELATION_TYPES.CUSTOMER
+      },
+      internalIdForBusiness: DataTypes.STRING,
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Please enter company name' } }
-    },
-    phone: {
-      type: DataTypes.STRING,
-      validate: {
-        isNumeric: { msg: 'Please enter correct phone number' }
+      contactId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please select a contact" } }
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Please enter company name" } }
+      },
+      phone: {
+        type: DataTypes.STRING,
+        validate: {
+          isNumeric: { msg: "Please enter correct phone number" }
+        }
+      },
+      allowedApps: {
+        type: DataTypes.ENUM({
+          values: Object.keys(PORTALS)
+        }),
+        allowNull: false,
+        defaultValue: PORTALS.CUSTOMER
+      },
+      notes: DataTypes.STRING,
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
       }
     },
-    allowedApps: {
-      type: DataTypes.ENUM({
-        values: Object.keys(PORTALS)
-      }),
-      allowNull: false,
-      defaultValue: PORTALS.CUSTOMER
-    },
-    notes: DataTypes.STRING,
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
-    },
-  }, {
-    sequelize,
-    paranoid: true,
-    modelName: 'Company',
-  });
+    {
+      sequelize,
+      paranoid: true,
+      modelName: "Company"
+    }
+  );
 
   return Company;
 };
