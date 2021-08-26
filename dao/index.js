@@ -3,5 +3,6 @@ module.exports = {
   Company: require("./Company"),
   Inventory: require("./Inventory"),
   Warehouse: require("./Warehouse"),
-  Product: require("./Product")
+  Product: require("./Product"),
+  WastagesType: require("./WastagesType")
 };

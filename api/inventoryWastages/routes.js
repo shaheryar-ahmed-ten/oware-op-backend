@@ -5,6 +5,12 @@ const config = require("../../config");
 const { Inventory, Company, Warehouse, Product, UOM, User, InventoryWastage } = require("../../models");
 const { Op } = require("sequelize");
 
+router.get("/wastages-type", async (req, res) => {
+  const params = { where: {} };
+  const response = await controller.getWastagesType(params);
+  if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
+  else res.sendError(response.success, response.message, response.error);
+});
 router.get("/", async (req, res) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;

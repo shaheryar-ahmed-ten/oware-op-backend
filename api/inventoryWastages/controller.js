@@ -113,16 +113,33 @@ async function deleteWastage(id) {
 
 async function getRelations(params) {
   try {
-    console.log("------------error----------------------");
     const company = await Dao.Company.findAll(params);
     const warehouse = await Dao.Warehouse.findAll(params);
     const product = await Dao.Product.findAll(params);
     const records = { company, warehouse, product };
-    return { success: httpStatus.OK, message: "company added", data: records };
+    return { success: httpStatus.OK, message: "data found", data: records };
   } catch (err) {
     console.log("err", err);
-    return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to add Wastages" };
+    return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to found data" };
   }
 }
 
-module.exports = { getWastages, addWastages, getWastageById, updateWastage, deleteWastage, getRelations };
+async function getWastagesType(params) {
+  try {
+    const WastagesType = await Dao.WastagesType.findAll(params);
+    return { success: httpStatus.OK, message: "wastages type found", data: WastagesType };
+  } catch (err) {
+    console.log("err", err);
+    return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to found data" };
+  }
+}
+
+module.exports = {
+  getWastages,
+  addWastages,
+  getWastageById,
+  updateWastage,
+  deleteWastage,
+  getRelations,
+  getWastagesType
+};
