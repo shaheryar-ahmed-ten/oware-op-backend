@@ -81,7 +81,7 @@ class CrudServiceDao {
 
   async findByPk(id) {
     const record = await this.model.findByPk(id);
-    return record ? record : [];
+    return record ? record : null;
   }
 }
 

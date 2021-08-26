@@ -33,7 +33,8 @@ router.get("/", async (req, res) => {
       { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
     ],
     attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
-    where
+    where,
+    sort: [["createdAt", "DESC"]]
   };
   const response = await controller.getWastages(params);
   if (response.success === httpStatus.OK)

@@ -99,7 +99,6 @@ async function updateWastage(params, req_body) {
 async function deleteWastage(id) {
   try {
     const response = await Dao.InventoryWastage.findByPk(id);
-    console.log("response", response);
     if (response) {
       body = await Dao.InventoryWastage.delete(response);
       return { success: httpStatus.OK, message: "Adjustment deleted", data: response };
