@@ -37,6 +37,8 @@ async function addWastages(params, adminId) {
         );
         if (!inventory) throw new Error("Product doesn't exist in inventory");
         else {
+          if (inventory.availableQuantity < product.adjustmentQuantity)
+            throw new Error("Product adjustment quantity cannot be more than availaible quantity");
           inventory.availableQuantity = inventory.availableQuantity - product.adjustmentQuantity;
           inventory.save({ transaction });
         }
@@ -98,7 +100,7 @@ async function deleteWastage(id) {
   try {
     const response = await Dao.InventoryWastage.findByPk(id);
     if (response) {
-      body = await Dao.InventoryWastage.delete(id);
+      body = await Dao.InventoryWastage.delete(response);
       return { success: httpStatus.OK, message: "Adjustment deleted", data: response };
     } else {
       return { success: httpStatus.OK, message: "Adjustment doesn't exist", data: null };
@@ -109,4 +111,15 @@ async function deleteWastage(id) {
   }
 }
 
-module.exports = { getWastages, addWastages, getWastageById, updateWastage, deleteWastage };
+async function getRelations(params) {
+  try {
+    console.log("------------error----------------------");
+    const company = await Dao.Company.findAll(params);
+    return { success: httpStatus.OK, message: "company added", data: company };
+  } catch (err) {
+    console.log("err", err);
+    return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to add Wastages" };
+  }
+}
+
+module.exports = { getWastages, addWastages, getWastageById, updateWastage, deleteWastage, getRelations };

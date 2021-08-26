@@ -2,8 +2,8 @@ const router = require("express").Router();
 const controller = require("./controller");
 const httpStatus = require("http-status");
 const config = require("../../config");
-const { Inventory, Company, Warehouse, Product, UOM, User } = require("../../models");
-const { Op, fn, col } = require("sequelize");
+const { Inventory, Company, Warehouse, Product, UOM, User, InventoryWastage } = require("../../models");
+const { Op } = require("sequelize");
 
 router.get("/", async (req, res) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
@@ -33,12 +33,29 @@ router.get("/", async (req, res) => {
       { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
     ],
     attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
-    where
+    where,
+    sort: [["createdAt", "DESC"]]
   };
   const response = await controller.getWastages(params);
   if (response.success === httpStatus.OK)
     res.sendJson(response.data, response.message, response.success, response.pages);
   else res.sendError(response.status, response.message, response.error);
+});
+
+router.get("/relations", async (req, res) => {
+  const params = {
+    where: {},
+    include: [{ model: Inventory, as: "Inventories", include: ["InventoryWastage"] }]
+  };
+  const response = await controller.getRelations(params);
+  if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
+  else res.sendError(response.success, response.message, response.error);
+});
+
+router.delete("/:id", async (req, res) => {
+  const response = await controller.deleteWastage(req.params.id);
+  if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
+  else res.sendError(response.success, response.message, response.code);
 });
 
 router.get("/:id", async (req, res) => {
@@ -74,12 +91,6 @@ router.post("/", async (req, res) => {
   const response = await controller.addWastages(req.body, req.userId);
   if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.code);
-});
-
-router.delete("/:id", async (req, res) => {
-  const response = await controller.deleteWastage(req.params.id);
-  if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
-  else res.sendError(response.success, response.message, response.code);
 });
 
 module.exports = router;
