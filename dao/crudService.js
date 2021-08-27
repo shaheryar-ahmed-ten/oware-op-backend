@@ -34,7 +34,6 @@ class CrudServiceDao {
   }
 
   async create(params) {
-    console.log("this.model", this.model);
     const record = await this.model.create(params);
     return record;
   }

@@ -26,7 +26,6 @@ router.get("/", async (req, res) => {
 
   if (req.query.product) where["$Inventory.Product.id$"] = { [Op.eq]: req.query.product };
 
-  console.log("where", where);
   const params = {
     limit,
     offset,
@@ -36,7 +35,8 @@ router.get("/", async (req, res) => {
         as: "Inventory",
         include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
       },
-      { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
+      { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] },
+      "WastagesType"
     ],
     attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
     where,

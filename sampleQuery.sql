@@ -22,3 +22,5 @@ select
     LEFT JOIN Customers as Customer ON PI.customerId=Customer.id
     LEFT JOIN UOMs as UOM ON Product.uomId=UOM.id
 group by PI.customerId, PI.productId, PI.warehouseId;
+
+INSERT INTO WastagesTypes VALUES (1,"DAMAGED",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),null),(2,"EXPIRED",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),null),(3,"STOLEN",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),null),(4,"OTHER",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),null);

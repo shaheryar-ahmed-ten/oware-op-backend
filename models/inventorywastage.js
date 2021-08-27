@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "adminId",
         as: "Admin"
       });
+      InventoryWastage.belongsTo(models.WastagesType, {
+        foreignKey: "type",
+        as: "WastagesType"
+      });
     }
   }
   InventoryWastage.init(
