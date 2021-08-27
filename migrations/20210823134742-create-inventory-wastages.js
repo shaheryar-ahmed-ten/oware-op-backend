@@ -18,11 +18,11 @@ module.exports = {
         onDelete: "CASCADE"
       },
       type: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: "WastagesTypes",
-          key: "id"
-        }
+        type: Sequelize.INTEGER
+        // references: {
+        //   model: "WastagesTypes",
+        //   key: "id"
+        // }
       },
       reason: {
         type: Sequelize.STRING
