@@ -26,36 +26,29 @@ async function getWastages(params) {
 
 async function addWastages(params, adminId) {
   try {
-    await sequelize.transaction(async transaction => {
-      const { warehouseId, customerId, adjustment_products } = params;
-      for (const product of adjustment_products) {
-        const inventory = await Inventory.findOne(
-          {
-            where: { productId: product.productId, customerId, warehouseId }
-          },
-          { transaction }
-        );
-        if (!inventory) throw new Error("Product doesn't exist in inventory");
-        else {
-          if (inventory.availableQuantity < product.adjustmentQuantity)
-            throw new Error("Product adjustment quantity cannot be more than availaible quantity");
-          inventory.availableQuantity = inventory.availableQuantity - product.adjustmentQuantity;
-          inventory.save({ transaction });
-        }
-
-        await Dao.StockAdjustment.create(
-          {
-            inventoryId: inventory.id,
-            type: product.type ? product.type : null,
-            reason: product.reason ? product.reason : null,
-            adjustmentQuantity: product.adjustmentQuantity,
-            adminId
-          },
-          { transaction }
-        );
+    // const stockAdjustment = await sequelize.transaction(async transaction => {
+    const adjustment = await Dao.StockAdjustment.create(
+      {
+        adminId
       }
-    });
-    return { success: httpStatus.OK, message: "Wastages added", data: [] };
+      // { transaction }
+    );
+
+    params = await Promise.all(
+      params.map(async param => {
+        const { customerId, productId, warehouseId } = param;
+        const inventory = await Dao.Inventory.findOne({ where: { customerId, productId, warehouseId } });
+        param["inventoryId"] = inventory.id;
+        param["adjustmentId"] = adjustment.id;
+        return param;
+      })
+    );
+    console.log("params", params);
+    const inv = await Dao.AdjustmentInventory.bulkCreate(params);
+    console.log("inv", inv);
+    // return adjustment;
+    // });
+    return { success: httpStatus.OK, message: "Stock Adjustment added", data: adjustment };
   } catch (err) {
     console.log("ERROR:", err);
     return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to add Wastages" };

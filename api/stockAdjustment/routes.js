@@ -4,6 +4,7 @@ const httpStatus = require("http-status");
 const config = require("../../config");
 const { Inventory, Company, Warehouse, Product, UOM, User, InventoryWastage } = require("../../models");
 const { Op } = require("sequelize");
+const AdjustmentInventory = require("../../dao/AdjustmentInventory");
 
 router.get("/wastages-type", async (req, res) => {
   const params = { where: {} };
@@ -36,10 +37,8 @@ router.get("/", async (req, res) => {
         required: true,
         include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
       },
-      { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] },
-      "WastagesType"
+      { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
     ],
-    attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
     where,
     sort: [["createdAt", "DESC"]]
   };
@@ -79,12 +78,12 @@ router.get("/:id", async (req, res) => {
     include: [
       {
         model: Inventory,
-        as: "Inventory",
+        as: "Inventories",
+        required: true,
         include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
       },
       { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
     ],
-    attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
     where: { id: req.params.id }
   };
   const response = await controller.getWastageById(params);
