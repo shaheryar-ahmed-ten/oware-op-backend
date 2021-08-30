@@ -13,10 +13,6 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "adminId",
         as: "Admin"
       });
-      StockAdjustment.belongsTo(models.WastagesType, {
-        foreignKey: "type",
-        as: "WastagesType"
-      });
       StockAdjustment.belongsToMany(models.Inventory, {
         foreignKey: "adjustmentId",
         through: models.AdjustmentInventory,
@@ -26,18 +22,6 @@ module.exports = (sequelize, DataTypes) => {
   }
   StockAdjustment.init(
     {
-      inventoryId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "inventoryId cannot be empty" } }
-      },
-      type: DataTypes.STRING,
-      reason: DataTypes.STRING,
-      adjustmentQuantity: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "adjustmentQuantity cannot be empty" } }
-      },
       adminId: {
         type: DataTypes.INTEGER,
         allowNull: false,

@@ -15,10 +15,21 @@ module.exports = (sequelize, DataTypes) => {
       AdjustmentInventory.belongsTo(models.StockAdjustment, {
         foreignKey: "adjustmentId"
       });
+      AdjustmentInventory.belongsTo(models.WastagesType, {
+        foreignKey: "reason",
+        as: "WastagesType"
+      });
     }
   }
   AdjustmentInventory.init(
     {
+      reason: DataTypes.INTEGER,
+      comment: DataTypes.STRING,
+      adjustmentQuantity: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "adjustmentQuantity cannot be empty" } }
+      },
       adjustmentId: DataTypes.INTEGER,
       inventoryId: DataTypes.INTEGER
     },

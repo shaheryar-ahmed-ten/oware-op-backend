@@ -39,14 +39,33 @@ module.exports = {
       deletedAt: {
         allowNull: true,
         type: Sequelize.DATE
+      },
+      reason: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: "WastagesTypes",
+          key: "id"
+        }
+      },
+      comment: {
+        type: Sequelize.STRING,
+        allowNull: true
+      },
+      adjustmentQuantity: {
+        type: Sequelize.INTEGER,
+        allowNull: false
       }
     });
 
     await queryInterface.removeColumn("StockAdjustments", "inventoryId");
+    await queryInterface.removeColumn("StockAdjustments", "type");
+    await queryInterface.removeColumn("StockAdjustments", "reason");
+    await queryInterface.removeColumn("StockAdjustments", "adjustmentQuantity");
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable("AdjustmentInventories");
-    await queryInterface.addColumn("inventoryId", {
+    await queryInterface.addColumn("StockAdjustments", "inventoryId", {
       type: Sequelize.INTEGER,
       references: {
         model: "Inventories",
@@ -55,5 +74,14 @@ module.exports = {
       onUpdate: "CASCADE",
       onDelete: "CASCADE"
     });
+    await queryInterface.addColumn("StockAdjustments", "type", {
+      type: Sequelize.INTEGER,
+      references: {
+        model: "WastagesTypes",
+        key: "id"
+      }
+    });
+    await queryInterface.addColumn("StockAdjustments", "reason", { type: Sequelize.STRING });
+    await queryInterface.addColumn("StockAdjustments", "adjustmentQuantity", { type: Sequelize.INTEGER });
   }
 };

@@ -19,10 +19,6 @@ module.exports = {
       },
       type: {
         type: Sequelize.INTEGER
-        // references: {
-        //   model: "WastagesTypes",
-        //   key: "id"
-        // }
       },
       reason: {
         type: Sequelize.STRING
