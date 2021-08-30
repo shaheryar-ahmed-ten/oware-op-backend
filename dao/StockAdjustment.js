@@ -1,10 +1,10 @@
 const CrudServiceDao = require("./crudService");
-const Dao = require("../dao");
+const Dao = require(".");
 const { Inventory } = require("../models");
 
-class InventoryWastageDao extends CrudServiceDao {
+class StockAdjustmentDao extends CrudServiceDao {
   constructor() {
-    super("InventoryWastage");
+    super("StockAdjustment");
   }
 
   async delete(response) {
@@ -26,4 +26,4 @@ class InventoryWastageDao extends CrudServiceDao {
   }
 }
 
-module.exports = new InventoryWastageDao();
+module.exports = new StockAdjustmentDao();

@@ -18,7 +18,7 @@ const vehicleRouter = require("./vehicle");
 const rideRouter = require("./ride");
 const uploadRouter = require("./upload");
 const previewRouter = require("./preview");
-const wastagesRouter = require("./inventoryWastages/routes");
+const stockAdjustment = require("./stockAdjustment/routes");
 
 const { isLoggedIn, checkPermission } = require("../services/auth.service");
 const { PERMISSIONS } = require("../enums");
@@ -53,7 +53,7 @@ router.use("/driver", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL
 router.use("/vehicle", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleRouter);
 router.use("/ride", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), rideRouter);
 router.use("/upload", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), uploadRouter);
-router.use("/inventory-wastages", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), wastagesRouter);
+router.use("/inventory-wastages", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), stockAdjustment);
 router.use("/preview", previewRouter);
 
 module.exports = router;

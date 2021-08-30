@@ -4,7 +4,7 @@ const { Inventory, sequelize } = require("../../models");
 
 async function getWastages(params) {
   try {
-    const response = await Dao.InventoryWastage.findAndCountAll(params);
+    const response = await Dao.StockAdjustment.findAndCountAll(params);
     // console.log("response.records", response.records);
     if (response.count)
       return {
@@ -43,7 +43,7 @@ async function addWastages(params, adminId) {
           inventory.save({ transaction });
         }
 
-        await Dao.InventoryWastage.create(
+        await Dao.StockAdjustment.create(
           {
             inventoryId: inventory.id,
             type: product.type ? product.type : null,
@@ -64,7 +64,7 @@ async function addWastages(params, adminId) {
 
 async function getWastageById(params) {
   try {
-    const response = await Dao.InventoryWastage.findOne(params);
+    const response = await Dao.StockAdjustment.findOne(params);
     if (response) return { status: httpStatus.OK, message: "Data Found", data: response };
     else return { status: httpStatus.OK, message: "Data not Found", data: [] };
   } catch (err) {
@@ -75,7 +75,7 @@ async function getWastageById(params) {
 
 async function updateWastage(params, req_body) {
   try {
-    const inventoryWastage = await Dao.InventoryWastage.findOne(params);
+    const inventoryWastage = await Dao.StockAdjustment.findOne(params);
     if (inventoryWastage) {
       if (req_body.adjustmentQuantity) {
         inventoryWastage.Inventory.availableQuantity =
@@ -98,9 +98,9 @@ async function updateWastage(params, req_body) {
 
 async function deleteWastage(id) {
   try {
-    const response = await Dao.InventoryWastage.findByPk(id);
+    const response = await Dao.StockAdjustment.findByPk(id);
     if (response) {
-      body = await Dao.InventoryWastage.delete(response);
+      body = await Dao.StockAdjustment.delete(response);
       return { success: httpStatus.OK, message: "Adjustment deleted", data: response };
     } else {
       return { success: httpStatus.OK, message: "Adjustment doesn't exist", data: null };

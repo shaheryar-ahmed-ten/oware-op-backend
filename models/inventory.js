@@ -31,9 +31,9 @@ module.exports = (sequelize, DataTypes) => {
         through: models.OutwardGroup,
         foreignKey: "inventoryId"
       });
-      Inventory.hasMany(models.InventoryWastage, {
+      Inventory.belongsToMany(models.StockAdjustment, {
         foreignKey: "inventoryId",
-        as: "InventoryWastage"
+        through: models.AdjustmentInventory
       });
     }
   }

@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "contactId",
         as: "Customer"
       });
-      User.hasMany(models.InventoryWastage, {
+      User.hasMany(models.StockAdjustment, {
         foreignKey: "adminId"
       });
     }

@@ -32,7 +32,8 @@ router.get("/", async (req, res) => {
     include: [
       {
         model: Inventory,
-        as: "Inventory",
+        as: "Inventories",
+        required: true,
         include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
       },
       { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] },

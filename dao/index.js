@@ -1,5 +1,5 @@
 module.exports = {
-  InventoryWastage: require("./inventoryWastage"),
+  StockAdjustment: require("./StockAdjustment"),
   Company: require("./Company"),
   Inventory: require("./Inventory"),
   Warehouse: require("./Warehouse"),
