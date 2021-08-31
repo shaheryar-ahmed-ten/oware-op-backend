@@ -1,11 +1,11 @@
 const httpStatus = require("http-status");
 const Dao = require("../../dao");
 const { Inventory, sequelize } = require("../../models");
+const inventory = require("../../models/inventory");
 
 async function getWastages(params) {
   try {
     const response = await Dao.StockAdjustment.findAndCountAll(params);
-    // console.log("response.records", response.records);
     if (response.count)
       return {
         success: httpStatus.OK,
@@ -36,8 +36,10 @@ async function addWastages(params, adminId) {
 
     params = await Promise.all(
       params.map(async param => {
-        const { customerId, productId, warehouseId } = param;
+        const { customerId, productId, warehouseId, adjustmentQuantity } = param;
         const inventory = await Dao.Inventory.findOne({ where: { customerId, productId, warehouseId } });
+        inventory.availableQuantity -= adjustmentQuantity;
+        inventory.save();
         param["inventoryId"] = inventory.id;
         param["adjustmentId"] = adjustment.id;
         return param;
@@ -68,20 +70,25 @@ async function getWastageById(params) {
 
 async function updateWastage(params, req_body) {
   try {
-    const inventoryWastage = await Dao.StockAdjustment.findOne(params);
-    if (inventoryWastage) {
-      if (req_body.adjustmentQuantity) {
-        inventoryWastage.Inventory.availableQuantity =
-          inventoryWastage.Inventory.availableQuantity +
-          inventoryWastage.adjustmentQuantity -
-          req_body.adjustmentQuantity;
-        inventoryWastage.adjustmentQuantity = req_body.adjustmentQuantity;
+    const stockAdjustment = await Dao.StockAdjustment.findOne(params);
+    if (stockAdjustment) {
+      for (const body of req_body) {
+        const { inventoryId } = body;
+        const adjustmentInventories = await Dao.AdjustmentInventory.findOne({
+          where: { adjustmentId: stockAdjustment.id, inventoryId }
+        });
+
+        if (body.adjustmentQuantity) {
+          const inventory = await Dao.Inventory.findOne({ where: { id: inventoryId } });
+          inventory.availableQuantity = body.availableQuantity;
+          adjustmentInventories.adjustmentQuantity = body.adjustmentQuantity;
+          await inventory.save();
+        }
+        if (body.reason) adjustmentInventories.reason = body.reason;
+        if (body.comment) adjustmentInventories.comment = body.comment;
+        await adjustmentInventories.save();
       }
-      if (req_body.reason) inventoryWastage.reason = req_body.reason;
-      if (req_body.type) inventoryWastage.type = req_body.type;
-      await inventoryWastage.save();
-      await inventoryWastage.Inventory.save();
-      return { status: httpStatus.OK, message: "Data Updated", data: inventoryWastage };
+      return { status: httpStatus.OK, message: "Data Updated", data: stockAdjustment };
     } else return { status: httpStatus.OK, message: "Data not Found", data: null };
   } catch (err) {
     console.log("err", err);
@@ -93,7 +100,8 @@ async function deleteWastage(id) {
   try {
     const response = await Dao.StockAdjustment.findByPk(id);
     if (response) {
-      body = await Dao.StockAdjustment.delete(response);
+      console.log("Dao2", Dao);
+      body = await Dao.StockAdjustment.delete(id);
       return { success: httpStatus.OK, message: "Adjustment deleted", data: response };
     } else {
       return { success: httpStatus.OK, message: "Adjustment doesn't exist", data: null };

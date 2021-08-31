@@ -2,7 +2,7 @@ const router = require("express").Router();
 const controller = require("./controller");
 const httpStatus = require("http-status");
 const config = require("../../config");
-const { Inventory, Company, Warehouse, Product, UOM, User, InventoryWastage } = require("../../models");
+const { Inventory, Company, Warehouse, Product, UOM, User, StockAdjustment } = require("../../models");
 const { Op } = require("sequelize");
 const AdjustmentInventory = require("../../dao/AdjustmentInventory");
 
@@ -24,8 +24,6 @@ router.get("/", async (req, res) => {
   if (req.query.warehouse) where["$Inventory.Warehouse.id$"] = { [Op.eq]: req.query.warehouse };
 
   if (req.query.company) where["$Inventory.Company.id$"] = { [Op.eq]: req.query.company };
-
-  if (req.query.product) where["$Inventory.Product.id$"] = { [Op.eq]: req.query.product };
 
   const params = {
     limit,
@@ -55,7 +53,7 @@ router.get("/relations", async (req, res) => {
       {
         model: Inventory,
         as: "Inventories",
-        include: [{ model: InventoryWastage, as: "InventoryWastage", required: true }],
+        include: [{ model: StockAdjustment, as: "StockAdjustment", required: true }],
         required: true
       }
     ],
@@ -93,8 +91,7 @@ router.get("/:id", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   const params = {
-    include: [{ model: Inventory, as: "Inventory" }],
-    attributes: ["id", ["type", "reasonType"], ["reason", "comment"], "adjustmentQuantity", "createdAt"],
+    include: [{ model: Inventory, as: "Inventories" }],
     where: { id: req.params.id }
   };
   const response = await controller.updateWastage(params, req.body);

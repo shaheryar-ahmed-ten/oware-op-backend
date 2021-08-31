@@ -33,7 +33,8 @@ module.exports = (sequelize, DataTypes) => {
       });
       Inventory.belongsToMany(models.StockAdjustment, {
         foreignKey: "inventoryId",
-        through: models.AdjustmentInventory
+        through: models.AdjustmentInventory,
+        as: "StockAdjustment"
       });
     }
   }

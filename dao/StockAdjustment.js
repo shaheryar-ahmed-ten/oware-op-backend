@@ -1,5 +1,5 @@
 const CrudServiceDao = require("./crudService");
-const Dao = require(".");
+const AdjustmentInventory = require("./AdjustmentInventory");
 const { Inventory } = require("../models");
 
 class StockAdjustmentDao extends CrudServiceDao {
@@ -7,22 +7,22 @@ class StockAdjustmentDao extends CrudServiceDao {
     super("StockAdjustment");
   }
 
-  async delete(response) {
-    const { id, adjustmentQuantity, inventoryId } = response;
-    const inventory = await Inventory.findByPk(inventoryId);
-    if (inventory) {
-      inventory.availableQuantity = inventory.availableQuantity + adjustmentQuantity;
-      await inventory.save();
-    }
-    const record = await this.model.update(
-      { deletedAt: new Date() },
-      {
-        where: { id: id },
-        returning: true,
-        plain: true
+  async delete(adjustmentId) {
+    const inventories = await AdjustmentInventory.findAll({
+      where: { adjustmentId },
+      include: ["Inventory"]
+    });
+    if (inventories) {
+      for (const adjInventory of inventories) {
+        console.log(adjInventory.Inventory);
+        adjInventory.Inventory.availableQuantity += adjInventory.adjustmentQuantity;
+        adjInventory.Inventory.save();
       }
-    );
-    return `deleted at id=${id}`;
+    }
+    const record = await this.model.destroy({
+      where: { id: adjustmentId }
+    });
+    return `deleted at id=${adjustmentId}`;
   }
 }
 
