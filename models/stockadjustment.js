@@ -22,17 +22,17 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "adjustmentId",
         as: "AdjustmentInventory"
       });
-      // StockAdjustment.belongsToMany(models.WastageType, {
-      //   foreignKey: "adjustmentId",
-      //   through: models.AdjustmentInventory,
-      //   as: "WastageType"
-      // });
     }
   }
   StockAdjustment.init(
     {
       adminId: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Admin cannot be empty" } }
+      },
+      internalIdForBusiness: {
+        type: DataTypes.STRING,
         allowNull: false,
         validate: { notEmpty: { msg: "Admin cannot be empty" } }
       }

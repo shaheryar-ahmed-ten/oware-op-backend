@@ -62,6 +62,11 @@ module.exports = {
     await queryInterface.removeColumn("StockAdjustments", "type");
     await queryInterface.removeColumn("StockAdjustments", "reason");
     await queryInterface.removeColumn("StockAdjustments", "adjustmentQuantity");
+    await queryInterface.addColumn("StockAdjustments", "internalIdForBusiness", {
+      type: Sequelize.STRING,
+      allowNull: false,
+      unique: true
+    });
   },
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable("AdjustmentInventories");
@@ -83,5 +88,6 @@ module.exports = {
     });
     await queryInterface.addColumn("StockAdjustments", "reason", { type: Sequelize.STRING });
     await queryInterface.addColumn("StockAdjustments", "adjustmentQuantity", { type: Sequelize.INTEGER });
+    await queryInterface.removeColumn("StockAdjustments", "internalIdForBusiness");
   }
 };

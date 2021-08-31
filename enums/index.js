@@ -54,5 +54,6 @@ module.exports = Object.freeze({
       PARTIALLY_FULFILLED: 1,
       FULFILLED: 2
     }
-  }
+  },
+  initialInternalIdForBusinessForAdjustment: "SA-"
 });

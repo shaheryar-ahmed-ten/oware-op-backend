@@ -1,7 +1,7 @@
 const httpStatus = require("http-status");
 const Dao = require("../../dao");
-const { Inventory, sequelize } = require("../../models");
-const inventory = require("../../models/inventory");
+const { digitize } = require("../../services/common.services");
+const { initialInternalIdForBusinessForAdjustment } = require("../../enums");
 
 async function getWastages(params) {
   try {
@@ -27,12 +27,18 @@ async function getWastages(params) {
 async function addWastages(params, adminId) {
   try {
     // const stockAdjustment = await sequelize.transaction(async transaction => {
+
     const adjustment = await Dao.StockAdjustment.create(
       {
-        adminId
+        adminId,
+        internalIdForBusiness: initialInternalIdForBusinessForAdjustment
       }
       // { transaction }
     );
+
+    const numberOfInternalIdForBusiness = digitize(adjustment.id, 6);
+    adjustment.internalIdForBusiness = adjustment.internalIdForBusiness + numberOfInternalIdForBusiness;
+    adjustment.save();
 
     params = await Promise.all(
       params.map(async param => {
@@ -45,9 +51,7 @@ async function addWastages(params, adminId) {
         return param;
       })
     );
-    console.log("params", params);
     const inv = await Dao.AdjustmentInventory.bulkCreate(params);
-    console.log("inv", inv);
     // return adjustment;
     // });
     return { success: httpStatus.OK, message: "Stock Adjustment added", data: adjustment };

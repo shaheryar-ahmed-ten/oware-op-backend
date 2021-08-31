@@ -4,7 +4,7 @@ const httpStatus = require("http-status");
 const config = require("../../config");
 const { Inventory, Company, Warehouse, Product, UOM, User, StockAdjustment } = require("../../models");
 const { Op } = require("sequelize");
-const AdjustmentInventory = require("../../dao/AdjustmentInventory");
+const moment = require("moment");
 
 router.get("/wastages-type", async (req, res) => {
   const params = { where: {} };
@@ -17,14 +17,18 @@ router.get("/", async (req, res) => {
   const offset = (req.query.page - 1 || 0) * limit;
   const where = {};
   if (req.query.search)
-    where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "$Inventory.Product.name$"].map(key => ({
+    where[Op.or] = ["$Admin.firstName$", "$Admin.lastName$"].map(key => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" }
     }));
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  }
+  if (req.query.internalIdForBusiness) where["internalIdForBusiness"] = { [Op.eq]: req.query.internalIdForBusiness };
+  // if (req.query.warehouse) where["$Inventory.Warehouse.id$"] = { [Op.eq]: req.query.warehouse };
 
-  if (req.query.warehouse) where["$Inventory.Warehouse.id$"] = { [Op.eq]: req.query.warehouse };
-
-  if (req.query.company) where["$Inventory.Company.id$"] = { [Op.eq]: req.query.company };
-
+  // if (req.query.company) where["$Inventory.Company.id$"] = { [Op.eq]: req.query.company };
   const params = {
     limit,
     offset,
@@ -35,7 +39,7 @@ router.get("/", async (req, res) => {
         required: true,
         include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
       },
-      { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
+      { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"], required: true }
     ],
     where,
     sort: [["createdAt", "DESC"]]
