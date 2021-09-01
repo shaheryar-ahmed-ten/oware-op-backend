@@ -14,7 +14,6 @@ class StockAdjustmentDao extends CrudServiceDao {
     });
     if (inventories) {
       for (const adjInventory of inventories) {
-        console.log(adjInventory.Inventory);
         adjInventory.Inventory.availableQuantity += adjInventory.adjustmentQuantity;
         adjInventory.Inventory.save();
       }
