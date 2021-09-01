@@ -65,8 +65,8 @@ module.exports = {
     await queryInterface.addColumn("StockAdjustments", "internalIdForBusiness", {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true,
-      defaultValue: "SA-"
+      unique: true
+      // defaultValue: "SA-"
     });
   },
   down: async (queryInterface, Sequelize) => {
