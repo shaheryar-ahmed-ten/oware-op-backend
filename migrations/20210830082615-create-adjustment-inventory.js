@@ -59,9 +59,9 @@ module.exports = {
     });
 
     // await queryInterface.removeColumn("StockAdjustments", "inventoryId");
-    await queryInterface.removeColumn("StockAdjustments", "type");
-    await queryInterface.removeColumn("StockAdjustments", "reason");
-    await queryInterface.removeColumn("StockAdjustments", "adjustmentQuantity");
+    // await queryInterface.removeColumn("StockAdjustments", "type");
+    // await queryInterface.removeColumn("StockAdjustments", "reason");
+    // await queryInterface.removeColumn("StockAdjustments", "adjustmentQuantity");
     await queryInterface.addColumn("StockAdjustments", "internalIdForBusiness", {
       type: Sequelize.STRING,
       allowNull: false,
@@ -79,15 +79,15 @@ module.exports = {
     //   onUpdate: "CASCADE",
     //   onDelete: "CASCADE"
     // });
-    await queryInterface.addColumn("StockAdjustments", "type", {
-      type: Sequelize.INTEGER,
-      references: {
-        model: "WastagesTypes",
-        key: "id"
-      }
-    });
-    await queryInterface.addColumn("StockAdjustments", "reason", { type: Sequelize.STRING });
-    await queryInterface.addColumn("StockAdjustments", "adjustmentQuantity", { type: Sequelize.INTEGER });
+    // await queryInterface.addColumn("StockAdjustments", "type", {
+    //   type: Sequelize.INTEGER,
+    //   references: {
+    //     model: "WastagesTypes",
+    //     key: "id"
+    //   }
+    // });
+    // await queryInterface.addColumn("StockAdjustments", "reason", { type: Sequelize.STRING });
+    // await queryInterface.addColumn("StockAdjustments", "adjustmentQuantity", { type: Sequelize.INTEGER });
     await queryInterface.removeColumn("StockAdjustments", "internalIdForBusiness");
   }
 };
