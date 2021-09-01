@@ -6,6 +6,7 @@ const { initialInternalIdForBusinessForAdjustment } = require("../../enums");
 async function getWastages(params) {
   try {
     const response = await Dao.StockAdjustment.findAndCountAll(params);
+    console.log("response.count", response.count);
     if (response.count)
       return {
         success: httpStatus.OK,
@@ -13,7 +14,7 @@ async function getWastages(params) {
         data: response.records,
         pages: Math.ceil(response.count / params.limit)
       };
-    else return { success: httpStatus.OK, message: "Data not Found", data: [] };
+    else return { success: httpStatus.OK, message: "Data not Found", data: [], count: response.count };
   } catch (err) {
     console.log("ERROR:", err);
     return {

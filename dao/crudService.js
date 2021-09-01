@@ -14,7 +14,7 @@ class CrudServiceDao {
   async findAndCountAll(params) {
     const { offset, limit, sort, where } = params;
     let { includeAll = false, include, attributes } = params;
-    const _params = { limit, offset, order: sort, where };
+    const _params = { limit, offset, order: sort, where, distinct: true };
     if (includeAll) _params.include = [{ all: true }];
     if (include) _params.include = include;
     if (attributes) _params.attributes = attributes;
