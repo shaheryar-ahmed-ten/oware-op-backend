@@ -13,7 +13,8 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "inventoryId"
       });
       AdjustmentInventory.belongsTo(models.StockAdjustment, {
-        foreignKey: "adjustmentId"
+        foreignKey: "adjustmentId",
+        as: "StockAdjustment"
       });
       AdjustmentInventory.belongsTo(models.WastagesType, {
         foreignKey: "reason",

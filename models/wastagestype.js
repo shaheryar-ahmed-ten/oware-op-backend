@@ -1,5 +1,5 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, Sequelize } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class WastagesType extends Model {
     /**
@@ -9,6 +9,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      WastagesType.hasMany(models.AdjustmentInventory, {
+        foreignKey: "reason"
+      });
     }
   }
   WastagesType.init(

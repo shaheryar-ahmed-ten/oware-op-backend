@@ -2,7 +2,16 @@ const router = require("express").Router();
 const controller = require("./controller");
 const httpStatus = require("http-status");
 const config = require("../../config");
-const { Inventory, Company, Warehouse, Product, UOM, User, StockAdjustment } = require("../../models");
+const {
+  Inventory,
+  Company,
+  Warehouse,
+  Product,
+  UOM,
+  User,
+  StockAdjustment,
+  AdjustmentInventory
+} = require("../../models");
 const { Op } = require("sequelize");
 const moment = require("moment");
 
@@ -37,7 +46,12 @@ router.get("/", async (req, res) => {
         model: Inventory,
         as: "Inventories",
         required: true,
-        include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
+        include: [
+          { model: Product, as: "Product", include: [{ model: UOM }] },
+          "Company",
+          "Warehouse",
+          { model: AdjustmentInventory, as: "AdjustmentDetails", include: ["WastagesType"] }
+        ]
       },
       { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"], required: true }
     ],
@@ -82,7 +96,12 @@ router.get("/:id", async (req, res) => {
         model: Inventory,
         as: "Inventories",
         required: true,
-        include: [{ model: Product, as: "Product", include: [{ model: UOM }] }, "Company", "Warehouse"]
+        include: [
+          { model: Product, as: "Product", include: [{ model: UOM }] },
+          "Company",
+          "Warehouse",
+          { model: AdjustmentInventory, as: "AdjustmentDetails", include: ["WastagesType"] }
+        ]
       },
       { model: User, as: "Admin", attributes: ["id", "firstName", "lastName"] }
     ],
@@ -98,13 +117,13 @@ router.put("/:id", async (req, res) => {
     include: [{ model: Inventory, as: "Inventories" }],
     where: { id: req.params.id }
   };
-  const response = await controller.updateWastage(params, req.body);
+  const response = await controller.updateWastage(params, req.body["adjustment_products"]);
   if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.error);
 });
 
 router.post("/", async (req, res) => {
-  const response = await controller.addWastages(req.body, req.userId);
+  const response = await controller.addWastages(req.body["adjustment_products"], req.userId);
   if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.code);
 });

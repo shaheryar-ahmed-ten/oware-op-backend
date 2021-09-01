@@ -36,6 +36,15 @@ module.exports = (sequelize, DataTypes) => {
         through: models.AdjustmentInventory,
         as: "StockAdjustment"
       });
+      Inventory.belongsToMany(models.WastagesType, {
+        foreignKey: "inventoryId",
+        through: "AdjustmentInventory",
+        as: "WastagesType"
+      });
+      Inventory.hasOne(models.AdjustmentInventory, {
+        foreignKey: "inventoryId",
+        as: "AdjustmentDetails"
+      });
     }
   }
   Inventory.init(
