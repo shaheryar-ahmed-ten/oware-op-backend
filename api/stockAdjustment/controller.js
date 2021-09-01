@@ -74,6 +74,7 @@ async function getWastageById(params) {
 
 async function updateWastage(params, req_body) {
   try {
+    console.log("req.body", req_body);
     const stockAdjustment = await Dao.StockAdjustment.findOne(params);
     if (stockAdjustment) {
       for (const body of req_body) {
@@ -84,7 +85,7 @@ async function updateWastage(params, req_body) {
 
         if (body.adjustmentQuantity) {
           const inventory = await Dao.Inventory.findOne({ where: { id: inventoryId } });
-          inventory.availableQuantity = body.availableQuantity;
+          inventory.availableQuantity = body.availableQuantity - body.adjustmentQuantity;
           adjustmentInventories.adjustmentQuantity = body.adjustmentQuantity;
           await inventory.save();
         }
