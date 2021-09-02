@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
   const offset = (req.query.page - 1 || 0) * limit;
   const where = {};
   if (req.query.search)
-    where[Op.or] = ["$Admin.firstName$", "$Admin.lastName$"].map(key => ({
+    where[Op.or] = ["$Admin.firstName$", "$Admin.lastName$", "internalIdForBusiness"].map(key => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" }
     }));
   if (req.query.days) {
