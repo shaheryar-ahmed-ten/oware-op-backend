@@ -106,7 +106,6 @@ async function deleteWastage(id) {
   try {
     const response = await Dao.StockAdjustment.findByPk(id);
     if (response) {
-      console.log("Dao2", Dao);
       body = await Dao.StockAdjustment.delete(id);
       return { success: httpStatus.OK, message: "Adjustment deleted", data: response };
     } else {
