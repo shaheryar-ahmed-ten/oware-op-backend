@@ -88,13 +88,18 @@ async function updateWastage(params, req_body) {
             body.availableQuantity + adjustmentInventories.adjustmentQuantity - body.adjustmentQuantity;
           adjustmentInventories.adjustmentQuantity = body.adjustmentQuantity;
           await inventory.save();
-          if (body.adjustmentQuantity == 0) await adjustmentInventories.destroy();
-          else allProductsRemovedFromAdjustment = false;
+          if (body.adjustmentQuantity == 0) {
+            await adjustmentInventories.destroy();
+          } else {
+            allProductsRemovedFromAdjustment = false;
+          }
         }
         if (body.reason) adjustmentInventories.reason = body.reason;
         if (body.comment) adjustmentInventories.comment = body.comment;
         await adjustmentInventories.save();
-        if (allProductsRemovedFromAdjustment) await stockAdjustment.destroy();
+      }
+      if (allProductsRemovedFromAdjustment) {
+        await stockAdjustment.destroy();
       }
       return { status: httpStatus.OK, message: "Data Updated", data: stockAdjustment };
     } else return { status: httpStatus.OK, message: "Data not Found", data: null };
