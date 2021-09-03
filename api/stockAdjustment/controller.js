@@ -74,25 +74,27 @@ async function getWastageById(params) {
 
 async function updateWastage(params, req_body) {
   try {
-    console.log("req.body", req_body);
     const stockAdjustment = await Dao.StockAdjustment.findOne(params);
     if (stockAdjustment) {
+      let allProductsRemovedFromAdjustment = true;
       for (const body of req_body) {
         const { inventoryId } = body;
         const adjustmentInventories = await Dao.AdjustmentInventory.findOne({
           where: { adjustmentId: stockAdjustment.id, inventoryId }
         });
-
-        if (body.adjustmentQuantity) {
+        if (body.adjustmentQuantity >= 0) {
           const inventory = await Dao.Inventory.findOne({ where: { id: inventoryId } });
           inventory.availableQuantity =
             body.availableQuantity + adjustmentInventories.adjustmentQuantity - body.adjustmentQuantity;
           adjustmentInventories.adjustmentQuantity = body.adjustmentQuantity;
           await inventory.save();
+          if (body.adjustmentQuantity == 0) await adjustmentInventories.destroy();
+          else allProductsRemovedFromAdjustment = false;
         }
         if (body.reason) adjustmentInventories.reason = body.reason;
         if (body.comment) adjustmentInventories.comment = body.comment;
         await adjustmentInventories.save();
+        if (allProductsRemovedFromAdjustment) await stockAdjustment.destroy();
       }
       return { status: httpStatus.OK, message: "Data Updated", data: stockAdjustment };
     } else return { status: httpStatus.OK, message: "Data not Found", data: null };
