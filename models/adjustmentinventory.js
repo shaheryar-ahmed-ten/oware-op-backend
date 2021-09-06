@@ -1,5 +1,6 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, sequelize } = require("sequelize");
+const { WastagesType } = require("./index");
 module.exports = (sequelize, DataTypes) => {
   class AdjustmentInventory extends Model {
     /**
@@ -24,7 +25,21 @@ module.exports = (sequelize, DataTypes) => {
   }
   AdjustmentInventory.init(
     {
-      reason: DataTypes.INTEGER,
+      reason: {
+        type: DataTypes.INTEGER,
+        get() {
+          switch (this.dataValues.reason) {
+            case 1:
+              return "DAMAGED";
+            case 2:
+              return "EXPIRED";
+            case 3:
+              return "STOLEN";
+            case 4:
+              return "OTHER";
+          }
+        }
+      },
       comment: DataTypes.STRING,
       adjustmentQuantity: {
         type: DataTypes.INTEGER,
