@@ -2,6 +2,7 @@ const httpStatus = require("http-status");
 const Dao = require("../../dao");
 const { digitize } = require("../../services/common.services");
 const { initialInternalIdForBusinessForAdjustment } = require("../../enums");
+// const { StockAdjustment } = require("../../models");
 
 async function getWastages(params) {
   try {
@@ -88,6 +89,8 @@ async function updateWastage(params, req_body) {
             body.availableQuantity + adjustmentInventories.adjustmentQuantity - body.adjustmentQuantity;
           adjustmentInventories.adjustmentQuantity = body.adjustmentQuantity;
           await inventory.save();
+          stockAdjustment.changed("updatedAt", true);
+          await stockAdjustment.save();
           if (body.adjustmentQuantity == 0) {
             await adjustmentInventories.destroy();
           } else {
