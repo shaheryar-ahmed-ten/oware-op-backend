@@ -26,19 +26,7 @@ module.exports = (sequelize, DataTypes) => {
   AdjustmentInventory.init(
     {
       reason: {
-        type: DataTypes.INTEGER,
-        get() {
-          switch (this.dataValues.reason) {
-            case 1:
-              return "DAMAGED";
-            case 2:
-              return "EXPIRED";
-            case 3:
-              return "STOLEN";
-            case 4:
-              return "OTHER";
-          }
-        }
+        type: DataTypes.INTEGER
       },
       comment: DataTypes.STRING,
       adjustmentQuantity: {
