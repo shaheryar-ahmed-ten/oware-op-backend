@@ -1,10 +1,12 @@
-'use strict';
-const { DispatchOrder } = require('../models');
+"use strict";
+const { DispatchOrder } = require("../models");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const orderGroup = [];
-    const dispatchOrders = await DispatchOrder.findAll();
+    const dispatchOrders = await DispatchOrder.findAll({
+      attributes: ["id", "userId", "inventoryId", "quantity", "createdAt", "updatedAt"]
+    });
     dispatchOrders.forEach(element => {
       const orderObj = {
         orderId: element.id,
@@ -16,8 +18,7 @@ module.exports = {
       };
       orderGroup.push(orderObj);
     });
-    if (orderGroup.length)
-      await queryInterface.bulkInsert('OrderGroups', orderGroup);
+    if (orderGroup.length) await queryInterface.bulkInsert("OrderGroups", orderGroup);
   },
 
   down: async (queryInterface, Sequelize) => {

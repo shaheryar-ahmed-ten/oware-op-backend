@@ -1,10 +1,14 @@
-'use strict';
-const { ProductOutward, DispatchOrder } = require('../models');
+"use strict";
+const { ProductOutward, DispatchOrder } = require("../models");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     const outwardGroup = [];
-    const productOutwards = await ProductOutward.findAll({ include: [DispatchOrder] });
+    const productOutwards = await ProductOutward.findAll({
+      include: [
+        { model: DispatchOrder, attributes: ["id", "userId", "inventoryId", "quantity", "createdAt", "updatedAt"] }
+      ]
+    });
     productOutwards.forEach(element => {
       const outwardObj = {
         outwardId: element.id,
@@ -16,11 +20,10 @@ module.exports = {
       };
       outwardGroup.push(outwardObj);
     });
-    if (outwardGroup.length)
-      await queryInterface.bulkInsert('OutwardGroups', outwardGroup);
+    if (outwardGroup.length) await queryInterface.bulkInsert("OutwardGroups", outwardGroup);
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('OutwardGroups');
+    return queryInterface.bulkDelete("OutwardGroups");
   }
 };
