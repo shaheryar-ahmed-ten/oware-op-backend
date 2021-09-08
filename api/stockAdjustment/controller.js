@@ -97,8 +97,8 @@ async function updateWastage(params, req_body) {
             allProductsRemovedFromAdjustment = false;
           }
         }
-        if (body.reason) adjustmentInventories.reason = body.reason;
-        if (body.comment) adjustmentInventories.comment = body.comment;
+        if (body.reason == "") adjustmentInventories.reason = body.reason;
+        if (body.hasOwnProperty("comment")) adjustmentInventories.comment = body.comment;
         await adjustmentInventories.save();
       }
       if (allProductsRemovedFromAdjustment) {
