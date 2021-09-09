@@ -41,6 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       type: DataTypes.INTEGER
     },
+    quantity: DataTypes.INTEGER,
     dispatchOrderId: DataTypes.INTEGER,
     dispatchOrderQuantity: DataTypes.INTEGER,
     product: DataTypes.STRING,

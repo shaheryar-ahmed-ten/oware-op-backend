@@ -3,6 +3,7 @@ const router = express.Router();
 const { Brand, User } = require('../models')
 const config = require('../config');
 const { Op } = require("sequelize");
+const { errorHandler } = require('../services/error.service');
 
 /* GET brands listing. */
 router.get('/', async (req, res, next) => {
@@ -14,7 +15,7 @@ router.get('/', async (req, res, next) => {
   if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
   const response = await Brand.findAndCountAll({
     include: [{ model: User }],
-    orderBy: [['updatedAt', 'DESC']],
+    order: [['updatedAt', 'DESC']],
     where, limit, offset
   });
   res.json({
@@ -35,10 +36,12 @@ router.post('/', async (req, res, next) => {
       ...req.body
     });
   } catch (err) {
+    errorHandler(err)
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.message
     });
+
   }
   res.json({
     success: true,

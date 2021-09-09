@@ -1,82 +1,162 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { Inventory, DispatchOrder, Company, Warehouse, Product, UOM } = require('../models');
-const config = require('../config');
+const {
+  Inventory,
+  DispatchOrder,
+  OrderGroup,
+  Company,
+  Warehouse,
+  Product,
+  UOM,
+  sequelize,
+  ProductOutward
+} = require("../models");
+const config = require("../config");
 const { Op, fn, col } = require("sequelize");
-const authService = require('../services/auth.service');
-const { digitizie } = require('../services/common.services');
+const authService = require("../services/auth.service");
+const { digitize } = require("../services/common.services");
+const { RELATION_TYPES } = require("../enums");
 
 /* GET dispatchOrders listing. */
-router.get('/', async (req, res, next) => {
-  const limit = req.query.rowsPerPage || config.rowsPerPage
+router.get("/", async (req, res, next) => {
+  const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['$Inventory.Product.name$', '$Inventory.Company.name$', '$Inventory.Warehouse.name$']
-    .map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  if (req.query.search)
+    where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$"].map(key => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" }
+    }));
   const response = await DispatchOrder.findAndCountAll({
-    include: [{
-      model: Inventory,
-      include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-    }],
-    orderBy: [['updatedAt', 'DESC']],
-    where, limit, offset
+    include: [
+      {
+        model: Inventory,
+        as: "Inventory",
+        required: true,
+        include: [
+          { model: Product, include: [{ model: UOM }] },
+          { model: Company, required: true },
+          { model: Warehouse, required: true }
+        ]
+      },
+      {
+        model: Inventory,
+        as: "Inventories",
+        required: true,
+        include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse]
+      }
+    ],
+    order: [["updatedAt", "DESC"]],
+    distinct: true,
+    where,
+    limit,
+    offset,
+    distinct: true
   });
+
+  for (const { dataValues } of response.rows) {
+    dataValues["ProductOutwards"] = await ProductOutward.findAll({
+      include: ["OutwardGroups", "Vehicle"],
+      attributes: ["quantity", "referenceId", "internalIdForBusiness"],
+      required: false,
+      where: { dispatchOrderId: dataValues.id }
+    });
+  }
   res.json({
     success: true,
-    message: 'respond with a resource',
+    message: "respond with a resource",
     data: response.rows,
     pages: Math.ceil(response.count / limit)
   });
 });
 
 /* POST create new dispatchOrder. */
-router.post('/', async (req, res, next) => {
-  let message = 'New dispatchOrder registered';
-
-
-  let inventory = await Inventory.findByPk(req.body.inventoryId);
-  if (!inventory && !req.body.inventoryId) return res.json({
-    success: false,
-    message: 'Inventory is not available'
-  });
-  if (req.body.quantity > inventory.availableQuantity) return res.json({
-    success: false,
-    message: 'Cannot create orders above available quantity'
-  });
+router.post("/", async (req, res, next) => {
+  let message = "New dispatchOrder registered";
   let dispatchOrder;
+  req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
+
   try {
-    dispatchOrder = await DispatchOrder.create({
-      userId: req.userId,
-      ...req.body
+    await sequelize.transaction(async transaction => {
+      dispatchOrder = await DispatchOrder.create(
+        {
+          userId: req.userId,
+          ...req.body
+        },
+        { transaction }
+      );
+      const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
+      dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+      let sumOfComitted = [];
+      let comittedAcc;
+      req.body.inventories.forEach(Inventory => {
+        let quantity = parseInt(Inventory.quantity);
+        sumOfComitted.push(quantity);
+      });
+      comittedAcc = sumOfComitted.reduce((acc, po) => {
+        return acc + po;
+      });
+      dispatchOrder.quantity = comittedAcc;
+      await dispatchOrder.save({ transaction });
+      let inventoryIds = [];
+      inventoryIds = req.body.inventories.map(inventory => {
+        return inventory.id;
+      });
+      const toFindDuplicates = arry => arry.filter((item, index) => arry.indexOf(item) != index);
+      const duplicateElements = toFindDuplicates(inventoryIds);
+      if (duplicateElements.length != 0) {
+        throw new Error("Can not add same inventory twice");
+      }
+
+      await OrderGroup.bulkCreate(
+        req.body.inventories.map(inventory => ({
+          userId: req.userId,
+          orderId: dispatchOrder.id,
+          inventoryId: inventory.id,
+          quantity: inventory.quantity
+        })),
+        { transaction }
+      );
+
+      return Promise.all(
+        req.body.inventories.map(_inventory => {
+          return Inventory.findByPk(_inventory.id, { transaction }).then(inventory => {
+            if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
+            if (_inventory.quantity > inventory.availableQuantity)
+              throw new Error("Cannot create orders above available quantity");
+            try {
+              inventory.committedQuantity += +_inventory.quantity;
+              inventory.availableQuantity -= +_inventory.quantity;
+              return inventory.save({ transaction });
+            } catch (err) {
+              throw new Error(err.errors.pop().message);
+            }
+          });
+        })
+      );
     });
-    const numberOfInternalIdForBusiness = digitizie(dispatchOrder.id, 6);
-    dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
-    dispatchOrder.save();
-    inventory.committedQuantity += (+req.body.quantity);
-    inventory.availableQuantity -= (+req.body.quantity);
-    inventory.save();
+    res.json({
+      success: true,
+      message,
+      data: dispatchOrder
+    });
   } catch (err) {
-    return res.json({
+    res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.toString().replace("Error: ", "")
     });
   }
-  res.json({
-    success: true,
-    message,
-    data: dispatchOrder
-  });
 });
 
 /* PUT update existing dispatchOrder. */
-router.put('/:id', async (req, res, next) => {
+router.put("/:id", async (req, res, next) => {
   let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id } });
-  if (!dispatchOrder) return res.status(400).json({
-    success: false,
-    message: 'No dispatchOrder found!'
-  });
+  if (!dispatchOrder)
+    return res.status(400).json({
+      success: false,
+      message: "No dispatchOrder found!"
+    });
   dispatchOrder.shipmentDate = req.body.shipmentDate;
   dispatchOrder.receiverName = req.body.receiverName;
   dispatchOrder.receiverPhone = req.body.receiverPhone;
@@ -84,7 +164,7 @@ router.put('/:id', async (req, res, next) => {
     const response = await dispatchOrder.save();
     return res.json({
       success: true,
-      message: 'Dispatch Order updated',
+      message: "Dispatch Order updated",
       data: response
     });
   } catch (err) {
@@ -95,30 +175,37 @@ router.put('/:id', async (req, res, next) => {
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete("/:id", async (req, res, next) => {
   let response = await DispatchOrder.destroy({ where: { id: req.params.id } });
-  if (response) res.json({
-    success: true,
-    message: 'DispatchOrder deleted'
-  });
-  else res.status(400).json({
-    success: false,
-    message: 'No dispatchOrder found!'
-  });
-})
+  if (response)
+    res.json({
+      success: true,
+      message: "DispatchOrder deleted"
+    });
+  else
+    res.status(400).json({
+      success: false,
+      message: "No dispatchOrder found!"
+    });
+});
 
-router.get('/relations', async (req, res, next) => {
+router.get("/relations", async (req, res, next) => {
   let where = { isActive: true };
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  const customers = await Company.findAll({ where });
+  const customers = await Company.findAll({
+    where: {
+      ...where,
+      relationType: RELATION_TYPES.CUSTOMER
+    }
+  });
   res.json({
     success: true,
-    message: 'respond with a resource',
+    message: "respond with a resource",
     customers
   });
 });
 
-router.get('/inventory', async (req, res, next) => {
+router.get("/inventory", async (req, res, next) => {
   if (req.query.customerId && req.query.warehouseId && req.query.productId) {
     const inventory = await Inventory.findOne({
       where: {
@@ -126,70 +213,75 @@ router.get('/inventory', async (req, res, next) => {
         warehouseId: req.query.warehouseId,
         productId: req.query.productId
       }
-    })
+    });
     res.json({
       success: true,
-      message: 'respond with a resource',
+      message: "respond with a resource",
       inventory
     });
-  } else res.json({
-    success: false,
-    message: 'No inventory found'
-  })
+  } else
+    res.json({
+      success: false,
+      message: "No inventory found"
+    });
 });
 
-router.get('/warehouses', async (req, res, next) => {
+router.get("/warehouses", async (req, res, next) => {
   if (req.query.customerId) {
     const inventories = await Inventory.findAll({
       where: {
         customerId: req.query.customerId
       },
-      attributes: [
-        'warehouseId',
-        fn('COUNT', col('warehouseId'))
+      attributes: ["warehouseId", fn("COUNT", col("warehouseId"))],
+      include: [
+        {
+          model: Warehouse
+        }
       ],
-      include: [{
-        model: Warehouse
-      }],
-      group: 'warehouseId'
-    })
+      group: "warehouseId"
+    });
     res.json({
       success: true,
-      message: 'respond with a resource',
+      message: "respond with a resource",
       warehouses: inventories.map(inventory => inventory.Warehouse)
     });
-  } else res.json({
-    success: false,
-    message: 'No inventory found'
-  })
+  } else
+    res.json({
+      success: false,
+      message: "No inventory found"
+    });
 });
 
-router.get('/products', async (req, res, next) => {
+router.get("/products", async (req, res, next) => {
   if (req.query.customerId) {
     const inventories = await Inventory.findAll({
       where: {
         customerId: req.query.customerId,
-        warehouseId: req.query.warehouseId
+        warehouseId: req.query.warehouseId,
+        availableQuantity: {
+          [Op.ne]: 0
+        }
       },
-      attributes: [
-        'productId',
-        fn('COUNT', col('productId'))
+      attributes: ["productId", fn("COUNT", col("productId"))],
+      include: [
+        {
+          model: Product,
+          include: [{ model: UOM }]
+        }
       ],
-      include: [{
-        model: Product,
-        include: [{ model: UOM }]
-      }],
-      group: 'productId'
-    })
+      group: "productId"
+    });
     res.json({
       success: true,
-      message: 'respond with a resource',
+      message: "respond with a resource",
       products: inventories.map(inventory => inventory.Product)
     });
-  } else res.json({
-    success: false,
-    message: 'No inventory found'
-  })
+  } else
+    res.json({
+      products: [],
+      success: false,
+      message: "No inventory found"
+    });
 });
 
 module.exports = router;

@@ -1,0 +1,1531 @@
+[
+  {
+    "area": "Bahadurabad",
+    "city": "Karachi",
+    "zone": "Bahadarabad"
+  },
+  {
+    "area": "Musharaf Colony",
+    "city": "Karachi",
+    "zone": "Baldia"
+  },
+  {
+    "area": "Rasheedabad",
+    "city": "Karachi",
+    "zone": "Baldia"
+  },
+  {
+    "area": "Baldia Town",
+    "city": "Karachi",
+    "zone": "Baldia"
+  },
+  {
+    "area": "Ittehad Town",
+    "city": "Karachi",
+    "zone": "Baldia"
+  },
+  {
+    "area": "Pakhtoonabad",
+    "city": "Karachi",
+    "zone": "Baldia"
+  },
+  {
+    "area": "Naval Colony Baldia Town",
+    "city": "Karachi",
+    "zone": "Baldia"
+  },
+  {
+    "area": "Gulshan e Habeeb",
+    "city": "Karachi",
+    "zone": "Baldia"
+  },
+  {
+    "area": "Gulshan e Bihar",
+    "city": "Karachi",
+    "zone": "Baldia"
+  },
+  {
+    "area": "Mehmoodabad",
+    "city": "Karachi",
+    "zone": "Baloch Colony"
+  },
+  {
+    "area": "Qayyumabad",
+    "city": "Karachi",
+    "zone": "Baloch Colony"
+  },
+  {
+    "area": "Baloch Colony",
+    "city": "Karachi",
+    "zone": "Baloch Colony"
+  },
+  {
+    "area": "Shah Town",
+    "city": "Karachi",
+    "zone": "Bin Qasim"
+  },
+  {
+    "area": "Bin Qasim Town",
+    "city": "Karachi",
+    "zone": "Bin Qasim"
+  },
+  {
+    "area": "Punjab Colony",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "Bath Island",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "New P & T Colony",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "Gizri",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "Frere Town",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "Civil Lines",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "P & T Colony",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "Dehli Colony",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "Askari 1 Appartments",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "Clifton",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "Karachi Cantt",
+    "city": "Karachi",
+    "zone": "Clifton"
+  },
+  {
+    "area": "DHA",
+    "city": "Karachi",
+    "zone": "DHA"
+  },
+  {
+    "area": "Buffer Zone",
+    "city": "Karachi",
+    "zone": "FB Area"
+  },
+  {
+    "area": "Federal B Area",
+    "city": "Karachi",
+    "zone": "FB Area"
+  },
+  {
+    "area": "Ghazi Goth",
+    "city": "Karachi",
+    "zone": "Gadap"
+  },
+  {
+    "area": "Gulshan Akakhel",
+    "city": "Karachi",
+    "zone": "Gadap"
+  },
+  {
+    "area": "Gadap Town",
+    "city": "Karachi",
+    "zone": "Gadap"
+  },
+  {
+    "area": "Khalil Goth",
+    "city": "Karachi",
+    "zone": "Gadap"
+  },
+  {
+    "area": "Jamshed Quarter",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Goth Dad Muhammad",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "JUbilee Chowk",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Shiddi Village",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Garden East",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Garden West",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Nawa Lane",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Garden West",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Gazdarabad",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Usmanabad",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Jinnahabad",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Ramswami",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Hamid Colony",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Ghanchi Para",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Pakistan Quarter",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Hashim Khan Haq Nagar",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Chakiwara",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Narayan Pura",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Bhimpura",
+    "city": "Karachi",
+    "zone": "Garden"
+  },
+  {
+    "area": "Gulistan e Jauhar Block 9",
+    "city": "Karachi",
+    "zone": "Gulistan-e-Jauhar"
+  },
+  {
+    "area": "Karachi Race Course",
+    "city": "Karachi",
+    "zone": "Gulistan-e-Jauhar"
+  },
+  {
+    "area": "Gulistan e Jauhar",
+    "city": "Karachi",
+    "zone": "Gulistan-e-Jauhar"
+  },
+  {
+    "area": "Gulshan e Jamal",
+    "city": "Karachi",
+    "zone": "Gulistan-e-Jauhar"
+  },
+  {
+    "area": "Gulshan e Hadeed",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Hadeed"
+  },
+  {
+    "area": "Pakistan Steel Mills",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Hadeed"
+  },
+  {
+    "area": "Steel Town",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Hadeed"
+  },
+  {
+    "area": "Central Government Employees CHS",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Essa Nagri",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Saadi Town",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Pir Ahmed Zaman Town",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Al Mehran CHS",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Varayal Patan CHS",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Gulshan E umair",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Shanti Nagar",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "University Of Karachi",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Gulshan e Iqbal",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Iqbal"
+  },
+  {
+    "area": "Memon Fam House",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Maymar"
+  },
+  {
+    "area": "Pir Ahmed Zaman",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Maymar"
+  },
+  {
+    "area": "Al Manzar Town",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Maymar"
+  },
+  {
+    "area": "Gulshan e Maymar",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Maymar"
+  },
+  {
+    "area": "Gulshan E Rabia",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Maymar"
+  },
+  {
+    "area": "Faqir Muhammad Goth",
+    "city": "Karachi",
+    "zone": "Gulshan-e-Maymar"
+  },
+  {
+    "area": "Gulzar e Hijri",
+    "city": "Karachi",
+    "zone": "Gulzar e Hijri"
+  },
+  {
+    "area": "Gulshan e Sachal",
+    "city": "Karachi",
+    "zone": "Gulzar e Hijri"
+  },
+  {
+    "area": "New Sabzi Mandi",
+    "city": "Karachi",
+    "zone": "Gulzar-e-Hijri"
+  },
+  {
+    "area": "Gulshan e Elahi",
+    "city": "Karachi",
+    "zone": "Gulzar-e-Hijri"
+  },
+  {
+    "area": "Gulshan e Usman",
+    "city": "Karachi",
+    "zone": "Gulzar-e-Hijri"
+  },
+  {
+    "area": "Naval Colony Karsaz",
+    "city": "Karachi",
+    "zone": "Karsaz"
+  },
+  {
+    "area": "Karsaz",
+    "city": "Karachi",
+    "zone": "Karsaz"
+  },
+  {
+    "area": "Korangi Creek",
+    "city": "Karachi",
+    "zone": "Korangi"
+  },
+  {
+    "area": "Korangi",
+    "city": "Karachi",
+    "zone": "Korangi"
+  },
+  {
+    "area": "Gulshan e Sikandar",
+    "city": "Karachi",
+    "zone": "Korangi"
+  },
+  {
+    "area": "Ibrahim Hyderi",
+    "city": "Karachi",
+    "zone": "Korangi"
+  },
+  {
+    "area": "Landhi Town",
+    "city": "Karachi",
+    "zone": "Landhi"
+  },
+  {
+    "area": "Shah Latif Town",
+    "city": "Karachi",
+    "zone": "Landhi"
+  },
+  {
+    "area": "Ilyas Goth",
+    "city": "Karachi",
+    "zone": "Landhi"
+  },
+  {
+    "area": "C1 Area",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "Firdous Colony",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "Martin Quarter West",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "Liaquatabad",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "Patel Para",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "PIB Colony",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "Kutiyana Memon Complex",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "Mustafa Colony",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "Nafeesabad",
+    "city": "Karachi",
+    "zone": "Liaqatabad"
+  },
+  {
+    "area": "Baghdadi",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Juna Kalri",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Zikri Para",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Bihar Colony",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Agra Taj Colony",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Singo Lane",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Rangiwara",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Moosa Lane",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Bawapat",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Lyari",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Hashmi Mohala",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "IDU Lane",
+    "city": "Karachi",
+    "zone": "Liyari"
+  },
+  {
+    "area": "Malir Cantonment",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Tipu Sultan CHS",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Karachi Memon CHS",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Malir Halt",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Khokhrapar",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Model Colony",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Askari 5",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Gulshan e Mehran",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Saudabad",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Petal Avenue",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Kausar Town",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Pak Kausar Town",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Gulshan e Mehran Extension SECHS",
+    "city": "Karachi",
+    "zone": "Malir"
+  },
+  {
+    "area": "Bhutta Village",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Mauripur",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Karachi Port",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "North Western Industrial Zone Port Qasim",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Port Tower Complex",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Kemari",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Naval Officer Residential Estate 1",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "East Wharf",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Yousuf Goth",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Haji Camp",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Nayabad",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Machar Colony",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Lalazar",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "City Railway Colony",
+    "city": "Karachi",
+    "zone": "Mauripur"
+  },
+  {
+    "area": "Gulshan e Roomi",
+    "city": "Karachi",
+    "zone": "Model Colony"
+  },
+  {
+    "area": "Muslimabad Hill",
+    "city": "Karachi",
+    "zone": "Nazimabad"
+  },
+  {
+    "area": "Nazimabad",
+    "city": "Karachi",
+    "zone": "Nazimabad"
+  },
+  {
+    "area": "Sultanabad New Karachi",
+    "city": "Karachi",
+    "zone": "New Karachi"
+  },
+  {
+    "area": "New Karachi",
+    "city": "Karachi",
+    "zone": "New Karachi"
+  },
+  {
+    "area": "North Karachi",
+    "city": "Karachi",
+    "zone": "North Karachi"
+  },
+  {
+    "area": "New Mianwali Colony",
+    "city": "Karachi",
+    "zone": "North Nazimabad"
+  },
+  {
+    "area": "Shadman Town",
+    "city": "Karachi",
+    "zone": "North Nazimabad"
+  },
+  {
+    "area": "Naya Nazimabad",
+    "city": "Karachi",
+    "zone": "North Nazimabad"
+  },
+  {
+    "area": "North Nazimabad Town",
+    "city": "Karachi",
+    "zone": "North Nazimabad"
+  },
+  {
+    "area": "Nusrat Bhutto Colony",
+    "city": "Karachi",
+    "zone": "North Nazimabad"
+  },
+  {
+    "area": "Orangi Town",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Qasba Colony",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Muslim Nagar",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Data Nagar",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Sadiqabad",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "West Wharf",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Aziz Nagar",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Islam Nagar",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "MuhammadPur",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Ghaziabad",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Gulshan e Tauheed Housing Society",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Mujahidabad",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Khyber Mohalla",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Chishti Nagar",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Al Khizra Society",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Haji Fazal Town",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Sir Syed Colony",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Iqbal Colony",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Muhammad Nagar",
+    "city": "Karachi",
+    "zone": "Orangi"
+  },
+  {
+    "area": "Dhoraji Cooperative Housing Society",
+    "city": "Karachi",
+    "zone": "PECHS"
+  },
+  {
+    "area": "PECHS",
+    "city": "Karachi",
+    "zone": "PECHS"
+  },
+  {
+    "area": "Allama Iqbal Colony",
+    "city": "Karachi",
+    "zone": "PECHS"
+  },
+  {
+    "area": "KMC Work Area",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Jodia Bazar",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Kharadar",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Abyssinia Lines",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Soldier Bazar",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Old Haji Camp",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Saddar",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Lee Market",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Preedy Quarters",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Parsi Colony",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Old Kalri",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Burns Road",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Gari Khata",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Jat Land Lines",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Shah Baig Lane 1",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Lines Area",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Aram Bagh",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Bolten Market",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "New Chali",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Bohrapir",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Adhumal o Odharam Quarter",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "D J Science Collage",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Rambagh Quarter",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Central Jacob Line",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Mithadar",
+    "city": "Karachi",
+    "zone": "Saddar"
+  },
+  {
+    "area": "Tariq Bin Zaid Housing Society",
+    "city": "Karachi",
+    "zone": "Shah Faisal"
+  },
+  {
+    "area": "Shah Faisal",
+    "city": "Karachi",
+    "zone": "Shah Faisal"
+  },
+  {
+    "area": "Faisal Cantonment",
+    "city": "Karachi",
+    "zone": "Shah Faisal"
+  },
+  {
+    "area": "Falcon Complex",
+    "city": "Karachi",
+    "zone": "Shah Faisal"
+  },
+  {
+    "area": "Jafar e Tayyara",
+    "city": "Karachi",
+    "zone": "Shah Faisal"
+  },
+  {
+    "area": "PAF Air Base Faisal",
+    "city": "Karachi",
+    "zone": "Shah Faisal"
+  },
+  {
+    "area": "T & T Colony",
+    "city": "Karachi",
+    "zone": "Shah Faisal"
+  },
+  {
+    "area": "Shersha Colony",
+    "city": "Karachi",
+    "zone": "SITE"
+  },
+  {
+    "area": "Gulbai",
+    "city": "Karachi",
+    "zone": "SITE"
+  },
+  {
+    "area": "New Labour Colony",
+    "city": "Karachi",
+    "zone": "SITE"
+  },
+  {
+    "area": "SITE",
+    "city": "Karachi",
+    "zone": "SITE"
+  },
+  {
+    "area": "Sultanabad",
+    "city": "Karachi",
+    "zone": "Sultanabad"
+  },
+  {
+    "area": "Sultanabad Colony",
+    "city": "Karachi",
+    "zone": "Sultanabad"
+  },
+  {
+    "area": "Intelligence Colony",
+    "city": "Karachi",
+    "zone": "Sultanabad"
+  },
+  {
+    "area": "Hijrat Colony",
+    "city": "Karachi",
+    "zone": "Sultanabad"
+  },
+  {
+    "area": "Surjani Town",
+    "city": "Karachi",
+    "zone": "Surjani"
+  },
+  {
+    "area": "Gulshan e Bilal",
+    "city": "Karachi",
+    "zone": "Surjani"
+  },
+  {
+    "area": "Taiser Town",
+    "city": "Karachi",
+    "zone": "Taiser Town"
+  },
+  { "city": "Lahore", "zone": "Green City", "area": "Green City" },
+  { "city": "Lahore", "zone": "Pakistan Mint Colony", "area": "Pakistan Mint Colony" },
+  { "city": "Lahore", "zone": "LDA Avenue", "area": "LDA Avenue" },
+  { "city": "Lahore", "zone": "DHA Phase 4", "area": "DHA Phase 4" },
+  { "city": "Lahore", "zone": "Aziz Bhatti Colony", "area": "Aziz Bhatti Colony" },
+  { "city": "Lahore", "zone": "Shalimar Housing Scheme", "area": "Shalimar Housing Scheme" },
+  { "city": "Lahore", "zone": "Judicial Housing Scheme", "area": "Judicial Housing Scheme" },
+  { "city": "Lahore", "zone": "Shadman", "area": "Shadman" },
+  { "city": "Lahore", "zone": "Eden Canal Villas", "area": "Eden Canal Villas" },
+  { "city": "Lahore", "zone": "Jalal Colony", "area": "Jalal Colony" },
+  { "city": "Lahore", "zone": "Ameer Kot", "area": "Ameer Kot" },
+  { "city": "Lahore", "zone": "Chughalpura", "area": "Chughalpura" },
+  { "city": "Lahore", "zone": "Mandiana Wala", "area": "Mandiana Wala" },
+  { "city": "Lahore", "zone": "Nespak Society Phase 2", "area": "Nespak Society Phase 2" },
+  { "city": "Lahore", "zone": "Chandian Town", "area": "Chandian Town" },
+  { "city": "Lahore", "zone": "Rail Town", "area": "Rail Town" },
+  { "city": "Lahore", "zone": "Bata Pur", "area": "Bata Pur" },
+  { "city": "Lahore", "zone": "DHA Phase 2", "area": "DHA Phase 2" },
+  { "city": "Lahore", "zone": "Qila Gujjar Singh", "area": "Qila Gujjar Singh" },
+  { "city": "Lahore", "zone": "DHA Phase 1", "area": "DHA Phase 1" },
+  { "city": "Lahore", "zone": "Bata Officer Colony", "area": "Bata Officer Colony" },
+  { "city": "Lahore", "zone": "Muslim Town", "area": "Muslim Town" },
+  { "city": "Lahore", "zone": "Pak Arab Housing Scheme", "area": "Pak Arab Housing Scheme" },
+  { "city": "Lahore", "zone": "Rajgarh", "area": "Rajgarh" },
+  { "city": "Lahore", "zone": "Ameen Park", "area": "Ameen Park" },
+  { "city": "Lahore", "zone": "Kotli Ghazi", "area": "Kotli Ghazi" },
+  { "city": "Lahore", "zone": "Barki", "area": "Barki" },
+  { "city": "Lahore", "zone": "Anarkali, Lahore", "area": "Anarkali, Lahore" },
+  { "city": "Lahore", "zone": "Al Hamra Town", "area": "Al Hamra Town" },
+  { "city": "Lahore", "zone": "Sharif Garden", "area": "Sharif Garden" },
+  { "city": "Lahore", "zone": "China Scheme", "area": "China Scheme" },
+  { "city": "Lahore", "zone": "Iqbal Avenue phase 3", "area": "Iqbal Avenue phase 3" },
+  { "city": "Lahore", "zone": "Gajjumata", "area": "Gajjumata" },
+  { "city": "Lahore", "zone": "GOR 2", "area": "GOR 2" },
+  { "city": "Lahore", "zone": "Shah Pur", "area": "Shah Pur" },
+  { "city": "Lahore", "zone": "Bagariat Saidan", "area": "Bagariat Saidan" },
+  { "city": "Lahore", "zone": "Sheshah Colony", "area": "Sheshah Colony" },
+  { "city": "Lahore", "zone": "Singhpura", "area": "Singhpura" },
+  { "city": "Lahore", "zone": "New Sanda", "area": "New Sanda" },
+  { "city": "Lahore", "zone": "Muhafiz Town", "area": "Muhafiz Town" },
+  { "city": "Lahore", "zone": "Tarogil", "area": "Tarogil" },
+  { "city": "Lahore", "zone": "Fazlia colony", "area": "Fazlia colony" },
+  { "city": "Lahore", "zone": "Peekhywal", "area": "Peekhywal" },
+  { "city": "Lahore", "zone": "Islamia Park", "area": "Islamia Park" },
+  { "city": "Lahore", "zone": "Paragon City", "area": "Paragon City" },
+  { "city": "Lahore", "zone": "Airline Society,", "area": "Airline Society," },
+  { "city": "Lahore", "zone": "Larechs Colony 4", "area": "Larechs Colony 4" },
+  { "city": "Lahore", "zone": "Sabzazar", "area": "Sabzazar" },
+  { "city": "Lahore", "zone": "Nabi Pura", "area": "Nabi Pura" },
+  { "city": "Lahore", "zone": "Gohawa", "area": "Gohawa" },
+  { "city": "Lahore", "zone": "Askari 10", "area": "Askari 10" },
+  { "city": "Lahore", "zone": "Ali Town", "area": "Ali Town" },
+  { "city": "Lahore", "zone": "Naain Sukh", "area": "Naain Sukh" },
+  { "city": "Lahore", "zone": "DHA Phase 9", "area": "DHA Phase 9" },
+  { "city": "Lahore", "zone": "Gujjar Pure", "area": "Gujjar Pure" },
+  { "city": "Lahore", "zone": "Ghausia Colony", "area": "Ghausia Colony" },
+  { "city": "Lahore", "zone": "Asif Town", "area": "Asif Town" },
+  { "city": "Lahore", "zone": "Yohanabad", "area": "Yohanabad" },
+  { "city": "Lahore", "zone": "PIR Naseer", "area": "PIR Naseer" },
+  { "city": "Lahore", "zone": "Muslim Colony", "area": "Muslim Colony" },
+  { "city": "Lahore", "zone": "Eden Residencia", "area": "Eden Residencia" },
+  { "city": "Lahore", "zone": "DHA Phase 5", "area": "DHA Phase 5" },
+  { "city": "Lahore", "zone": "Jallo", "area": "Jallo" },
+  { "city": "Lahore", "zone": "Dream Villas", "area": "Dream Villas" },
+  { "city": "Lahore", "zone": "Central Park Housing Scheme", "area": "Central Park Housing Scheme" },
+  { "city": "Lahore", "zone": "Mehmood Boti", "area": "Mehmood Boti" },
+  { "city": "Lahore", "zone": "Rampura", "area": "Rampura" },
+  { "city": "Lahore", "zone": "BOR Society", "area": "BOR Society" },
+  { "city": "Lahore", "zone": "Engineers Housing Society", "area": "Engineers Housing Society" },
+  { "city": "Lahore", "zone": "Phullar Wan", "area": "Phullar Wan" },
+  { "city": "Lahore", "zone": "Bhagatpura", "area": "Bhagatpura" },
+  { "city": "Lahore", "zone": "Royal Garden", "area": "Royal Garden" },
+  { "city": "Lahore", "zone": "Shah jamal", "area": "Shah jamal" },
+  { "city": "Lahore", "zone": "PCSIR Staff Colony", "area": "PCSIR Staff Colony" },
+  { "city": "Lahore", "zone": "Ghoray Shah", "area": "Ghoray Shah" },
+  { "city": "Lahore", "zone": "Pearl Garden", "area": "Pearl Garden" },
+  { "city": "Lahore", "zone": "RehmatPura Nai Abadi", "area": "RehmatPura Nai Abadi" },
+  { "city": "Lahore", "zone": "falcon society", "area": "falcon society" },
+  { "city": "Lahore", "zone": "Marghazar Colony", "area": "Marghazar Colony" },
+  { "city": "Lahore", "zone": "Sultan pura", "area": "Sultan pura" },
+  { "city": "Lahore", "zone": "Nishat Colony", "area": "Nishat Colony" },
+  { "city": "Lahore", "zone": "Al Riaz Colony", "area": "Al Riaz Colony" },
+  { "city": "Lahore", "zone": "Natha Singh Wala", "area": "Natha Singh Wala" },
+  { "city": "Lahore", "zone": "Saddar", "area": "Saddar" },
+  { "city": "Lahore", "zone": "Aitchison Society", "area": "Aitchison Society" },
+  { "city": "Lahore", "zone": "Phase 1", "area": "Phase 1" },
+  {
+    "city": "Lahore",
+    "zone": "Audit and Accounts Housing Society, Lahore",
+    "area": "Audit and Accounts Housing Society, Lahore"
+  },
+  { "city": "Lahore", "zone": "Sittara Colony", "area": "Sittara Colony" },
+  { "city": "Lahore", "zone": "Karianwala", "area": "Karianwala" },
+  { "city": "Lahore", "zone": "DHE EME Cottages", "area": "DHE EME Cottages" },
+  { "city": "Lahore", "zone": "Kahna", "area": "Kahna" },
+  { "city": "Lahore", "zone": "Lake City", "area": "Lake City" },
+  { "city": "Lahore", "zone": "Venus Housing Scheme", "area": "Venus Housing Scheme" },
+  { "city": "Lahore", "zone": "DHA Phase 3", "area": "DHA Phase 3" },
+  { "city": "Lahore", "zone": "Babo Sabu", "area": "Babo Sabu" },
+  { "city": "Lahore", "zone": "Garden Town", "area": "Garden Town" },
+  { "city": "Lahore", "zone": "Shabir Town", "area": "Shabir Town" },
+  { "city": "Lahore", "zone": "G.O.R I", "area": "G.O.R I" },
+  { "city": "Lahore", "zone": "Imad Garden", "area": "Imad Garden" },
+  { "city": "Lahore", "zone": "Manzoor Colony", "area": "Manzoor Colony" },
+  {
+    "city": "Lahore",
+    "zone": "Punjab Government Employees Cooperative Housing Society Phase 2",
+    "area": "Punjab Government Employees Cooperative Housing Society Phase 2"
+  },
+  { "city": "Lahore", "zone": "Dhaloky", "area": "Dhaloky" },
+  { "city": "Lahore", "zone": "PU E CHS Society", "area": "PU E CHS Society" },
+  { "city": "Lahore", "zone": "Wahdat Colony", "area": "Wahdat Colony" },
+  { "city": "Lahore", "zone": "Garhi Shahu", "area": "Garhi Shahu" },
+  { "city": "Lahore", "zone": "Javed Colony", "area": "Javed Colony" },
+  { "city": "Lahore", "zone": "Judacial Housing Society", "area": "Judacial Housing Society" },
+  { "city": "Lahore", "zone": "Faisal Town", "area": "Faisal Town" },
+  { "city": "Lahore", "zone": "Wara Sittar", "area": "Wara Sittar" },
+  { "city": "Lahore", "zone": "OPF Housing Scheme", "area": "OPF Housing Scheme" },
+  { "city": "Lahore", "zone": "Tamhara Kot Pind", "area": "Tamhara Kot Pind" },
+  { "city": "Lahore", "zone": "SAMI Town", "area": "SAMI Town" },
+  { "city": "Lahore", "zone": "Askari 9", "area": "Askari 9" },
+  { "city": "Lahore", "zone": "Shersha Colony", "area": "Shersha Colony" },
+  { "city": "Lahore", "zone": "Tech Society", "area": "Tech Society" },
+  { "city": "Lahore", "zone": "Agrics town", "area": "Agrics town" },
+  { "city": "Lahore", "zone": "Combo Colony", "area": "Combo Colony" },
+  { "city": "Lahore", "zone": "Boston Colony", "area": "Boston Colony" },
+  { "city": "Lahore", "zone": "Minhalla", "area": "Minhalla" },
+  { "city": "Lahore", "zone": "Sultan Colony", "area": "Sultan Colony" },
+  { "city": "Lahore", "zone": "Guldasht Town", "area": "Guldasht Town" },
+  { "city": "Lahore", "zone": "Angoori Bagh", "area": "Angoori Bagh" },
+  { "city": "Lahore", "zone": "Saggian", "area": "Saggian" },
+  { "city": "Lahore", "zone": "GOR 3", "area": "GOR 3" },
+  { "city": "Lahore", "zone": "IDEAL HOME", "area": "IDEAL HOME" },
+  { "city": "Lahore", "zone": "Samanabad", "area": "Samanabad" },
+  { "city": "Lahore", "zone": "Maraka", "area": "Maraka" },
+  { "city": "Lahore", "zone": "Kamahan", "area": "Kamahan" },
+  { "city": "Lahore", "zone": "Gulberg", "area": "Gulberg" },
+  { "city": "Lahore", "zone": "SallyTown", "area": "SallyTown" },
+  { "city": "Lahore", "zone": "Chah Miran, UC 19", "area": "Chah Miran, UC 19" },
+  { "city": "Lahore", "zone": "Idle Garden Housing Scheme", "area": "Idle Garden Housing Scheme" },
+  { "city": "Lahore", "zone": "Baghbanpura", "area": "Baghbanpura" },
+  { "city": "Lahore", "zone": "Gulshan e Ravi", "area": "Gulshan e Ravi" },
+  { "city": "Lahore", "zone": "Phase 8 Ex park Avenur", "area": "Phase 8 Ex park Avenur" },
+  { "city": "Lahore", "zone": "Timber Markeet", "area": "Timber Markeet" },
+  { "city": "Lahore", "zone": "Bhangali UC 61", "area": "Bhangali UC 61" },
+  { "city": "Lahore", "zone": "Data Gunj Buksh Town", "area": "Data Gunj Buksh Town" },
+  { "city": "Lahore", "zone": "Glaxo Town", "area": "Glaxo Town" },
+  { "city": "Lahore", "zone": "Harbanspura", "area": "Harbanspura" },
+  { "city": "Lahore", "zone": "Nasheman Iqbal Phase 1, Lahore", "area": "Nasheman Iqbal Phase 1, Lahore" },
+  { "city": "Lahore", "zone": "Green Forts 2", "area": "Green Forts 2" },
+  { "city": "Lahore", "zone": "Al Rehman Gardens", "area": "Al Rehman Gardens" },
+  { "city": "Lahore", "zone": "Askari 11", "area": "Askari 11" },
+  { "city": "Lahore", "zone": "Yonus Pora", "area": "Yonus Pora" },
+  { "city": "Lahore", "zone": "Mian Mir Pind", "area": "Mian Mir Pind" },
+  { "city": "Lahore", "zone": "Valencia town", "area": "Valencia town" },
+  { "city": "Lahore", "zone": "Chah Miran", "area": "Chah Miran" },
+  { "city": "Lahore", "zone": "Gawalmandi", "area": "Gawalmandi" },
+  { "city": "Lahore", "zone": "Beacon House Society", "area": "Beacon House Society" },
+  { "city": "Lahore", "zone": "Liaqatabad", "area": "Liaqatabad" },
+  { "city": "Lahore", "zone": "Khan Colony", "area": "Khan Colony" },
+  { "city": "Lahore", "zone": "Awan Town", "area": "Awan Town" },
+  { "city": "Lahore", "zone": "Railway Colony", "area": "Railway Colony" },
+  { "city": "Lahore", "zone": "Green Acers Housing Socity", "area": "Green Acers Housing Socity" },
+  { "city": "Lahore", "zone": "Fahad Town", "area": "Fahad Town" },
+  {
+    "city": "Lahore",
+    "zone": "Military Accounts Co-operative Housing Society, Lahore",
+    "area": "Military Accounts Co-operative Housing Society, Lahore"
+  },
+  { "city": "Lahore", "zone": "Nespak society", "area": "Nespak society" },
+  { "city": "Lahore", "zone": "New Chauburji Park", "area": "New Chauburji Park" },
+  { "city": "Lahore", "zone": "GHAZI PUL MUSLIMABAD", "area": "GHAZI PUL MUSLIMABAD" },
+  { "city": "Lahore", "zone": "Scheme No 2", "area": "Scheme No 2" },
+  { "city": "Lahore", "zone": "Rizwan Garden", "area": "Rizwan Garden" },
+  { "city": "Lahore", "zone": "Johar Town", "area": "Johar Town" },
+  { "city": "Lahore", "zone": "Badami Bagh", "area": "Badami Bagh" },
+  { "city": "Lahore", "zone": "Attari West", "area": "Attari West" },
+  { "city": "Lahore", "zone": "Nazir Garden Society", "area": "Nazir Garden Society" },
+  { "city": "Lahore", "zone": "NPF Housing Society", "area": "NPF Housing Society" },
+  { "city": "Lahore", "zone": "Cavalry Ground", "area": "Cavalry Ground" },
+  { "city": "Lahore", "zone": "Lahore Press Club Housing Scheme", "area": "Lahore Press Club Housing Scheme" },
+  { "city": "Lahore", "zone": "Lahore Medical Housing Society", "area": "Lahore Medical Housing Society" },
+  { "city": "Lahore", "zone": "DHA Phase 6", "area": "DHA Phase 6" },
+  { "city": "Lahore", "zone": "PCSIR 1", "area": "PCSIR 1" },
+  { "city": "Lahore", "zone": "Mominpura", "area": "Mominpura" },
+  { "city": "Lahore", "zone": "Bagrian", "area": "Bagrian" },
+  { "city": "Lahore", "zone": "Ferozwala", "area": "Ferozwala" },
+  { "city": "Lahore", "zone": "Askari 5", "area": "Askari 5" },
+  { "city": "Lahore", "zone": "Walton", "area": "Walton" },
+  { "city": "Lahore", "zone": "Izmir Town", "area": "Izmir Town" },
+  { "city": "Lahore", "zone": "Canal Bank Housing Scheme", "area": "Canal Bank Housing Scheme" },
+  { "city": "Lahore", "zone": "Model Town", "area": "Model Town" },
+  { "city": "Lahore", "zone": "Kot Lakhpat", "area": "Kot Lakhpat" },
+  { "city": "Lahore", "zone": "Mull", "area": "Mull" },
+  { "city": "Lahore", "zone": "Lahore Canal Bank", "area": "Lahore Canal Bank" },
+  { "city": "Lahore", "zone": "Haier Pind", "area": "Haier Pind" },
+  { "city": "Lahore", "zone": "Walled City", "area": "Walled City" },
+  { "city": "Lahore", "zone": "UET Housing Society", "area": "UET Housing Society" },
+  { "city": "Lahore", "zone": "Gajjumattah", "area": "Gajjumattah" },
+  { "city": "Lahore", "zone": "HAir", "area": "HAir" },
+  { "city": "Lahore", "zone": "Attoke Awan", "area": "Attoke Awan" },
+  { "city": "Lahore", "zone": "Sherakot", "area": "Sherakot" },
+  { "city": "Lahore", "zone": "Old Kahna", "area": "Old Kahna" },
+  { "city": "Lahore", "zone": "Sodhiwal", "area": "Sodhiwal" },
+  { "city": "Lahore", "zone": "Taj bagh Scheme", "area": "Taj bagh Scheme" },
+  { "city": "Lahore", "zone": "Arya Nagar", "area": "Arya Nagar" },
+  { "city": "Lahore", "zone": "DHA Phase 11 Rahbar", "area": "DHA Phase 11 Rahbar" },
+  { "city": "Lahore", "zone": "Riwaz Garden", "area": "Riwaz Garden" },
+  { "city": "Lahore", "zone": "Usman Park", "area": "Usman Park" },
+  { "city": "Lahore", "zone": "Shiekh Zaid Palace", "area": "Shiekh Zaid Palace" },
+  { "city": "Lahore", "zone": "DHA Phase 8", "area": "DHA Phase 8" },
+  { "city": "Lahore", "zone": "Makkah Garden", "area": "Makkah Garden" },
+  { "city": "Lahore", "zone": "Gul Colony", "area": "Gul Colony" },
+  { "city": "Lahore", "zone": "Mayo Cardens", "area": "Mayo Cardens" },
+  { "city": "Lahore", "zone": "Shalimar Larechs Colony", "area": "Shalimar Larechs Colony" },
+  { "city": "Lahore", "zone": "Gulshan Town", "area": "Gulshan Town" },
+  { "city": "Lahore", "zone": "Modern Colony", "area": "Modern Colony" },
+  { "city": "Lahore", "zone": "Bahria town", "area": "Bahria town" },
+  { "city": "Lahore", "zone": "Zaitoon Colony", "area": "Zaitoon Colony" },
+  { "city": "Lahore", "zone": "HBFC Society", "area": "HBFC Society" },
+  { "city": "Lahore", "zone": "IBL Housing Scheme", "area": "IBL Housing Scheme" },
+  { "city": "Lahore", "zone": "Green Cap Housing Scheme", "area": "Green Cap Housing Scheme" },
+  { "city": "Lahore", "zone": "Township", "area": "Township" },
+  { "city": "Lahore", "zone": "Wapda colony", "area": "Wapda colony" },
+  { "city": "Lahore", "zone": "Asim Town", "area": "Asim Town" },
+  { "city": "Lahore", "zone": "Hanjarwal", "area": "Hanjarwal" },
+  { "city": "Lahore", "zone": "PCSIR", "area": "PCSIR" },
+  { "city": "Lahore", "zone": "Eden Palace Villas", "area": "Eden Palace Villas" },
+  { "city": "Lahore", "zone": "Kharia", "area": "Kharia" },
+  { "city": "Lahore", "zone": "Kahna No", "area": "Kahna No" },
+  { "city": "Lahore", "zone": "Dera Gujran", "area": "Dera Gujran" },
+  { "city": "Lahore", "zone": "Shareef Pura", "area": "Shareef Pura" },
+  { "city": "Lahore", "zone": "Rehman City Phase 6", "area": "Rehman City Phase 6" },
+  { "city": "Lahore", "zone": "Lakhodheer", "area": "Lakhodheer" },
+  { "city": "Lahore", "zone": "Fateh Garh", "area": "Fateh Garh" },
+  { "city": "Lahore", "zone": "Shahdara", "area": "Shahdara" },
+  { "city": "Lahore", "zone": "Mughalpura", "area": "Mughalpura" },
+  { "city": "Lahore", "zone": "Gulshan E Ahbab", "area": "Gulshan E Ahbab" },
+  { "city": "Lahore", "zone": "Dallu Khurd", "area": "Dallu Khurd" },
+  { "city": "Lahore", "zone": "New Officer Colony", "area": "New Officer Colony" },
+  { "city": "Lahore", "zone": "AWT Housing Scheme", "area": "AWT Housing Scheme" },
+  { "city": "Lahore", "zone": "Cantt View Phas 1,2", "area": "Cantt View Phas 1,2" },
+  { "city": "Lahore", "zone": "Al Rehman Garden Phase 2", "area": "Al Rehman Garden Phase 2" },
+  { "city": "Lahore", "zone": "Pajjiyan", "area": "Pajjiyan" },
+  { "city": "Lahore", "zone": "Daogewala", "area": "Daogewala" },
+  { "city": "Lahore", "zone": "Nawab Town", "area": "Nawab Town" },
+  { "city": "Lahore", "zone": "Misiri Shah", "area": "Misiri Shah" },
+  { "city": "Lahore", "zone": "Shamky Bhattiyan", "area": "Shamky Bhattiyan" },
+  { "city": "Lahore", "zone": "Wafaqi Colony", "area": "Wafaqi Colony" },
+  { "city": "Lahore", "zone": "Polygon 304", "area": "Polygon 304" },
+  { "city": "Lahore", "zone": "Kot Khawaja Saeed", "area": "Kot Khawaja Saeed" },
+  { "city": "Lahore", "zone": "Ittehad Colony", "area": "Ittehad Colony" },
+  { "city": "Lahore", "zone": "Lakho Deer", "area": "Lakho Deer" },
+  { "city": "Lahore", "zone": "Gushan e Lahore", "area": "Gushan e Lahore" },
+  { "city": "Lahore", "zone": "Mohafiz Town", "area": "Mohafiz Town" },
+  { "city": "Lahore", "zone": "Eden Avenue", "area": "Eden Avenue" },
+  { "city": "Lahore", "zone": "Mandilla", "area": "Mandilla" },
+  { "city": "Lahore", "zone": "NFC Society", "area": "NFC Society" },
+  { "city": "Lahore", "zone": "Badar Colony", "area": "Badar Colony" },
+  { "city": "Lahore", "zone": "Jindri", "area": "Jindri" },
+  { "city": "Lahore", "zone": "Eden value Homes", "area": "Eden value Homes" },
+  { "city": "Lahore", "zone": "Qainchi", "area": "Qainchi" },
+  { "city": "Lahore", "zone": "Sant Nagar", "area": "Sant Nagar" },
+  { "city": "Lahore", "zone": "Tulspura", "area": "Tulspura" },
+  { "city": "Lahore", "zone": "Cantt", "area": "Cantt" },
+  { "city": "Lahore", "zone": "Tariq Gardens", "area": "Tariq Gardens" },
+  { "city": "Lahore", "zone": "Ghaziabad", "area": "Ghaziabad" },
+  { "city": "Lahore", "zone": "OLD Sanda", "area": "OLD Sanda" },
+  { "city": "Lahore", "zone": "Shadiwal", "area": "Shadiwal" },
+  { "city": "Lahore", "zone": "Tajpura", "area": "Tajpura" },
+  { "city": "Lahore", "zone": "Dha Boradway", "area": "Dha Boradway" },
+  { "city": "Lahore", "zone": "Pandoki", "area": "Pandoki" },
+  { "city": "Lahore", "zone": "OLD Officers Colony", "area": "OLD Officers Colony" },
+  { "city": "Lahore", "zone": "Wapda town", "area": "Wapda town" },
+  { "city": "Lahore", "zone": "Baggrian", "area": "Baggrian" },
+  { "city": "Lahore", "zone": "Icchra", "area": "Icchra" },
+  { "city": "Lahore", "zone": "Daroghewala", "area": "Daroghewala" },
+  { "city": "Lahore", "zone": "Jinnah Colony", "area": "Jinnah Colony" },
+  { "city": "Lahore", "zone": "Shadi Pura", "area": "Shadi Pura" },
+  { "city": "Lahore", "zone": "PGECHS Housing Society", "area": "PGECHS Housing Society" },
+  { "city": "Lahore", "zone": "Ittefaq Town", "area": "Ittefaq Town" },
+  { "city": "Lahore", "zone": "T & T Aabpara Housing Scheme", "area": "T & T Aabpara Housing Scheme" },
+  { "city": "Lahore", "zone": "Mozang Chungi", "area": "Mozang Chungi" },
+  { "city": "Lahore", "zone": "Mangga", "area": "Mangga" },
+  { "city": "Lahore", "zone": "Mustafa Town", "area": "Mustafa Town" },
+  {
+    "city": "Lahore",
+    "zone": "Abdalians Cooperative Housing Society",
+    "area": "Abdalians Cooperative Housing Society"
+  },
+  { "city": "Lahore", "zone": "Gulberg 5", "area": "Gulberg 5" },
+  { "city": "Lahore", "zone": "Shalimar Bagh", "area": "Shalimar Bagh" },
+  { "city": "Lahore", "zone": "Green town", "area": "Green town" },
+  { "city": "Lahore", "zone": "Rahim Abad", "area": "Rahim Abad" },
+  { "city": "Lahore", "zone": "Muslim Nagar Housing Scheme", "area": "Muslim Nagar Housing Scheme" },
+  { "city": "Lahore", "zone": "P & D Society", "area": "P & D Society" },
+  { "city": "Lahore", "zone": "PIA Housing Society", "area": "PIA Housing Society" },
+  { "city": "Lahore", "zone": "Phase 8 Ex Air Avenue", "area": "Phase 8 Ex Air Avenue" },
+  { "city": "Lahore", "zone": "Jia Bagga", "area": "Jia Bagga" },
+  { "city": "Lahore", "zone": "Sham Nagar", "area": "Sham Nagar" },
+  {
+    "city": "Lahore",
+    "zone": "Revenue Employees Cooperative Housing",
+    "area": "Revenue Employees Cooperative Housing"
+  },
+  { "city": "Lahore", "zone": "Canal View", "area": "Canal View" },
+  { "city": "Lahore", "zone": "Gujjar pura", "area": "Gujjar pura" },
+  { "city": "Lahore", "zone": "KoT Muhammad", "area": "KoT Muhammad" },
+  { "city": "Lahore", "zone": "Qazi Town", "area": "Qazi Town" },
+  { "city": "Lahore", "zone": "Kot Kamboh", "area": "Kot Kamboh" },
+  { "city": "Lahore", "zone": "Jubilee Town", "area": "Jubilee Town" },
+  { "city": "Lahore", "zone": "Thokar Niaz Baig", "area": "Thokar Niaz Baig" },
+  { "city": "Lahore", "zone": "Hajvery Housing Scheme", "area": "Hajvery Housing Scheme" },
+  { "city": "Lahore", "zone": "Akbari Mandi", "area": "Akbari Mandi" },
+  { "city": "Lahore", "zone": "Elite Town", "area": "Elite Town" },
+  { "city": "Lahore", "zone": "Allama Iqbal Town", "area": "Allama Iqbal Town" },
+  { "city": "Lahore", "zone": "Rachna Town", "area": "Rachna Town" },
+  { "city": "Lahore", "zone": "Formanites Housing Scheme", "area": "Formanites Housing Scheme" },
+  { "city": "Lahore", "zone": "Fazaia Housing Scheme", "area": "Fazaia Housing Scheme" },
+  { "city": "Lahore", "zone": "Haloki", "area": "Haloki" },
+  { "city": "Lahore", "zone": "Punjab University", "area": "Punjab University" },
+  { "city": "Islamabad", "zone": "Misrial", "area": "Misrial" },
+  { "city": "Islamabad", "zone": "Mughal", "area": "Mughal" },
+  { "city": "Islamabad", "zone": "Sohan Dehati ", "area": "Sohan Dehati " },
+  { "city": "Islamabad", "zone": "Khurram", "area": "Khurram" },
+  { "city": "Islamabad", "zone": "Koral", "area": "Koral" },
+  { "city": "Islamabad", "zone": "Wah cantt", "area": "Wah cantt" },
+  { "city": "Islamabad", "zone": "Mohallah Imam", "area": "Mohallah Imam" },
+  { "city": "Islamabad", "zone": "Chaklala Cant", "area": "Chaklala Cant" },
+  { "city": "Islamabad", "zone": "Top City", "area": "Top City" },
+  { "city": "Islamabad", "zone": "Saddar", "area": "Saddar" },
+  { "city": "Islamabad", "zone": "Fateh Jang", "area": "Fateh Jang" },
+  { "city": "Islamabad", "zone": "Dhoke Kala Khan", "area": "Dhoke Kala Khan" },
+  { "city": "Islamabad", "zone": "G-8/3&4", "area": "G-8/3&4" },
+  { "city": "Islamabad", "zone": "Sadiq Abad", "area": "Sadiq Abad" },
+  { "city": "Islamabad", "zone": "H-8", "area": "H-8" },
+  { "city": "Islamabad", "zone": "H-11", "area": "H-11" },
+  { "city": "Islamabad", "zone": "Soan garden", "area": "Soan garden" },
+  { "city": "Islamabad", "zone": "D-12", "area": "D-12" },
+  { "city": "Islamabad", "zone": "F-8", "area": "F-8" },
+  { "city": "Islamabad", "zone": "Kotha kalan", "area": "Kotha kalan" },
+  { "city": "Islamabad", "zone": "Dhok Ratta", "area": "Dhok Ratta" },
+  { "city": "Islamabad", "zone": "Gulberg greens", "area": "Gulberg greens" },
+  { "city": "Islamabad", "zone": "G-7/3 & 4", "area": "G-7/3 & 4" },
+  { "city": "Islamabad", "zone": "F-7", "area": "F-7" },
+  { "city": "Islamabad", "zone": "Thatta Khalil", "area": "Thatta Khalil" },
+  { "city": "Islamabad", "zone": "Bahria Town Phase 1.2.3.4.5.6", "area": "Bahria Town Phase 1.2.3.4.5.6" },
+  { "city": "Islamabad", "zone": "Chour Harpal", "area": "Chour Harpal" },
+  { "city": "Islamabad", "zone": "E-11", "area": "E-11" },
+  { "city": "Islamabad", "zone": "Chamanzar Colony", "area": "Chamanzar Colony" },
+  { "city": "Islamabad", "zone": "Bhadana Kalan", "area": "Bhadana Kalan" },
+  { "city": "Islamabad", "zone": "I-9", "area": "I-9" },
+  { "city": "Islamabad", "zone": "Najjo", "area": "Najjo" },
+  { "city": "Islamabad", "zone": "I-15", "area": "I-15" },
+  { "city": "Islamabad", "zone": "Rawat", "area": "Rawat" },
+  { "city": "Islamabad", "zone": "Kuri", "area": "Kuri" },
+  { "city": "Islamabad", "zone": "Khayaban-e-SirSyed (N)", "area": "Khayaban-e-SirSyed (N)" },
+  { "city": "Islamabad", "zone": "Chak Shahzad ", "area": "Chak Shahzad " },
+  { "city": "Islamabad", "zone": "Asghar Mall", "area": "Asghar Mall" },
+  { "city": "Islamabad", "zone": "G-9", "area": "G-9" },
+  { "city": "Islamabad", "zone": "G-13", "area": "G-13" },
+  { "city": "Islamabad", "zone": "Askari XI", "area": "Askari XI" },
+  { "city": "Islamabad", "zone": "Shakrial", "area": "Shakrial" },
+  { "city": "Islamabad", "zone": "Siham", "area": "Siham" },
+  { "city": "Islamabad", "zone": "Airport", "area": "Airport" },
+  { "city": "Islamabad", "zone": "E-7", "area": "E-7" },
+  { "city": "Islamabad", "zone": "Westridge 1,2,3", "area": "Westridge 1,2,3" },
+  { "city": "Islamabad", "zone": "Kalyal Sharief", "area": "Kalyal Sharief" },
+  { "city": "Islamabad", "zone": "Pind Begowal ", "area": "Pind Begowal " },
+  { "city": "Islamabad", "zone": "Khana Dak", "area": "Khana Dak" },
+  { "city": "Islamabad", "zone": "chakri", "area": "chakri" },
+  { "city": "Islamabad", "zone": "Bluearea", "area": "Bluearea" },
+  { "city": "Islamabad", "zone": "Kuri - 2", "area": "Kuri - 2" },
+  { "city": "Islamabad", "zone": "G-6/2-3 & 4", "area": "G-6/2-3 & 4" },
+  { "city": "Islamabad", "zone": "PWD", "area": "PWD" },
+  { "city": "Islamabad", "zone": "H-13", "area": "H-13" },
+  { "city": "Islamabad", "zone": "G-12", "area": "G-12" },
+  { "city": "Islamabad", "zone": "Satellite Town", "area": "Satellite Town" },
+  { "city": "Islamabad", "zone": "D-17", "area": "D-17" },
+  { "city": "Islamabad", "zone": "Kirpa", "area": "Kirpa" },
+  { "city": "Islamabad", "zone": "Shalimar Town", "area": "Shalimar Town" },
+  { "city": "Islamabad", "zone": "Tarnol", "area": "Tarnol" },
+  { "city": "Islamabad", "zone": "Shah Allah Dita", "area": "Shah Allah Dita" },
+  { "city": "Islamabad", "zone": "pind sangril", "area": "pind sangril" },
+  { "city": "Islamabad", "zone": "E-9", "area": "E-9" },
+  { "city": "Islamabad", "zone": "Her DO Gher", "area": "Her DO Gher" },
+  { "city": "Islamabad", "zone": "E-10", "area": "E-10" },
+  { "city": "Islamabad", "zone": "i-14", "area": "i-14" },
+  { "city": "Islamabad", "zone": "Malpur", "area": "Malpur" },
+  { "city": "Islamabad", "zone": "Ghori town", "area": "Ghori town" },
+  { "city": "Islamabad", "zone": "Dhoke makhanwali", "area": "Dhoke makhanwali" },
+  { "city": "Islamabad", "zone": "Ramna 4", "area": "Ramna 4" },
+  { "city": "Islamabad", "zone": "Sangjani", "area": "Sangjani" },
+  { "city": "Islamabad", "zone": "Allama Iqbal Colony", "area": "Allama Iqbal Colony" },
+  { "city": "Islamabad", "zone": "Redzone", "area": "Redzone" },
+  { "city": "Islamabad", "zone": "Jinnah Garden", "area": "Jinnah Garden" },
+  { "city": "Islamabad", "zone": "Zaraj Housing Society", "area": "Zaraj Housing Society" },
+  { "city": "Islamabad", "zone": "H-14", "area": "H-14" },
+  { "city": "Islamabad", "zone": "Hassan Abdal", "area": "Hassan Abdal" },
+  { "city": "Islamabad", "zone": "DHA 1", "area": "DHA 1" },
+  { "city": "Islamabad", "zone": "I-8", "area": "I-8" },
+  { "city": "Islamabad", "zone": "Jhangi Syedan", "area": "Jhangi Syedan" },
+  { "city": "Islamabad", "zone": "Gawalmandi", "area": "Gawalmandi" },
+  { "city": "Islamabad", "zone": "Chanda Chichi", "area": "Chanda Chichi" },
+  { "city": "Islamabad", "zone": "G-14", "area": "G-14" },
+  { "city": "Islamabad", "zone": "I-16", "area": "I-16" },
+  { "city": "Islamabad", "zone": "Sarai Kharbuza", "area": "Sarai Kharbuza" },
+  { "city": "Islamabad", "zone": "Sihala", "area": "Sihala" },
+  { "city": "Islamabad", "zone": "DHA 2", "area": "DHA 2" },
+  { "city": "Islamabad", "zone": "I-10", "area": "I-10" },
+  { "city": "Islamabad", "zone": "Bri Imam", "area": "Bri Imam" },
+  { "city": "Islamabad", "zone": "DHA Valley", "area": "DHA Valley" },
+  { "city": "Islamabad", "zone": "G-11/1, 2, 3 & 4 ", "area": "G-11/1, 2, 3 & 4 " },
+  { "city": "Islamabad", "zone": "G-16", "area": "G-16" },
+  { "city": "Islamabad", "zone": "Committee Chowk", "area": "Committee Chowk" },
+  { "city": "Islamabad", "zone": "Charah ", "area": "Charah " },
+  { "city": "Islamabad", "zone": "H-10", "area": "H-10" },
+  { "city": "Islamabad", "zone": "Ali pur", "area": "Ali pur" },
+  { "city": "Islamabad", "zone": "G-5", "area": "G-5" },
+  { "city": "Islamabad", "zone": "Pir Wadhahi", "area": "Pir Wadhahi" },
+  { "city": "Islamabad", "zone": "H-9 ", "area": "H-9 " },
+  { "city": "Islamabad", "zone": "Rawal Town & Margala town", "area": "Rawal Town & Margala town" },
+  { "city": "Islamabad", "zone": "Shamsabad", "area": "Shamsabad" },
+  { "city": "Islamabad", "zone": "I-13", "area": "I-13" },
+  { "city": "Islamabad", "zone": "Koh-i-Noor Colony", "area": "Koh-i-Noor Colony" },
+  { "city": "Islamabad", "zone": "Tarlai Kalan ", "area": "Tarlai Kalan " },
+  { "city": "Islamabad", "zone": "Adiala", "area": "Adiala" },
+  { "city": "Islamabad", "zone": "F-17", "area": "F-17" },
+  { "city": "Islamabad", "zone": "F-11", "area": "F-11" },
+  { "city": "Islamabad", "zone": "Humak", "area": "Humak" },
+  { "city": "Islamabad", "zone": "Railway Scheme 7", "area": "Railway Scheme 7" },
+  { "city": "Islamabad", "zone": "F-9 Park", "area": "F-9 Park" },
+  { "city": "Islamabad", "zone": "F-6", "area": "F-6" },
+  { "city": "Islamabad", "zone": "Waris khan", "area": "Waris khan" },
+  { "city": "Islamabad", "zone": "Ghari", "area": "Ghari" },
+  { "city": "Islamabad", "zone": "H-12", "area": "H-12" },
+  { "city": "Islamabad", "zone": "F-15", "area": "F-15" },
+  { "city": "Islamabad", "zone": "Tumair", "area": "Tumair" },
+  { "city": "Islamabad", "zone": "Noorpur Shahan ", "area": "Noorpur Shahan " },
+  { "city": "Islamabad", "zone": "E-8", "area": "E-8" },
+  { "city": "Islamabad", "zone": "F-10", "area": "F-10" },
+  { "city": "Islamabad", "zone": "G-10 ", "area": "G-10 " },
+  { "city": "Islamabad", "zone": "Lalazar", "area": "Lalazar" },
+  { "city": "Islamabad", "zone": "Qasimabad", "area": "Qasimabad" },
+  { "city": "Islamabad", "zone": "Barma", "area": "Barma" },
+  { "city": "Islamabad", "zone": "Taxila Cantt", "area": "Taxila Cantt" },
+  { "city": "Islamabad", "zone": "Gulshan Abad", "area": "Gulshan Abad" },
+  { "city": "Islamabad", "zone": "Golra Sharif ", "area": "Golra Sharif " },
+  { "city": "Islamabad", "zone": "Pindora", "area": "Pindora" },
+  { "city": "Islamabad", "zone": "Pir choha Mohala", "area": "Pir choha Mohala" },
+  { "city": "Islamabad", "zone": "Bhara Kahu", "area": "Bhara Kahu" },
+  { "city": "Islamabad", "zone": "Lohi Bhair", "area": "Lohi Bhair" },
+  { "city": "Islamabad", "zone": "Defence colony", "area": "Defence colony" },
+  { "city": "Islamabad", "zone": "Saidpur", "area": "Saidpur" },
+  { "city": "Islamabad", "zone": "Lala G Sarkar", "area": "Lala G Sarkar" },
+  { "city": "Islamabad", "zone": "Naval Anchorage", "area": "Naval Anchorage" },
+  { "city": "Islamabad", "zone": "Air Port Housing Society", "area": "Air Port Housing Society" },
+  { "city": "Islamabad", "zone": "New City", "area": "New City" },
+  { "city": "Islamabad", "zone": "F-5", "area": "F-5" },
+  { "city": "Islamabad", "zone": "G-15", "area": "G-15" },
+  { "city": "Islamabad", "zone": "Lake View Park", "area": "Lake View Park" },
+  { "city": "Islamabad", "zone": "Lakhwal", "area": "Lakhwal" },
+  { "city": "Islamabad", "zone": "Dhoke Paracha", "area": "Dhoke Paracha" },
+  { "city": "Islamabad", "zone": "F-16", "area": "F-16" },
+  { "city": "Islamabad", "zone": "Dhok Khabba", "area": "Dhok Khabba" },
+  { "city": "Islamabad", "zone": "I-11", "area": "I-11" },
+  { "city": "Islamabad", "zone": "ramna 5", "area": "ramna 5" },
+  { "city": "Islamabad", "zone": "Chah Sultan", "area": "Chah Sultan" },
+  { "city": "Islamabad", "zone": "Bahria Town 7 & 8", "area": "Bahria Town 7 & 8" }
+]

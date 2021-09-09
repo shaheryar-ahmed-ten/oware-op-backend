@@ -105,7 +105,7 @@
     serviceType.value
     submitbtn.addEventListener('click', (e) => {
       e.preventDefault()
-      fetch('http://coc.oware.co/api/v1/public/customer-inquiry', {
+      fetch('https://coc.oware.co/api/v1/public/customer-inquiry', {
         method: 'POST',
         body: JSON.stringify({
           name: name.value,

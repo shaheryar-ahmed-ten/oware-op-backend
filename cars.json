@@ -1,0 +1,57 @@
+[
+  {
+    "make": "Suzuki",
+    "model": "2 Stroke",
+    "vehicleType": "Mini Truck"
+  },
+  {
+    "make": "Suzuki",
+    "model": "Chamber",
+    "vehicleType": "Mini Truck"
+  },
+  {
+    "make": "Suzuki",
+    "model": "Ravi",
+    "vehicleType": "Mini Truck"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Shehzore Mini Truck",
+    "vehicleType": "Light Truck"
+  },
+  {
+    "make": "Hyundai",
+    "model": "Nishat",
+    "vehicleType": "Light Truck"
+  },
+  {
+    "make": "Hyundai",
+    "model": "H-100",
+    "vehicleType": "Light Truck"
+  },
+  {
+    "make": "Master",
+    "model": "Foton M-280",
+    "vehicleType": "Light Truck"
+  },
+  {
+    "make": "Master",
+    "model": "Foton 16 ft",
+    "vehicleType": "Light Truck"
+  },
+  {
+    "make": "Master",
+    "model": "Foton 18 ft",
+    "vehicleType": "Light Truck"
+  },
+  {
+    "make": "Mazda",
+    "model": "Titan T-3500",
+    "vehicleType": "Heavy Truck"
+  },
+  {
+    "make": "Mazda",
+    "model": "Titan T-4600",
+    "vehicleType": "Heavy Truck"
+  }
+]
