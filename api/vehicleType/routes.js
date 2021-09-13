@@ -2,7 +2,7 @@ const router = require("express").Router();
 const controller = require("./controller");
 const httpStatus = require("http-status");
 const config = require("../../config");
-const { VehicleType } = require('../../models')
+const { VehicleType, CarMake, CarModel } = require('../../models')
 const { Op } = require("sequelize");
 const moment = require("moment");
 
@@ -15,7 +15,23 @@ router.get('/', async (req, res) => {
         limit,
         offset,
         where,
-
+        include: [
+            {
+                model: CarMake,
+                as: 'CarMake',
+                required: true,
+            },
+            {
+                model: CarModel,
+                as: 'CarModel',
+                required: true,
+            },
+            {
+                model: VehicleType,
+                as: 'VehicleType',
+                required: true,
+            }
+        ],
         order: [['updatedAt', 'DESC']],
     }
     const response = await controller.getVehicleTypes(params)
@@ -28,11 +44,33 @@ router.get('/', async (req, res) => {
 router.get("/:id", async (req, res) => {
     let where = { id: req.params.id };
     const params = {
-        where
+        where,
+        include: [
+            {
+                model: CarMake,
+                as: 'CarMake',
+                required: true,
+            },
+            {
+                model: CarModel,
+                as: 'CarModel',
+                required: true,
+            },
+            {
+                model: VehicleType,
+                as: 'VehicleType',
+                required: true,
+            }
+        ]
     }
     const response = await controller.getVehicleTypeById(params)
     if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
     else res.sendError(response.status, response.message, response.error);
+})
+
+router.post("/", async (req, res) => {
+    const response = await controller.addVehicleType(req.body, req.userId);
+    res.sendJson(true)
 })
 
 module.exports = router;
