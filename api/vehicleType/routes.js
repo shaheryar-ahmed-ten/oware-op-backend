@@ -70,7 +70,8 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", async (req, res) => {
     const response = await controller.addVehicleType(req.body, req.userId);
-    res.sendJson(true)
+    if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
+    else res.sendError(response.status, response.message, response.code);
 })
 
 module.exports = router;

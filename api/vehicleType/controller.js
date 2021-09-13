@@ -31,7 +31,7 @@ exports.getVehicleTypes = async (params) => {
 exports.getVehicleTypeById = async (params) => {
     try {
         const response = await Dao.Car.findOne(params);
-        if (response) return { success: false, status: httpStatus.OK, message: "Data Found", data: response };
+        if (response) return { success: true, status: httpStatus.OK, message: "Data Found", data: response };
         else return { status: httpStatus.OK, message: "Data not Found", data: [] };
     } catch (err) {
         console.log("ERROR:", err);
@@ -43,14 +43,15 @@ exports.getVehicleTypeById = async (params) => {
     }
 }
 
-exports.addVehicleType = async (params, adminId) => {
+exports.addVehicleType = async (params, userId) => {
     try {
-        const vehicleType = await VehicleType.create(
-            {
-                adminId,
-            }
-
-        )
+        const response = await Dao.Car.create({
+            userId: userId,
+            ...params // req.body
+        })
+        if (response)
+            return { success: true, status: httpStatus.OK, message: "Data Found", data: response }
+        else return { status: httpStatus.OK, message: "Data not Found", data: [] };
     } catch (err) {
         console.log("ERROR:", err);
         return {
