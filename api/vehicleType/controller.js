@@ -75,3 +75,18 @@ exports.deleteVehicleType = async (params) => {
         };
     }
 }
+
+exports.updateVehicleType = async (params, id) => {
+    try {
+        let response = await Dao.Car.update(params, id);
+        if (response) return { success: true, status: httpStatus.OK, message: "Vehicle type updated", data: response };
+        else return { status: httpStatus.OK, message: "Data not Found", data: [] };
+    } catch (err) {
+        console.log("ERROR:", err);
+        return {
+            success: false,
+            message: err.message,
+            code: "Failed to get data"
+        };
+    }
+}
