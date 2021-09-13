@@ -74,4 +74,10 @@ router.post("/", async (req, res) => {
     else res.sendError(response.status, response.message, response.code);
 })
 
+router.delete("/:id", async (req, res) => {
+    const response = await controller.deleteVehicleType(req.params.id);
+    if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
+    else res.sendError(response.status, response.message, response.code);
+})
+
 module.exports = router;

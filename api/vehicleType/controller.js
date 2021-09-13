@@ -1,6 +1,5 @@
 const httpStatus = require('http-status');
 const Dao = require('../../dao');
-const { Car } = require('../../models')
 
 exports.getVehicleTypes = async (params) => {
     try {
@@ -51,6 +50,21 @@ exports.addVehicleType = async (params, userId) => {
         })
         if (response)
             return { success: true, status: httpStatus.OK, message: "Data Found", data: response }
+        else return { status: httpStatus.OK, message: "Data not Found", data: [] };
+    } catch (err) {
+        console.log("ERROR:", err);
+        return {
+            success: false,
+            message: err.message,
+            code: "Failed to get data"
+        };
+    }
+}
+
+exports.deleteVehicleType = async (params) => {
+    try {
+        const response = await Dao.Car.delete(params);
+        if (response) return { success: true, status: httpStatus.OK, message: "Record delete", data: response };
         else return { status: httpStatus.OK, message: "Data not Found", data: [] };
     } catch (err) {
         console.log("ERROR:", err);
