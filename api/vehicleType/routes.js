@@ -11,10 +11,13 @@ router.get('/', async (req, res) => {
     const limit = req.query.rowsPerPage || config.rowsPerPage
     const offset = (req.query.page - 1 || 0) * limit;
     let where = {};
+    if (req.query.search)
+        where[Op.or] = ["$CarMake.name$", "$CarModel.name$", "$VehicleType.name$"].map(key => ({
+            [key]: { [Op.like]: "%" + req.query.search + "%" }
+        }));
     const params = {
         limit,
         offset,
-        where,
         include: [
             {
                 model: CarMake,
@@ -32,6 +35,7 @@ router.get('/', async (req, res) => {
                 required: true,
             }
         ],
+        where,
         sort: [['updatedAt', 'DESC']],
     }
     const response = await controller.getVehicleTypes(params)

@@ -26,7 +26,6 @@ exports.getVehicleTypes = async (params) => {
     }
 }
 
-
 exports.getVehicleTypeById = async (params) => {
     try {
         const response = await Dao.Car.findOne(params);
