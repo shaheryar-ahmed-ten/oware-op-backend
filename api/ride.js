@@ -22,6 +22,9 @@ const { Op } = require("sequelize");
 const RIDE_STATUS = require('../enums/rideStatus');
 const { RELATION_TYPES } = require('../enums');
 const { digitize } = require('../services/common.services');
+const ExcelJS = require("exceljs");
+const authService = require("../services/auth.service");
+const moment = require("moment");
 
 /* GET rides listing. */
 router.get('/', async (req, res, next) => {
@@ -222,6 +225,112 @@ router.get('/stats', async (req, res) => {
   return res.json({
     success: true, stats
   })
+})
+
+
+// get excel export
+router.get('/export', async (req, res, next) => {
+  let where = {};
+  if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
+
+  let workbook = new ExcelJS.Workbook();
+
+  let worksheet = workbook.addWorksheet("Rides");
+
+  const getColumnsConfig = columns =>
+    columns.map(column => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig([
+    "RIDE ID",
+    "STATUS",
+    "COMPANY",
+    "DRIVER",
+    "DRIVER PHONE",
+    "VEHICLE",
+    "PRICE",
+    "COST",
+    "CUSTOMER DISCOUNT",
+    "DRIVER INCENTIVE",
+    "PICKUP CITY",
+    "PICKUP ZONE",
+    "PICKUP AREA",
+    "PICKUP ADDRESS",
+    "PICKUP DATE",
+    "DROPOFF CITY",
+    "DROPOFF ZONE",
+    "DROPOFF AREA",
+    "DROPOFF ADDRESS",
+    "DROPOFF DATE",
+    "PRODUCTS"
+  ]);
+
+  let response = await Ride.findAll({
+    include: [{
+      model: Company,
+      as: 'Customer'
+    }, {
+      model: File, as: 'Manifest'
+    }, {
+      model: RideProduct,
+      include: [Category]
+    }, {
+      model: Area,
+      include: [{ model: Zone, include: [City] }],
+      as: 'PickupArea'
+    }, {
+      model: Area,
+      include: [{ model: Zone, include: [City] }],
+      as: 'DropoffArea'
+    }, {
+      model: Vehicle,
+      include: [{
+        model: Company, as: 'Vendor'
+      }, {
+        model: Car, include: [CarModel, CarMake, VehicleType]
+      }]
+    }, {
+      model: Driver,
+      include: [{ model: Company, as: 'Vendor' }]
+    }],
+    order: [['updatedAt', 'DESC']],
+  });
+
+
+  worksheet.addRows(
+    response.map(row => [
+      row.id,
+      row.status,
+      row.Customer.name,
+      row.Driver.name,
+      row.Driver.phone,
+      row.Vehicle.registrationNumber,
+      row.price,
+      row.cost,
+      row.customerDiscount,
+      row.driverIncentive,
+      row.PickupArea.Zone.City.name,
+      row.PickupArea.Zone.name,
+      row.PickupArea.name,
+      row.pickupAddress,
+      moment(row.pickupDate).format("DD/MM/yy HH:mm"),
+      row.DropoffArea.Zone.City.name,
+      row.DropoffArea.Zone.name,
+      row.DropoffArea.name,
+      row.dropoffAddress,
+      moment(row.dropoffDate).format("DD/MM/yy HH:mm"),
+      row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`)
+    ])
+  );
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
+
+  // return res.json({
+  // success: true,
+  // data: response
+  // })
 })
 
 module.exports = router;
