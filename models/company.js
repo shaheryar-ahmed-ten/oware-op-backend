@@ -44,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: RELATION_TYPES.CUSTOMER
       },
       internalIdForBusiness: DataTypes.STRING,
+      logoId: DataTypes.INTEGER,
       type: DataTypes.STRING,
       contactId: {
         type: DataTypes.INTEGER,
