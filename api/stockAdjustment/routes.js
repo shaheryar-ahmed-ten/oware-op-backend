@@ -13,6 +13,7 @@ const {
   AdjustmentInventory,
   ActivityLog,
   sequelize,
+  s
 } = require("../../models");
 
 const modell = require("../../models");
@@ -50,11 +51,13 @@ async function beforeCreate(req, res, next) {
 async function activityLog(req, res, next) {
   // console.log("res", res);
   const modelUrl = req.originalUrl.split("/api/v1/");
-  let MODEL;
+  let MODEL,TYPE;
   switch (modelUrl[1]) {
     case "inventory-wastages":
       MODEL = "StockAdjustment";
+      TYPE = ""
   }
+  const sourceType = await 
   if (req.method == "POST") {
     // StockAdjustment.afterCreate(async (stockadjustment, options) => {
     //   stockadjustment.user = req.userId;
