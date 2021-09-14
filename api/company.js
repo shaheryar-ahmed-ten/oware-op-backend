@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Company, User, Role } = require("../models");
+const { Company, User, Role ,File } = require("../models");
 const { Op } = require("sequelize");
 const config = require("../config");
 const authService = require("../services/auth.service");
@@ -25,6 +25,7 @@ router.get("/:relationType", async (req, res, next) => {
     offset,
     where
   });
+  
   res.json({
     success: true,
     message: "respond with a resource",
@@ -49,6 +50,7 @@ router.post("/:relationType", async (req, res, next) => {
       message: err.message
     });
   }
+  
   res.json({
     success: true,
     message,
@@ -71,6 +73,8 @@ router.put("/:relationType/:id", async (req, res, next) => {
   customer.contactId = req.body.contactId;
   customer.notes = req.body.notes;
   customer.isActive = req.body.isActive;
+  customer.logoId = req.body.logoId;
+  
   try {
     const response = await customer.save();
     return res.json({
