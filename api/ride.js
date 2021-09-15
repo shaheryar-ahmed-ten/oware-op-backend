@@ -25,6 +25,7 @@ const { digitize } = require('../services/common.services');
 const ExcelJS = require("exceljs");
 const authService = require("../services/auth.service");
 const moment = require("moment");
+const { previewFile } = require('../services/s3.service');
 
 /* GET rides listing. */
 router.get('/', async (req, res, next) => {
@@ -86,6 +87,58 @@ router.get('/', async (req, res, next) => {
   });
 });
 
+// Get single ride
+router.get('/single/:id', async (req, res, next) => {
+  let ride = await Ride.findOne({
+    where: { id: req.params.id },
+    include: [{
+      model: Company,
+      as: 'Customer'
+    }, {
+      model: File, as: 'Manifest'
+    }, {
+      model: RideProduct,
+      include: [Category]
+    }, {
+      model: Area,
+      include: [{ model: Zone, include: [City] }],
+      as: 'PickupArea'
+    }, {
+      model: Area,
+      include: [{ model: Zone, include: [City] }],
+      as: 'DropoffArea'
+    }, {
+      model: Vehicle,
+      include: [{
+        model: Company, as: 'Vendor'
+      }, {
+        model: Car, include: [CarModel, CarMake, VehicleType]
+      }]
+    }, {
+      model: Driver,
+      include: [{ model: Company, as: 'Vendor' }]
+    }],
+  });
+  if (!ride) return res.status(400).json({
+    success: false,
+    message: 'No ride found!'
+  });
+  res.status(200).json({
+    success: true,
+    message: 'Data found!',
+    data: ride
+  });
+})
+
+// get ride product manifest
+router.get('/preview/:id', async (req, res, next) => {
+  console.log("req.params.id", req.params.id)
+  const id = req.params.id;
+  let file = await File.findOne({ where: { id } });
+  let preview = await previewFile(file.bucket, file.key);
+  console.log("preview", preview)
+  res.json({preview});
+})
 /* POST create new ride. */
 router.post('/', async (req, res, next) => {
   let message = 'New ride registered';
