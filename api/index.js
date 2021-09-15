@@ -19,6 +19,7 @@ const rideRouter = require("./ride");
 const uploadRouter = require("./upload");
 const previewRouter = require("./preview");
 const stockAdjustment = require("./stockAdjustment/routes");
+const addActivityLog = require("../middlewares/activityLog");
 
 const { isLoggedIn, checkPermission } = require("../services/auth.service");
 const { PERMISSIONS } = require("../enums");
@@ -27,7 +28,7 @@ const { PERMISSIONS } = require("../enums");
 router.get("/", (req, res, next) => {
   res.json({
     success: true,
-    message: "Welcome!"
+    message: "Welcome!",
   });
 });
 
@@ -41,19 +42,43 @@ router.use(
   checkPermission(PERMISSIONS.OPS_CUSTOMERINQUIRY_FULL),
   customerInquiryRouter
 );
-router.use("/uom", isLoggedIn, checkPermission(PERMISSIONS.OPS_UOM_FULL), uomRouter);
-router.use("/brand", isLoggedIn, checkPermission(PERMISSIONS.OPS_BRAND_FULL), brandRouter);
-router.use("/warehouse", isLoggedIn, checkPermission(PERMISSIONS.OPS_WAREHOUSE_FULL), warehouseRouter);
-router.use("/product", isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCT_FULL), productRouter);
-router.use("/product-inward", isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCTINWARD_FULL), productInwardRouter);
-router.use("/dispatch-order", isLoggedIn, checkPermission(PERMISSIONS.OPS_DISPATCHORDER_FULL), dispatchOrderRouter);
-router.use("/product-outward", isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCTOUTWARD_FULL), productOutwardRouter);
-router.use("/inventory", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), inventoryRouter);
-router.use("/driver", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), driverRouter);
-router.use("/vehicle", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleRouter);
-router.use("/ride", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), rideRouter);
-router.use("/upload", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), uploadRouter);
-router.use("/inventory-wastages", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), stockAdjustment);
+router.use("/uom", isLoggedIn, checkPermission(PERMISSIONS.OPS_UOM_FULL), addActivityLog, uomRouter);
+router.use("/brand", isLoggedIn, checkPermission(PERMISSIONS.OPS_BRAND_FULL), addActivityLog, brandRouter);
+router.use("/warehouse", isLoggedIn, checkPermission(PERMISSIONS.OPS_WAREHOUSE_FULL), addActivityLog, warehouseRouter);
+router.use("/product", isLoggedIn, checkPermission(PERMISSIONS.OPS_PRODUCT_FULL), addActivityLog, productRouter);
+router.use(
+  "/product-inward",
+  isLoggedIn,
+  checkPermission(PERMISSIONS.OPS_PRODUCTINWARD_FULL),
+  addActivityLog,
+  productInwardRouter
+);
+router.use(
+  "/dispatch-order",
+  isLoggedIn,
+  checkPermission(PERMISSIONS.OPS_DISPATCHORDER_FULL),
+  addActivityLog,
+  dispatchOrderRouter
+);
+router.use(
+  "/product-outward",
+  isLoggedIn,
+  checkPermission(PERMISSIONS.OPS_PRODUCTOUTWARD_FULL),
+  addActivityLog,
+  productOutwardRouter
+);
+router.use("/inventory", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), addActivityLog, inventoryRouter);
+router.use("/driver", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), addActivityLog, driverRouter);
+router.use("/vehicle", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), addActivityLog, vehicleRouter);
+router.use("/ride", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), addActivityLog, rideRouter);
+router.use("/upload", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), addActivityLog, uploadRouter);
+router.use(
+  "/inventory-wastages",
+  isLoggedIn,
+  checkPermission(PERMISSIONS.OPS_INVENTORY_FULL),
+  addActivityLog,
+  stockAdjustment
+);
 router.use("/preview", previewRouter);
 
 module.exports = router;
