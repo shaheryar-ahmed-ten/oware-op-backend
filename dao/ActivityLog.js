@@ -17,9 +17,6 @@ class ActivityLogDao extends CrudServiceDao {
     let MODEL;
     for (const row of rows) {
       MODEL = row.ActivitySourceType.name;
-      // const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
-      console.log(`sourceModel[MODEL]`, sourceModel[MODEL]);
-      console.log(`row.sourceId`, row.sourceId);
       let source;
       if (row.ActivitySourceType.hasInternalIdForBusiness) {
         source = await sourceModel[MODEL].findOne({
@@ -27,13 +24,12 @@ class ActivityLogDao extends CrudServiceDao {
           attributes: ["internalIdForBusiness"],
         });
         source = source.internalIdForBusiness;
-      } else if (row.ActivitySourceType.name) {
-        source = (await sourceModel[MODEL].findOne({ where: { id: row.sourceId }, attributes: ["name"] })).name;
+      } else if (!row.ActivitySourceType.hasInternalIdForBusiness) {
+        source = await sourceModel[MODEL].findOne({ where: { id: row.sourceId }, attributes: ["name"] });
         source = source.name;
+        console.log("source", source);
       }
-      row["name"] = source;
-      console.log(`row["name"]`, row["name"]);
-      console.log("row", row);
+      row.dataValues["name"] = source;
     }
     return { count, records: rows };
   }
