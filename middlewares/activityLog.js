@@ -3,9 +3,9 @@ const sourceModel = require("../models");
 
 async function addActivityLog(req, res, next) {
   console.log(`req.params`, req.params);
+  const modelUrl = req.originalUrl.split("/");
+  let MODEL = getModel(modelUrl[3]);
   if (req.method == "POST") {
-    const modelUrl = req.originalUrl.split("/api/v1/");
-    let MODEL = getModel(modelUrl[1]);
     const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
     const source = (await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1, attributes: ["id"] }))
       .id;
@@ -18,8 +18,6 @@ async function addActivityLog(req, res, next) {
       activityType: "ADD",
     });
   } else if (req.method == "PUT") {
-    const modelUrl = req.originalUrl.split("/");
-    let MODEL = getModel(modelUrl[3]);
     const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
     const source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1 });
     const log = await ActivityLog.create({
@@ -31,8 +29,6 @@ async function addActivityLog(req, res, next) {
       activityType: "EDIT",
     });
   } else if (req.method == "DELETE") {
-    const modelUrl = req.originalUrl.split("/");
-    let MODEL = getModel(modelUrl[3]);
     const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
     const source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1 });
     const log = await ActivityLog.create({
