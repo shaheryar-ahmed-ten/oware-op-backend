@@ -18,9 +18,10 @@ const vehicleRouter = require("./vehicle");
 const rideRouter = require("./ride");
 const uploadRouter = require("./upload");
 const previewRouter = require("./preview");
+const activityLogRouter = require("./ActivityLog/routes");
 const stockAdjustment = require("./stockAdjustment/routes");
 
-const vehicleType = require('./vehicleType/routes');
+const vehicleType = require("./vehicleType/routes");
 
 const { isLoggedIn, checkPermission } = require("../services/auth.service");
 const { PERMISSIONS } = require("../enums");
@@ -29,7 +30,7 @@ const { PERMISSIONS } = require("../enums");
 router.get("/", (req, res, next) => {
   res.json({
     success: true,
-    message: "Welcome!"
+    message: "Welcome!",
   });
 });
 
@@ -56,6 +57,7 @@ router.use("/vehicle", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FUL
 router.use("/ride", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), rideRouter);
 router.use("/upload", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), uploadRouter);
 router.use("/inventory-wastages", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), stockAdjustment);
+router.use("/audit-logs", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), activityLogRouter);
 router.use("/vehicle-types", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleType);
 router.use("/preview", previewRouter);
 

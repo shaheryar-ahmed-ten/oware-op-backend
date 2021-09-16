@@ -6,5 +6,6 @@ module.exports = {
   Warehouse: require("./Warehouse"),
   Product: require("./Product"),
   WastagesType: require("./WastagesType"),
-  Car: require("./Car")
+  ActivityLog: require("./ActivityLog"),
+  Car: require("./Car"),
 };
