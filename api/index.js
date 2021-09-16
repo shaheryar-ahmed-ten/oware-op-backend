@@ -21,6 +21,8 @@ const previewRouter = require("./preview");
 const activityLogRouter = require("./ActivityLog/routes");
 const stockAdjustment = require("./stockAdjustment/routes");
 
+const vehicleType = require("./vehicleType/routes");
+
 const { isLoggedIn, checkPermission } = require("../services/auth.service");
 const { PERMISSIONS } = require("../enums");
 
@@ -56,6 +58,7 @@ router.use("/ride", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL),
 router.use("/upload", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), uploadRouter);
 router.use("/inventory-wastages", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), stockAdjustment);
 router.use("/audit-logs", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), activityLogRouter);
+router.use("/vehicle-types", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleType);
 router.use("/preview", previewRouter);
 
 module.exports = router;

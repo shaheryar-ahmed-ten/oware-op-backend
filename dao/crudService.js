@@ -70,7 +70,7 @@ class CrudServiceDao {
         plain: true,
       }
     );
-    return `deleted at id=${id}`;
+    return record;
   }
 
   async destroy(id) {

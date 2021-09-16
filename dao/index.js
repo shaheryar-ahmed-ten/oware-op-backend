@@ -7,4 +7,5 @@ module.exports = {
   Product: require("./Product"),
   WastagesType: require("./WastagesType"),
   ActivityLog: require("./ActivityLog"),
+  Car: require("./Car"),
 };
