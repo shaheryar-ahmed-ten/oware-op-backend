@@ -15,6 +15,7 @@ async function addActivityLog(req, res, next) {
       previousPayload: null,
       sourceId: source ? source + 1 : 1,
       sourceType: sourceTypeId,
+      activityType: "ADD",
     });
   } else if (req.method == "PUT") {
     const modelUrl = req.originalUrl.split("/");
@@ -27,6 +28,7 @@ async function addActivityLog(req, res, next) {
       previousPayload: source,
       sourceId: req.params.id,
       sourceType: sourceTypeId,
+      activityType: "EDIT",
     });
   } else if (req.method == "DELETE") {
     const modelUrl = req.originalUrl.split("/");
@@ -39,6 +41,7 @@ async function addActivityLog(req, res, next) {
       previousPayload: source,
       sourceId: req.params.id,
       sourceType: sourceTypeId,
+      activityType: "DELETE",
     });
   }
   next();
@@ -106,6 +109,7 @@ function getModel(modelUrl) {
     case "ride":
       MODEL = "Ride";
   }
+  console.log(`MODEL`, MODEL);
   return MODEL;
 }
 
