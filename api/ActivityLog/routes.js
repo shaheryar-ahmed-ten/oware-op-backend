@@ -41,7 +41,7 @@ router.get("/", async (req, res) => {
     offset,
     include: [
       { model: User, as: "User", attributes: ["id", "firstName", "lastName"], required: true },
-      { model: ActivitySourceType, as: "ActivitySourceType", attributes: ["id", "name"] },
+      { model: ActivitySourceType, as: "ActivitySourceType", attributes: ["id", "name", "hasInternalIdForBusiness"] },
     ],
     where,
     sort: [["createdAt", "DESC"]],

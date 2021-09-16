@@ -6,7 +6,6 @@ async function addActivityLog(req, res, next) {
   if (req.method == "POST") {
     const modelUrl = req.originalUrl.split("/api/v1/");
     let MODEL = getModel(modelUrl[1]);
-    console.log("MODEL", MODEL);
     const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
     const source = (await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1, attributes: ["id"] }))
       .id;

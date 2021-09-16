@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       previousPayload: DataTypes.JSON,
       sourceId: DataTypes.INTEGER,
       sourceType: DataTypes.INTEGER,
+      activityType: DataTypes.STRING,
     },
     {
       sequelize,

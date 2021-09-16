@@ -78,7 +78,7 @@ router.get("/relations", async (req, res) => {
   else res.sendError(response.success, response.message, response.error);
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", activityLog, async (req, res) => {
   const response = await controller.deleteWastage(req.params.id);
   if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.success, response.message, response.code);
@@ -107,7 +107,7 @@ router.get("/:id", async (req, res) => {
   else res.sendError(response.status, response.message, response.error);
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", activityLog, async (req, res) => {
   console.log(`req.params`, req.params);
 
   const params = {
@@ -119,7 +119,7 @@ router.put("/:id", async (req, res) => {
   else res.sendError(response.status, response.message, response.error);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", activityLog, async (req, res) => {
   const response = await controller.addWastages(req.body["adjustment_products"], req.userId);
   if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.code);
