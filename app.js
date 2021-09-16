@@ -19,7 +19,7 @@ var accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), {
 morganBody(app, {
   // .. other settings
   noColors: true,
-  stream: accessLogStream
+  stream: accessLogStream,
 });
 
 // view engine setup (not required as we're only serving rest APIs)
@@ -31,6 +31,16 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// app.use((req, res, next) => {
+//   console.log("req.body", req.body);
+//   res.on("finish", () => {
+//     console.log("res.body", res.body);
+//     console.log("res.data", res.data);
+//     console.log("__morgan_body_response:", JSON.stringify(res.__morgan_body_response).data);
+//   });
+//   next();
+// });
 
 app.use("/api/v1/", apiRouter);
 
@@ -55,7 +65,7 @@ app.use("/api/v1", function (err, req, res, next) {
   res.status(err.status || 500);
   res.json({
     success: false,
-    message: "error"
+    message: "error",
   });
 });
 

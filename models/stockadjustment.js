@@ -1,5 +1,6 @@
 "use strict";
 const { Model } = require("sequelize");
+const { digitize } = require("../services/common.services");
 module.exports = (sequelize, DataTypes) => {
   class StockAdjustment extends Model {
     /**
@@ -11,16 +12,16 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       StockAdjustment.belongsTo(models.User, {
         foreignKey: "adminId",
-        as: "Admin"
+        as: "Admin",
       });
       StockAdjustment.belongsToMany(models.Inventory, {
         foreignKey: "adjustmentId",
         through: models.AdjustmentInventory,
-        as: "Inventories"
+        as: "Inventories",
       });
       StockAdjustment.hasMany(models.AdjustmentInventory, {
         foreignKey: "adjustmentId",
-        as: "AdjustmentInventory"
+        as: "AdjustmentInventory",
       });
     }
   }
@@ -29,19 +30,32 @@ module.exports = (sequelize, DataTypes) => {
       adminId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: { notEmpty: { msg: "Admin cannot be empty" } }
+        validate: { notEmpty: { msg: "Admin cannot be empty" } },
       },
       internalIdForBusiness: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: { notEmpty: { msg: "Admin cannot be empty" } }
-      }
+        validate: { notEmpty: { msg: "Admin cannot be empty" } },
+      },
     },
     {
       sequelize,
       modelName: "StockAdjustment",
-      paranoid: true
+      paranoid: true,
     }
   );
+
+  // StockAdjustment.afterCreate(async (stockadjustment, options) => {
+  //   const numberOfInternalIdForBusiness = digitize(stockadjustment.id, 6);
+  //   stockadjustment.internalIdForBusiness = stockadjustment.internalIdForBusiness + numberOfInternalIdForBusiness;
+  //   const adjustment = await stockadjustment.sequelize.models.ActivityLog.create({
+  //     userId: 12,
+  //     currentPayload: stockadjustment,
+  //     previousPayload: null,
+  //     sourceId: stockadjustment.id,
+  //     sourceType: 1,
+  //   });
+  //   console.log("adjustment", adjustment);
+  // });
   return StockAdjustment;
 };
