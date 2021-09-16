@@ -26,6 +26,7 @@ const ExcelJS = require("exceljs");
 const authService = require("../services/auth.service");
 const moment = require("moment");
 const { previewFile } = require("../services/s3.service");
+const activityLog = require("../middlewares/activityLog");
 
 /* GET rides listing. */
 router.get("/", async (req, res, next) => {
