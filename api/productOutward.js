@@ -14,11 +14,12 @@ const {
   Warehouse,
   Product,
   UOM,
-  sequelize
+  sequelize,
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const { digitize, checkOrderStatusAndUpdate } = require("../services/common.services");
+const activityLog = require("../middlewares/activityLog");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
@@ -30,10 +31,10 @@ router.get("/", async (req, res, next) => {
   if (req.query.search)
     where[Op.or] = [
       "$DispatchOrder.Inventory.Company.name$",
-      "$DispatchOrder.Inventory.Warehouse.name$"
+      "$DispatchOrder.Inventory.Warehouse.name$",
       // "$Inventories->Product.name$"
-    ].map(key => ({
-      [key]: { [Op.like]: "%" + req.query.search + "%" }
+    ].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
   const response = await ProductOutward.findAndCountAll({
     duplicating: false,
@@ -50,20 +51,20 @@ router.get("/", async (req, res, next) => {
             include: [
               { model: Product, include: [{ model: UOM }] },
               { model: Company, required: true },
-              { model: Warehouse, required: true }
-            ]
+              { model: Warehouse, required: true },
+            ],
           },
           {
             model: Inventory,
             required: true,
             as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-          }
-        ]
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+          },
+        ],
       },
       {
         model: Vehicle,
-        include: [{ model: Car, include: [CarMake, CarModel] }]
+        include: [{ model: Car, include: [CarMake, CarModel] }],
       },
       {
         model: Inventory,
@@ -72,21 +73,21 @@ router.get("/", async (req, res, next) => {
         include: [
           { model: Product, as: "Product", include: [{ model: UOM }] },
           { model: Company },
-          { model: Warehouse }
-        ]
-      }
+          { model: Warehouse },
+        ],
+      },
     ],
     order: [["updatedAt", "DESC"]],
     where,
     limit,
     offset,
-    distinct: true
+    distinct: true,
     // subQuery: false
   });
   var acc = [];
-  response.rows.forEach(productOutward => {
+  response.rows.forEach((productOutward) => {
     var sum = [];
-    productOutward.DispatchOrder.Inventories.forEach(Inventory => {
+    productOutward.DispatchOrder.Inventories.forEach((Inventory) => {
       sum.push(Inventory.OrderGroup.quantity);
     });
     acc.push(
@@ -100,9 +101,9 @@ router.get("/", async (req, res, next) => {
   }
 
   var comittedAcc = [];
-  response.rows.forEach(productOutward => {
+  response.rows.forEach((productOutward) => {
     var sumOfComitted = [];
-    productOutward.Inventories.forEach(Inventory => {
+    productOutward.Inventories.forEach((Inventory) => {
       sumOfComitted.push(Inventory.OutwardGroup.quantity);
     });
     comittedAcc.push(
@@ -120,27 +121,27 @@ router.get("/", async (req, res, next) => {
     message: "respond with a resource",
     data: response.rows,
     pages: Math.ceil(response.count / limit),
-    count: response.count
+    count: response.count,
   });
 });
 
 /* POST create new productOutward. */
-router.post("/", async (req, res, next) => {
+router.post("/", activityLog, async (req, res, next) => {
   let message = "New productOutward registered";
   let dispatchOrder = await DispatchOrder.findByPk(req.body.dispatchOrderId, { include: [ProductOutward] });
   if (!dispatchOrder)
     return res.json({
       success: false,
-      message: "No dispatch order found"
+      message: "No dispatch order found",
     });
   req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
 
   try {
-    await sequelize.transaction(async transaction => {
+    await sequelize.transaction(async (transaction) => {
       productOutward = await ProductOutward.create(
         {
           userId: req.userId,
-          ...req.body
+          ...req.body,
         },
         { transaction }
       );
@@ -148,7 +149,7 @@ router.post("/", async (req, res, next) => {
       productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
       let sumOfOutwards = [];
       let outwardAcc;
-      req.body.inventories.forEach(Inventory => {
+      req.body.inventories.forEach((Inventory) => {
         let quantity = parseInt(Inventory.quantity);
         sumOfOutwards.push(quantity);
       });
@@ -159,12 +160,12 @@ router.post("/", async (req, res, next) => {
       await productOutward.save({ transaction });
 
       await OutwardGroup.bulkCreate(
-        req.body.inventories.map(inventory => ({
+        req.body.inventories.map((inventory) => ({
           userId: req.userId,
           outwardId: productOutward.id,
           inventoryId: inventory.id,
           quantity: inventory.quantity,
-          availableQuantity: inventory.availableQuantity
+          availableQuantity: inventory.availableQuantity,
         })),
         { transaction }
       );
@@ -172,8 +173,8 @@ router.post("/", async (req, res, next) => {
       await checkOrderStatusAndUpdate(req.body.dispatchOrderId, productOutward.quantity, transaction);
 
       return Promise.all(
-        req.body.inventories.map(_inventory => {
-          return Inventory.findByPk(_inventory.id, { transaction }).then(inventory => {
+        req.body.inventories.map((_inventory) => {
+          return Inventory.findByPk(_inventory.id, { transaction }).then((inventory) => {
             if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
             if (_inventory.quantity > inventory.committedQuantity)
               throw new Error("Cannot create orders above available quantity");
@@ -191,7 +192,7 @@ router.post("/", async (req, res, next) => {
     return res.json({
       success: true,
       message,
-      data: productOutward
+      data: productOutward,
     });
     // TODO: // The following validations needs to be implemented for multi inventory outward
     // let availableOrderQuantity = dispatchOrder.quantity - dispatchOrder.ProductOutwards.reduce((acc, outward) => acc += outward.quantity, 0);
@@ -207,13 +208,13 @@ router.post("/", async (req, res, next) => {
     console.log("err", err);
     res.json({
       success: false,
-      message: err.toString().replace("Error: ", "")
+      message: err.toString().replace("Error: ", ""),
     });
   }
   res.json({
     success: true,
     message,
-    data: productOutward
+    data: productOutward,
   });
 });
 
@@ -221,12 +222,12 @@ router.post("/", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   let productOutward = await ProductOutward.findOne({
     where: { id: req.params.id },
-    include: [{ model: ProductInward }]
+    include: [{ model: ProductInward }],
   });
   if (!productOutward)
     return res.status(400).json({
       success: false,
-      message: "No productOutward found!"
+      message: "No productOutward found!",
     });
   await productOutward.ProductInward.save();
   productOutward.receiverName = req.body.receiverName;
@@ -237,12 +238,12 @@ router.put("/:id", async (req, res, next) => {
     return res.json({
       success: true,
       message: "Product Outward updated",
-      data: response
+      data: response,
     });
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.errors.pop().message,
     });
   }
 });
@@ -252,12 +253,12 @@ router.delete("/:id", async (req, res, next) => {
   if (response)
     res.json({
       success: true,
-      message: "ProductOutward deleted"
+      message: "ProductOutward deleted",
     });
   else
     res.status(400).json({
       success: false,
-      message: "No productOutward found!"
+      message: "No productOutward found!",
     });
 });
 router.get("/relations", async (req, res, next) => {
@@ -266,35 +267,35 @@ router.get("/relations", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventory",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
       },
       {
         model: Inventory,
         as: "Inventories",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
       },
       {
         model: ProductOutward,
         include: [
           {
-            model: Vehicle
+            model: Vehicle,
           },
           {
             model: Inventory,
             as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-          }
-        ]
-      }
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+          },
+        ],
+      },
     ],
-    order: [["updatedAt", "DESC"]]
+    order: [["updatedAt", "DESC"]],
   });
   const vehicles = await Vehicle.findAll({ where: { isActive: true } });
   res.json({
     success: true,
     message: "respond with a resource",
     dispatchOrders,
-    vehicles
+    vehicles,
   });
 });
 

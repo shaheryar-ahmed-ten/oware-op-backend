@@ -2,6 +2,7 @@ const { ActivityLog, ActivitySourceType } = require("../models");
 const sourceModel = require("../models");
 
 async function addActivityLog(req, res, next) {
+  console.log(`req.params`, req.params);
   if (req.method == "POST") {
     const modelUrl = req.originalUrl.split("/api/v1/");
     let MODEL = getModel(modelUrl[1]);
@@ -95,6 +96,12 @@ function getModel(modelUrl) {
 
     case "vehicle":
       MODEL = "Vehicle";
+      break;
+    case "user":
+      MODEL = "User";
+      break;
+    case "company":
+      MODEL = "Company";
       break;
 
     case "ride":

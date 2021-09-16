@@ -2,21 +2,8 @@ const router = require("express").Router();
 const controller = require("./controller");
 const httpStatus = require("http-status");
 const config = require("../../config");
-const addActivityLog = require("../../middlewares/activityLog");
-const {
-  Inventory,
-  Company,
-  Warehouse,
-  Product,
-  UOM,
-  User,
-  StockAdjustment,
-  AdjustmentInventory,
-  ActivityLog,
-  sequelize,
-  ActivitySourceType,
-} = require("../../models");
-
+const { Inventory, Product, UOM, User, StockAdjustment, AdjustmentInventory } = require("../../models");
+const activityLog = require("../../middlewares/activityLog");
 const sourceModel = require("../../models");
 
 const { Op } = require("sequelize");
@@ -91,7 +78,7 @@ router.get("/relations", async (req, res) => {
   else res.sendError(response.success, response.message, response.error);
 });
 
-router.delete("/:id", addActivityLog, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const response = await controller.deleteWastage(req.params.id);
   if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.success, response.message, response.code);
@@ -120,7 +107,9 @@ router.get("/:id", async (req, res) => {
   else res.sendError(response.status, response.message, response.error);
 });
 
-router.put("/:id", addActivityLog, async (req, res) => {
+router.put("/:id", async (req, res) => {
+  console.log(`req.params`, req.params);
+
   const params = {
     include: [{ model: Inventory, as: "Inventories" }],
     where: { id: req.params.id },
@@ -130,7 +119,7 @@ router.put("/:id", addActivityLog, async (req, res) => {
   else res.sendError(response.status, response.message, response.error);
 });
 
-router.post("/", addActivityLog, async (req, res) => {
+router.post("/", async (req, res) => {
   const response = await controller.addWastages(req.body["adjustment_products"], req.userId);
   if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.code);
