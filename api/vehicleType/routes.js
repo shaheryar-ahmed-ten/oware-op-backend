@@ -45,13 +45,9 @@ router.get('/', async (req, res) => {
 
 // Vehicle type relations
 router.get('/relations', async (req, res) => {
-    console.log("kalala")
     const limit = req.query.rowsPerPage || config.rowsPerPage
-    // const offset = (req.query.page - 1 || 0) * limit;
     let where = {};
     const params = {
-        // limit,
-        // offset,
         include: [],
         where,
         sort: [['updatedAt', 'DESC']],
