@@ -2,10 +2,7 @@ const { ActivityLog, ActivitySourceType } = require("../models");
 const sourceModel = require("../models");
 
 async function addActivityLog(req, res, next) {
-  console.log(`req.params`, req.params);
   const modelUrl = req.originalUrl.split("/");
-  console.log(`req.originalUrl`, req.originalUrl);
-  console.log("modelUrl", modelUrl[3]);
   let MODEL = getModel(modelUrl[3]);
   const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
   if (req.method == "POST") {

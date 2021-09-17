@@ -30,7 +30,7 @@ router.get("/", async (req, res, next) => {
 });
 
 /* POST create new warehouse. */
-router.post("/", async (req, res, next) => {
+router.post("/", activityLog, async (req, res, next) => {
   let message = "New warehouse registered";
   let warehouse;
   try {
@@ -54,7 +54,7 @@ router.post("/", async (req, res, next) => {
 });
 
 /* PUT update existing warehouse. */
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", activityLog, async (req, res, next) => {
   let warehouse = await Warehouse.findOne({ where: { id: req.params.id } });
   if (!warehouse)
     return res.status(400).json({
@@ -81,7 +81,7 @@ router.put("/:id", async (req, res, next) => {
   }
 });
 
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", activityLog, async (req, res, next) => {
   let response = await Warehouse.destroy({ where: { id: req.params.id } });
   if (response)
     res.json({

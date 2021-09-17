@@ -3,19 +3,7 @@ const controller = require("./controller");
 const httpStatus = require("http-status");
 const config = require("../../config");
 const addActivityLog = require("../../middlewares/activityLog");
-const {
-  Inventory,
-  Company,
-  Warehouse,
-  Product,
-  UOM,
-  User,
-  StockAdjustment,
-  AdjustmentInventory,
-  ActivityLog,
-  sequelize,
-  ActivitySourceType,
-} = require("../../models");
+const { User, ActivitySourceType } = require("../../models");
 
 const sourceModel = require("../../models");
 
@@ -28,7 +16,7 @@ router.get("/", async (req, res) => {
   const offset = (req.query.page - 1 || 0) * limit;
   const where = {};
   if (req.query.search)
-    where[Op.or] = ["$User.firstName$", "$User.lastName$"].map((key) => ({
+    where[Op.or] = ["$User.firstName$", "$User.lastName$", "$ActivitySourceType.name$"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
   if (req.query.days) {
