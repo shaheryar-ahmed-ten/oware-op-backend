@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Vehicle, Driver, Car, CarMake, CarModel, Company, File } = require("../models");
+const { Vehicle, Driver, Car, CarMake, CarModel, Company, File, VehicleType } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const VEHICLE_TYPES = require("../enums/vehicleTypes");
@@ -121,7 +121,11 @@ router.get("/relations", async (req, res, next) => {
   });
   let cars = await Car.findAll({
     where,
-    include: [CarMake, CarModel],
+    include: [CarMake, CarModel, {
+      model: VehicleType,
+      as: 'VehicleType',
+      required: true,
+    }],
   });
 
   const vehicleTypes = VEHICLE_TYPES;
