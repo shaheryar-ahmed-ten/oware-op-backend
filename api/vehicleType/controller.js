@@ -26,6 +26,30 @@ exports.getVehicleTypes = async (params) => {
     }
 }
 
+exports.getCarRelations = async (params) => {
+    try {
+        const carMakes = await Dao.CarMake.findAll(params);
+        const carModels = await Dao.CarModel.findAll(params);
+        const vehicleTypes = await Dao.VehicleType.findAll(params);
+        const records = { carMakes, carModels, vehicleTypes }
+        return {
+            status: httpStatus.OK,
+            success: true,
+            message: "Data Found",
+            data: records,
+        };
+    }
+    catch (err) {
+        console.log("ERROR:", err);
+        return {
+            success: false,
+            status: httpStatus.CONFLICT,
+            message: err.message,
+            code: "Failed to get data"
+        };
+    }
+}
+
 exports.getVehicleTypeById = async (params) => {
     try {
         const response = await Dao.Car.findOne(params);

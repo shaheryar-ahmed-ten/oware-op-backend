@@ -8,4 +8,7 @@ module.exports = {
   WastagesType: require("./WastagesType"),
   ActivityLog: require("./ActivityLog"),
   Car: require("./Car"),
+  CarMake: require("./CarMake"),
+  CarModel: require("./CarModel"),
+  VehicleType: require("./VehicleType"),
 };
