@@ -7,13 +7,14 @@ const { isLoggedIn, checkPermission, isSuperAdmin } = require("../services/auth.
 const { Op } = require("sequelize");
 const { PERMISSIONS, PORTALS, RELATION_TYPES } = require("../enums");
 const PORTALS_LABELS = require("../enums/portals");
+const activityLog = require("../middlewares/activityLog");
 
 async function updateUser(req, res, next) {
   let user = await User.findOne({ where: { id: req.params.id } });
   if (!user)
     return res.status(400).json({
       success: false,
-      message: "No user found!"
+      message: "No user found!",
     });
   user.firstName = req.body.firstName;
   user.lastName = req.body.lastName;
@@ -27,12 +28,12 @@ async function updateUser(req, res, next) {
     return res.json({
       success: true,
       message: "User updated",
-      data: response
+      data: response,
     });
   } catch (err) {
     return res.json({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 }
@@ -43,29 +44,29 @@ router.get("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (r
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {};
   if (req.query.search)
-    where[Op.or] = ["firstName", "lastName"].map(key => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+    where[Op.or] = ["firstName", "lastName"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
   const response = await User.findAndCountAll({
     distinct: true,
     include: [
       {
         model: Role,
-        include: [{ model: PermissionAccess, include: [{ model: Permission }] }]
+        include: [{ model: PermissionAccess, include: [{ model: Permission }] }],
       },
       {
         model: Company,
-        as: "Company"
-      }
+        as: "Company",
+      },
     ],
     order: [["updatedAt", "DESC"]],
     limit,
     offset,
-    where
+    where,
   });
   res.json({
     success: true,
     message: "respond with a resource",
     data: response.rows,
-    pages: Math.ceil(response.count / limit)
+    pages: Math.ceil(response.count / limit),
   });
 });
 
@@ -73,7 +74,7 @@ router.get("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (r
 router.get("/me", isLoggedIn, async (req, res, next) => {
   return res.json({
     success: true,
-    data: req.user
+    data: req.user,
   });
 });
 
@@ -93,34 +94,34 @@ router.post("/auth/login", async (req, res, next) => {
   let loginKey = req.body.username.indexOf("@") > -1 ? "email" : "username";
   const user = await User.findOne({
     where: { [loginKey]: req.body.username },
-    include: [Role]
+    include: [Role],
   });
   if (!user)
     return res.status(401).json({
       success: false,
-      message: "User doesn't exist with this email!"
+      message: "User doesn't exist with this email!",
     });
   let isPasswordValid = user.comparePassword(req.body.password);
   if (!isPasswordValid)
     return res.status(401).json({
       success: false,
-      message: "Invalid password!"
+      message: "Invalid password!",
     });
   if (user.Role.allowedApps.split(",").indexOf(PORTALS.OPERATIONS) < 0)
     return res.status(401).json({
       status: false,
-      message: "Not allowed to enter operations portal"
+      message: "Not allowed to enter operations portal",
     });
   var token = jwt.sign({ id: user.id }, config.JWT_SECRET, { expiresIn: '12h' });
   res.json({
     success: isPasswordValid,
     message: "Login successful",
-    token
+    token,
   });
 });
 
 /* POST create new user. */
-router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (req, res, next) => {
+router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activityLog, async (req, res, next) => {
   const adminRole = await Role.findOne({ where: { type: "admin" } });
   let message = "New user registered";
   let user;
@@ -128,43 +129,43 @@ router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (
     if (req.body["companyId"] === "") req.body["companyId"] = null;
     user = await User.create({
       roleId: adminRole.id,
-      ...req.body
+      ...req.body,
     });
     user.password = undefined;
   } catch (err) {
     console.log("err", err);
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.errors.pop().message,
     });
   }
   res.json({
     success: true,
     message,
-    data: user
+    data: user,
   });
 });
 
 /* PUT update existing user. */
-router.put("/:id", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), updateUser);
+router.put("/:id", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activityLog, updateUser);
 
-router.delete("/:id", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (req, res, next) => {
+router.delete("/:id", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activityLog, async (req, res, next) => {
   let response = await User.destroy({ where: { id: req.params.id } });
   if (response)
     res.json({
       success: true,
-      message: "User deleted"
+      message: "User deleted",
     });
   else
     res.status(400).json({
       success: false,
-      message: "No user found!"
+      message: "No user found!",
     });
 });
 
 router.get("/relations", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (req, res, next) => {
   const roles = await Role.findAll();
-  const portals = Object.keys(PORTALS_LABELS).map(portal => ({ id: portal, label: PORTALS_LABELS[portal] }));
+  const portals = Object.keys(PORTALS_LABELS).map((portal) => ({ id: portal, label: PORTALS_LABELS[portal] }));
   let where = {};
   if (!isSuperAdmin(req)) where.contactId = req.userId;
   const customers = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
@@ -173,7 +174,7 @@ router.get("/relations", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL),
     message: "respond with a resource",
     roles,
     customers,
-    portals
+    portals,
   });
 });
 
