@@ -4,41 +4,75 @@ const sourceModel = require("../models");
 async function addActivityLog(req, res, next) {
   console.log(`req.params`, req.params);
   const modelUrl = req.originalUrl.split("/");
+  console.log(`req.originalUrl`, req.originalUrl);
+  console.log("modelUrl", modelUrl[3]);
   let MODEL = getModel(modelUrl[3]);
+  const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
   if (req.method == "POST") {
-    const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
-    const source = (await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1, attributes: ["id"] }))
-      .id;
-    const log = await ActivityLog.create({
-      userId: req.userId,
-      currentPayload: req.body,
-      previousPayload: null,
-      sourceId: source ? source + 1 : 1,
-      sourceType: sourceTypeId,
-      activityType: "ADD",
-    });
+    if (MODEL != "Upload") {
+      const source = (
+        await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1, attributes: ["id"] })
+      ).id;
+      const log = await ActivityLog.create({
+        userId: req.userId,
+        currentPayload: req.body,
+        previousPayload: null,
+        sourceId: source ? source + 1 : 1,
+        sourceType: sourceTypeId,
+        activityType: "ADD",
+      });
+    } else {
+      const log = await ActivityLog.create({
+        userId: req.userId,
+        currentPayload: req.body,
+        previousPayload: null,
+        sourceId: null,
+        sourceType: sourceTypeId,
+        activityType: "ADD",
+      });
+    }
   } else if (req.method == "PUT") {
-    const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
-    const source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1 });
-    const log = await ActivityLog.create({
-      userId: req.userId,
-      currentPayload: req.body,
-      previousPayload: source,
-      sourceId: req.params.id,
-      sourceType: sourceTypeId,
-      activityType: "EDIT",
-    });
+    if (MODEL != "Upload") {
+      const source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1 });
+      const log = await ActivityLog.create({
+        userId: req.userId,
+        currentPayload: req.body,
+        previousPayload: source,
+        sourceId: req.params.id,
+        sourceType: sourceTypeId,
+        activityType: "EDIT",
+      });
+    } else {
+      const log = await ActivityLog.create({
+        userId: req.userId,
+        currentPayload: req.body,
+        previousPayload: null,
+        sourceId: null,
+        sourceType: sourceTypeId,
+        activityType: "PUT",
+      });
+    }
   } else if (req.method == "DELETE") {
-    const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
-    const source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1 });
-    const log = await ActivityLog.create({
-      userId: req.userId,
-      currentPayload: null,
-      previousPayload: source,
-      sourceId: req.params.id,
-      sourceType: sourceTypeId,
-      activityType: "DELETE",
-    });
+    if (MODEL != "Upload") {
+      const source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1 });
+      const log = await ActivityLog.create({
+        userId: req.userId,
+        currentPayload: null,
+        previousPayload: source,
+        sourceId: req.params.id,
+        sourceType: sourceTypeId,
+        activityType: "DELETE",
+      });
+    } else {
+      const log = await ActivityLog.create({
+        userId: req.userId,
+        currentPayload: null,
+        previousPayload: null,
+        sourceId: req.params.id,
+        sourceType: sourceTypeId,
+        activityType: "DELETE",
+      });
+    }
   }
   next();
 }
@@ -100,6 +134,10 @@ function getModel(modelUrl) {
       break;
     case "company":
       MODEL = "Company";
+      break;
+
+    case "upload":
+      MODEL = "Upload";
       break;
 
     case "ride":
