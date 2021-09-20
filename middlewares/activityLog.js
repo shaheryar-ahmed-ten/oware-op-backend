@@ -30,7 +30,7 @@ async function addActivityLog(req, res, next) {
     }
   } else if (req.method == "PUT") {
     if (MODEL != "Upload") {
-      const source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1 });
+      const source = await sourceModel[MODEL].findOne({ where: { id: req.params.id } });
       const log = await ActivityLog.create({
         userId: req.userId,
         currentPayload: req.body,
