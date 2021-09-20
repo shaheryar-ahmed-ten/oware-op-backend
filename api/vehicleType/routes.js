@@ -41,7 +41,20 @@ router.get('/', async (req, res) => {
     const response = await controller.getVehicleTypes(params)
     if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success, response.pages)
     else res.sendError(response.status, response.message, response.error);
+})
 
+// Vehicle type relations
+router.get('/relations', async (req, res) => {
+    const limit = req.query.rowsPerPage || config.rowsPerPage
+    let where = {};
+    const params = {
+        include: [],
+        where,
+        sort: [['updatedAt', 'DESC']],
+    }
+    const response = await controller.getCarRelations(params)
+    if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success, response.pages)
+    else res.sendError(response.status, response.message, response.error);
 })
 
 // single vehicle type
