@@ -50,6 +50,30 @@ router.post("/", activityLog, async (req, res, next) => {
   });
 });
 
+router.post("/bulk", activityLog, async (req, res, next) => {
+  let message = "Bulk products registered";
+  let products;
+  try {
+    req.body.products = req.body.products.map((product) => {
+      product["userId"] = req.userId;
+      return product;
+    });
+    console.log("req.body.products", req.body.products);
+    products = await Product.bulkCreate(req.body.products);
+  } catch (err) {
+    console.log("err", err);
+    return res.json({
+      success: false,
+      message: err.errors.pop().message,
+    });
+  }
+  res.json({
+    success: true,
+    message,
+    data: products,
+  });
+});
+
 /* PUT update existing product. */
 router.put("/:id", activityLog, async (req, res, next) => {
   let product = await Product.findOne({ where: { id: req.params.id } });
