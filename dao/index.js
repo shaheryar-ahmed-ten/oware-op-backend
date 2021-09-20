@@ -11,4 +11,7 @@ module.exports = {
   CarMake: require("./CarMake"),
   CarModel: require("./CarModel"),
   VehicleType: require("./VehicleType"),
+  UOM: require("./UOM"),
+  Brand: require("./Brand"),
+  Category: require("./Category"),
 };

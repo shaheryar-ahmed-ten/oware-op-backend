@@ -4,6 +4,7 @@ const { Product, User, Brand, UOM, Category } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
 
 /* GET products listing. */
 router.get("/", async (req, res, next) => {
@@ -54,11 +55,26 @@ router.post("/bulk", activityLog, async (req, res, next) => {
   let message = "Bulk products registered";
   let products;
   try {
-    req.body.products = req.body.products.map((product) => {
+    // req.body.products = req.body.products.map((product) => {
+    for (const product of req.body.products) {
       product["userId"] = req.userId;
-      return product;
-    });
-    console.log("req.body.products", req.body.products);
+      product["isActive"] = product["isActive"] == "TRUE" ? 1 : 0;
+      const category = await Dao.Category.findOne({ where: { name: product.category } });
+      const brand = await Dao.Brand.findOne({ where: { name: product.brand } });
+      const uom = await Dao.UOM.findOne({ where: { name: product.uom } });
+      if (category && brand && uom) {
+        product["categoryId"] = category.id;
+        product["brandId"] = brand.id;
+        product["uomId"] = uom.id;
+      } else if (!category) {
+        res.sendError(400, `Category Doesn't exist with name ${product.category}`, "Failed to add Bulk Products");
+      } else if (!brand) {
+        res.sendError(400, `Brand Doesn't exist with name ${product.brand}`, "Failed to add Bulk Products");
+      } else if (!uom) {
+        res.sendError(400, `Uom Doesn't exist with name ${product.uom}`, "Failed to add Bulk Products");
+      }
+    }
+    // });
     products = await Product.bulkCreate(req.body.products);
   } catch (err) {
     console.log("err", err);
