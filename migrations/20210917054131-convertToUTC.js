@@ -23,7 +23,6 @@ module.exports = {
     await queryInterface.changeColumn("StockAdjustments", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("ActivityLogs", "createdAt", {
       allowNull: false,
@@ -38,7 +37,6 @@ module.exports = {
     await queryInterface.changeColumn("ActivityLogs", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("ActivitySourceTypes", "createdAt", {
       allowNull: false,
@@ -53,7 +51,6 @@ module.exports = {
     await queryInterface.changeColumn("ActivitySourceTypes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("AdjustmentInventories", "createdAt", {
       allowNull: false,
@@ -68,7 +65,6 @@ module.exports = {
     await queryInterface.changeColumn("AdjustmentInventories", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Areas", "createdAt", {
       allowNull: false,
@@ -83,7 +79,6 @@ module.exports = {
     await queryInterface.changeColumn("Areas", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Brands", "createdAt", {
       allowNull: false,
@@ -98,7 +93,6 @@ module.exports = {
     await queryInterface.changeColumn("Brands", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("CarMakes", "createdAt", {
       allowNull: false,
@@ -113,7 +107,6 @@ module.exports = {
     await queryInterface.changeColumn("CarMakes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("CarModels", "createdAt", {
       allowNull: false,
@@ -128,7 +121,6 @@ module.exports = {
     await queryInterface.changeColumn("CarModels", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Cars", "createdAt", {
       allowNull: false,
@@ -143,7 +135,6 @@ module.exports = {
     await queryInterface.changeColumn("Cars", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Categories", "createdAt", {
       allowNull: false,
@@ -158,7 +149,6 @@ module.exports = {
     await queryInterface.changeColumn("Categories", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Cities", "createdAt", {
       allowNull: false,
@@ -173,7 +163,6 @@ module.exports = {
     await queryInterface.changeColumn("Cities", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Companies", "createdAt", {
       allowNull: false,
@@ -188,7 +177,6 @@ module.exports = {
     await queryInterface.changeColumn("Companies", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("CustomerInquiries", "createdAt", {
       allowNull: false,
@@ -203,7 +191,6 @@ module.exports = {
     await queryInterface.changeColumn("CustomerInquiries", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("DispatchOrders", "createdAt", {
       allowNull: false,
@@ -218,7 +205,6 @@ module.exports = {
     await queryInterface.changeColumn("DispatchOrders", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Drivers", "createdAt", {
       allowNull: false,
@@ -233,7 +219,6 @@ module.exports = {
     await queryInterface.changeColumn("Drivers", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Files", "createdAt", {
       allowNull: false,
@@ -263,7 +248,6 @@ module.exports = {
     await queryInterface.changeColumn("Inventories", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("InwardGroups", "createdAt", {
       allowNull: false,
@@ -278,7 +262,6 @@ module.exports = {
     await queryInterface.changeColumn("InwardGroups", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("OutwardGroups", "createdAt", {
       allowNull: false,
@@ -293,7 +276,6 @@ module.exports = {
     await queryInterface.changeColumn("OutwardGroups", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("PermissionAccesses", "createdAt", {
       allowNull: false,
@@ -308,7 +290,6 @@ module.exports = {
     await queryInterface.changeColumn("PermissionAccesses", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Permissions", "createdAt", {
       allowNull: false,
@@ -323,7 +304,6 @@ module.exports = {
     await queryInterface.changeColumn("Permissions", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("ProductInwards", "createdAt", {
       allowNull: false,
@@ -338,7 +318,6 @@ module.exports = {
     await queryInterface.changeColumn("ProductInwards", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("ProductOutwards", "createdAt", {
       allowNull: false,
@@ -353,7 +332,6 @@ module.exports = {
     await queryInterface.changeColumn("ProductOutwards", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Products", "createdAt", {
       allowNull: false,
@@ -368,7 +346,6 @@ module.exports = {
     await queryInterface.changeColumn("Products", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("RideProducts", "createdAt", {
       allowNull: false,
@@ -398,7 +375,6 @@ module.exports = {
     await queryInterface.changeColumn("Rides", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("UOMs", "createdAt", {
       allowNull: false,
@@ -413,7 +389,6 @@ module.exports = {
     await queryInterface.changeColumn("UOMs", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Users", "createdAt", {
       allowNull: false,
@@ -428,7 +403,6 @@ module.exports = {
     await queryInterface.changeColumn("Users", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("VehicleTypes", "createdAt", {
       allowNull: false,
@@ -443,7 +417,6 @@ module.exports = {
     await queryInterface.changeColumn("VehicleTypes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("VerificationCodes", "createdAt", {
       allowNull: false,
@@ -458,7 +431,6 @@ module.exports = {
     await queryInterface.changeColumn("VerificationCodes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Warehouses", "createdAt", {
       allowNull: false,
@@ -473,7 +445,6 @@ module.exports = {
     await queryInterface.changeColumn("Warehouses", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("WastagesTypes", "createdAt", {
       allowNull: false,
@@ -488,7 +459,6 @@ module.exports = {
     await queryInterface.changeColumn("WastagesTypes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Zones", "createdAt", {
       allowNull: false,
@@ -532,7 +502,6 @@ module.exports = {
     await queryInterface.changeColumn("StockAdjustments", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("ActivityLogs", "createdAt", {
       allowNull: false,
@@ -547,7 +516,6 @@ module.exports = {
     await queryInterface.changeColumn("ActivityLogs", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("ActivitySourceTypes", "createdAt", {
       allowNull: false,
@@ -562,7 +530,6 @@ module.exports = {
     await queryInterface.changeColumn("ActivitySourceTypes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("AdjustmentInventories", "createdAt", {
       allowNull: false,
@@ -577,7 +544,6 @@ module.exports = {
     await queryInterface.changeColumn("AdjustmentInventories", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Areas", "createdAt", {
       allowNull: false,
@@ -592,7 +558,6 @@ module.exports = {
     await queryInterface.changeColumn("Areas", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Brands", "createdAt", {
       allowNull: false,
@@ -607,7 +572,6 @@ module.exports = {
     await queryInterface.changeColumn("Brands", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("CarMakes", "createdAt", {
       allowNull: false,
@@ -622,7 +586,6 @@ module.exports = {
     await queryInterface.changeColumn("CarMakes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("CarModels", "createdAt", {
       allowNull: false,
@@ -637,7 +600,6 @@ module.exports = {
     await queryInterface.changeColumn("CarModels", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Cars", "createdAt", {
       allowNull: false,
@@ -652,7 +614,6 @@ module.exports = {
     await queryInterface.changeColumn("Cars", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Categories", "createdAt", {
       allowNull: false,
@@ -667,7 +628,6 @@ module.exports = {
     await queryInterface.changeColumn("Categories", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Cities", "createdAt", {
       allowNull: false,
@@ -682,7 +642,6 @@ module.exports = {
     await queryInterface.changeColumn("Cities", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Companies", "createdAt", {
       allowNull: false,
@@ -697,7 +656,6 @@ module.exports = {
     await queryInterface.changeColumn("Companies", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("CustomerInquiries", "createdAt", {
       allowNull: false,
@@ -712,7 +670,6 @@ module.exports = {
     await queryInterface.changeColumn("CustomerInquiries", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("DispatchOrders", "createdAt", {
       allowNull: false,
@@ -727,7 +684,6 @@ module.exports = {
     await queryInterface.changeColumn("DispatchOrders", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Drivers", "createdAt", {
       allowNull: false,
@@ -742,7 +698,6 @@ module.exports = {
     await queryInterface.changeColumn("Drivers", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Files", "createdAt", {
       allowNull: false,
@@ -757,7 +712,6 @@ module.exports = {
     await queryInterface.changeColumn("Files", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Inventories", "createdAt", {
       allowNull: false,
@@ -772,7 +726,6 @@ module.exports = {
     await queryInterface.changeColumn("Inventories", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("InwardGroups", "createdAt", {
       allowNull: false,
@@ -787,7 +740,6 @@ module.exports = {
     await queryInterface.changeColumn("InwardGroups", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("OutwardGroups", "createdAt", {
       allowNull: false,
@@ -802,7 +754,6 @@ module.exports = {
     await queryInterface.changeColumn("OutwardGroups", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("PermissionAccesses", "createdAt", {
       allowNull: false,
@@ -817,7 +768,6 @@ module.exports = {
     await queryInterface.changeColumn("PermissionAccesses", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Permissions", "createdAt", {
       allowNull: false,
@@ -832,7 +782,6 @@ module.exports = {
     await queryInterface.changeColumn("Permissions", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("ProductInwards", "createdAt", {
       allowNull: false,
@@ -847,7 +796,6 @@ module.exports = {
     await queryInterface.changeColumn("ProductInwards", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("ProductOutwards", "createdAt", {
       allowNull: false,
@@ -862,7 +810,6 @@ module.exports = {
     await queryInterface.changeColumn("ProductOutwards", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Products", "createdAt", {
       allowNull: false,
@@ -877,7 +824,6 @@ module.exports = {
     await queryInterface.changeColumn("Products", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("RideProducts", "createdAt", {
       allowNull: false,
@@ -892,7 +838,6 @@ module.exports = {
     await queryInterface.changeColumn("RideProducts", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Rides", "createdAt", {
       allowNull: false,
@@ -907,7 +852,6 @@ module.exports = {
     await queryInterface.changeColumn("Rides", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("UOMs", "createdAt", {
       allowNull: false,
@@ -922,7 +866,6 @@ module.exports = {
     await queryInterface.changeColumn("UOMs", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Users", "createdAt", {
       allowNull: false,
@@ -937,7 +880,6 @@ module.exports = {
     await queryInterface.changeColumn("Users", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("VehicleTypes", "createdAt", {
       allowNull: false,
@@ -952,7 +894,6 @@ module.exports = {
     await queryInterface.changeColumn("VehicleTypes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("VerificationCodes", "createdAt", {
       allowNull: false,
@@ -967,7 +908,6 @@ module.exports = {
     await queryInterface.changeColumn("VerificationCodes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Warehouses", "createdAt", {
       allowNull: false,
@@ -982,7 +922,6 @@ module.exports = {
     await queryInterface.changeColumn("Warehouses", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("WastagesTypes", "createdAt", {
       allowNull: false,
@@ -997,7 +936,6 @@ module.exports = {
     await queryInterface.changeColumn("WastagesTypes", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("Zones", "createdAt", {
       allowNull: false,
@@ -1012,7 +950,6 @@ module.exports = {
     await queryInterface.changeColumn("Zones", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     });
     await queryInterface.changeColumn("DispatchOrders", "shipmentDate", {
       allowNull: false,
