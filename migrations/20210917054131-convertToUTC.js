@@ -233,7 +233,6 @@ module.exports = {
     await queryInterface.changeColumn("Files", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Inventories", "createdAt", {
       allowNull: false,
@@ -360,7 +359,6 @@ module.exports = {
     await queryInterface.changeColumn("RideProducts", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("Rides", "createdAt", {
       allowNull: false,
@@ -473,7 +471,6 @@ module.exports = {
     await queryInterface.changeColumn("Zones", "deletedAt", {
       allowNull: true,
       type: Sequelize.DATE,
-      defaultValue: new Date(momenttz().tz("Africa/Abidjan")),
     });
     await queryInterface.changeColumn("DispatchOrders", "shipmentDate", {
       allowNull: false,
