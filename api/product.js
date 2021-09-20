@@ -6,7 +6,7 @@ const { Op } = require("sequelize");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const httpStatus = require("http-status");
-const {BULK_PRODUCT_LIMIT} = require("../enums")
+const { BULK_PRODUCT_LIMIT } = require("../enums");
 
 /* GET products listing. */
 router.get("/", async (req, res, next) => {
@@ -59,7 +59,8 @@ router.post("/bulk", activityLog, async (req, res, next) => {
   try {
     const allowedValues = ["name", "description", "volume", "weight", "category", "brand", "uom", "isActive"];
     // req.body.products = req.body.products.map((product) => {
-    req.body.products.length > BULK_PRODUCT_LIMIT return res.sendError(httpStatus.CONFLICT, `Cannot add product above ${BULK_PRODUCT_LIMIT}`);
+    if (req.body.products.length > BULK_PRODUCT_LIMIT)
+      return res.sendError(httpStatus.CONFLICT, `Cannot add product above ${BULK_PRODUCT_LIMIT}`);
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
         if (!allowedValues.includes(item))
