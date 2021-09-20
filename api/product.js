@@ -5,6 +5,7 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
+const httpStatus = require("http-status");
 
 /* GET products listing. */
 router.get("/", async (req, res, next) => {
@@ -55,8 +56,16 @@ router.post("/bulk", activityLog, async (req, res, next) => {
   let message = "Bulk products registered";
   let products;
   try {
+    const allowedValues = ["name", "description", "dimensionsCBM", "weight", "category", "brand", "uom", "isActive"];
     // req.body.products = req.body.products.map((product) => {
     for (const product of req.body.products) {
+      console.log(`Object.keys(product)`, Object.keys(product));
+      productArr = Object.keys(product);
+      const fileFieldValidation = productArr.every((elem) => allowedValues.includes(elem));
+      if (!fileFieldValidation) return res.sendError(httpStatus.CONFLICT, `File is invalid`);
+      const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
+      if (productAlreadyExist)
+        return res.sendError(httpStatus.CONFLICT, `Product Already Exist with name ${productAlreadyExist.name}`);
       product["userId"] = req.userId;
       product["isActive"] = product["isActive"] == "TRUE" ? 1 : 0;
       const category = await Dao.Category.findOne({ where: { name: product.category } });
@@ -67,11 +76,19 @@ router.post("/bulk", activityLog, async (req, res, next) => {
         product["brandId"] = brand.id;
         product["uomId"] = uom.id;
       } else if (!category) {
-        res.sendError(400, `Category Doesn't exist with name ${product.category}`, "Failed to add Bulk Products");
+        res.sendError(
+          httpStatus.CONFLICT,
+          `Category Doesn't exist with name ${product.category}`,
+          "Failed to add Bulk Products"
+        );
       } else if (!brand) {
-        res.sendError(400, `Brand Doesn't exist with name ${product.brand}`, "Failed to add Bulk Products");
+        res.sendError(
+          httpStatus.CONFLICT,
+          `Brand Doesn't exist with name ${product.brand}`,
+          "Failed to add Bulk Products"
+        );
       } else if (!uom) {
-        res.sendError(400, `Uom Doesn't exist with name ${product.uom}`, "Failed to add Bulk Products");
+        res.sendError(httpStatus.CONFLICT, `Uom Doesn't exist with name ${product.uom}`, "Failed to add Bulk Products");
       }
     }
     // });
