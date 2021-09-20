@@ -56,12 +56,9 @@ router.post("/bulk", activityLog, async (req, res, next) => {
   let message = "Bulk products registered";
   let products;
   try {
-    const allowedValues = ["name", "description", "dimensionsCBM", "weight", "category", "brand", "uom", "isActive"];
+    const allowedValues = ["name", "description", "volume", "weight", "category", "brand", "uom", "isActive"];
     // req.body.products = req.body.products.map((product) => {
     for (const product of req.body.products) {
-      console.log(`Object.keys(product)`, Object.keys(product));
-      productArr = Object.keys(product);
-      const fileFieldValidation = productArr.every((elem) => allowedValues.includes(elem));
       Object.keys(product).forEach((item) => {
         if (!allowedValues.includes(item))
           return res.sendError(httpStatus.CONFLICT, `Field ${item} is invalid`, "Failed to add Bulk Products");
@@ -70,7 +67,8 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       if (productAlreadyExist)
         return res.sendError(httpStatus.CONFLICT, `Product Already Exist with name ${productAlreadyExist.name}`);
       product["userId"] = req.userId;
-      product["isActive"] = product["isActive"] == "TRUE" ? 1 : 0;
+      product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
+      product["dimensionsCBM"] = product["volume"];
       const category = await Dao.Category.findOne({ where: { name: product.category } });
       const brand = await Dao.Brand.findOne({ where: { name: product.brand } });
       const uom = await Dao.UOM.findOne({ where: { name: product.uom } });
