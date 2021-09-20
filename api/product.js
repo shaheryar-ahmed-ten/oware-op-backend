@@ -62,7 +62,10 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       console.log(`Object.keys(product)`, Object.keys(product));
       productArr = Object.keys(product);
       const fileFieldValidation = productArr.every((elem) => allowedValues.includes(elem));
-      if (!fileFieldValidation) return res.sendError(httpStatus.CONFLICT, `File is invalid`);
+      Object.keys(product).forEach((item) => {
+        if (!allowedValues.includes(item))
+          return res.sendError(httpStatus.CONFLICT, `Field ${item} is invalid`, "Failed to add Bulk Products");
+      });
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
         return res.sendError(httpStatus.CONFLICT, `Product Already Exist with name ${productAlreadyExist.name}`);
