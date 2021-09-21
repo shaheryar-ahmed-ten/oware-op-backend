@@ -37,7 +37,7 @@ router.get("/:relationType", async (req, res, next) => {
 
 /* POST create new customer. */
 router.post("/:relationType", activityLog, async (req, res, next) => {
-  let message = "New Company registered";
+  let message = "New Customer registered";
   let customer;
   try {
     customer = await Company.create({
@@ -80,7 +80,7 @@ router.put("/:relationType/:id", activityLog, async (req, res, next) => {
     const response = await customer.save();
     return res.json({
       success: true,
-      message: "Company updated",
+      message: "Customer updated",
       data: response,
     });
   } catch (err) {
