@@ -405,9 +405,9 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF AREA",
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
-    "CATEGORY",
-    "PRODUCTS",
-    "QUANTITIES"
+    // "CATEGORY",
+    // "PRODUCTS",
+    // "QUANTITIES"
   ]);
 
   worksheet.addRows(
@@ -435,21 +435,38 @@ router.get("/export", async (req, res, next) => {
       // row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`),
       // row.RideProducts.map((product, idx) => `Name${idx + 1} = ${product.name}`),
       // row.RideProducts.map((product, idx) => `Qty${idx + 1} = ${product.quantity}`),
-      row.RideProducts.map((product, idx) => `${idx + 1}: ${product.Category.name}`),
-      row.RideProducts.map((product, idx) => `${idx + 1}: ${product.name}`),
-      row.RideProducts.map((product, idx) => `${idx + 1}: ${product.quantity}`)
+      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.Category.name}`),
+      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.name}`),
+      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.quantity}`)
     ])
   );
+
+  // separate sheet for product details
+  worksheet = workbook.addWorksheet("Product Details");
+
+  worksheet.columns = getColumnsConfig([
+    "RIDE ID",
+    "CATEGORY",
+    "PRODUCT NAME",
+    "QUANTITY",
+  ])
+
+  response.map((row) => {
+    worksheet.addRows(
+      row.RideProducts.map((product) => [
+        row.id,
+        product.Category.name,
+        product.name,
+        product.quantity
+      ])
+    )
+  })
+
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
 
   await workbook.xlsx.write(res).then(() => res.end());
-
-  // return res.json({
-  // success: true,
-  // data: response
-  // })
 });
 
 module.exports = router;
