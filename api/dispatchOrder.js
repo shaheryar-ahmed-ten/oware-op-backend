@@ -14,9 +14,10 @@ const {
 const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
-const { digitize } = require("../services/common.services");
+const { digitize, addActivityLog } = require("../services/common.services");
 const { RELATION_TYPES } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
 
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {

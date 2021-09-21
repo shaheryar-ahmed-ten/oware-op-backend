@@ -21,12 +21,13 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const RIDE_STATUS = require("../enums/rideStatus");
 const { RELATION_TYPES } = require("../enums");
-const { digitize } = require("../services/common.services");
+const { digitize, addActivityLog } = require("../services/common.services");
 const ExcelJS = require("exceljs");
 const authService = require("../services/auth.service");
 const moment = require("moment-timezone");
 const { previewFile } = require("../services/s3.service");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
 
 /* GET rides listing. */
 router.get("/", async (req, res, next) => {
@@ -252,6 +253,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await ride.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Ride updated",
@@ -338,7 +340,6 @@ router.get("/export", async (req, res, next) => {
   const getColumnsConfig = (columns) =>
     columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
 
-
   let response = await Ride.findAll({
     include: [
       {
@@ -407,7 +408,7 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF DATE",
     "CATEGORY",
     "PRODUCTS",
-    "QUANTITIES"
+    "QUANTITIES",
   ]);
 
   worksheet.addRows(
@@ -426,18 +427,18 @@ router.get("/export", async (req, res, next) => {
       row.PickupArea.Zone.name,
       row.PickupArea.name,
       row.pickupAddress,
-      moment(row.pickupDate).tz('Asia/Karachi').format("DD/MM/yy h:mm A"),
+      moment(row.pickupDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
       row.DropoffArea.Zone.City.name,
       row.DropoffArea.Zone.name,
       row.DropoffArea.name,
       row.dropoffAddress,
-      moment(row.dropoffDate).tz('Asia/Karachi').format("DD/MM/yy h:mm A"),
+      moment(row.dropoffDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
       // row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`),
       // row.RideProducts.map((product, idx) => `Name${idx + 1} = ${product.name}`),
       // row.RideProducts.map((product, idx) => `Qty${idx + 1} = ${product.quantity}`),
       row.RideProducts.map((product, idx) => `${idx + 1}: ${product.Category.name}`),
       row.RideProducts.map((product, idx) => `${idx + 1}: ${product.name}`),
-      row.RideProducts.map((product, idx) => `${idx + 1}: ${product.quantity}`)
+      row.RideProducts.map((product, idx) => `${idx + 1}: ${product.quantity}`),
     ])
   );
 

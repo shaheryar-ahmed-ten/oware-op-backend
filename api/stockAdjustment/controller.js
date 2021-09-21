@@ -1,6 +1,6 @@
 const httpStatus = require("http-status");
 const Dao = require("../../dao");
-const { digitize } = require("../../services/common.services");
+const { digitize, addActivityLog } = require("../../services/common.services");
 const { initialInternalIdForBusinessForAdjustment } = require("../../enums");
 // const { StockAdjustment } = require("../../models");
 
@@ -73,7 +73,7 @@ async function getWastageById(params) {
   }
 }
 
-async function updateWastage(params, req_body) {
+async function updateWastage(params, req_body, activityLogId) {
   try {
     const stockAdjustment = await Dao.StockAdjustment.findOne(params);
     if (stockAdjustment) {
@@ -100,6 +100,7 @@ async function updateWastage(params, req_body) {
         if (body.reason == "") adjustmentInventories.reason = body.reason;
         if (body.hasOwnProperty("comment")) adjustmentInventories.comment = body.comment;
         await adjustmentInventories.save();
+        await addActivityLog(activityLogId, stockAdjustment, Dao.ActivityLog);
       }
       if (allProductsRemovedFromAdjustment) {
         await stockAdjustment.destroy();

@@ -5,6 +5,8 @@ const { Op } = require("sequelize");
 const config = require("../config");
 const { errorHandler } = require("../services/error.service");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET categories listing. */
 router.get("/", async (req, res, next) => {
@@ -64,6 +66,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   category.isActive = req.body.isActive;
   try {
     const response = await category.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Category updated",

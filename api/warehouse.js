@@ -5,6 +5,8 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const { errorHandler } = require("../services/error.service");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET warehouses listing. */
 router.get("/", async (req, res, next) => {
@@ -68,6 +70,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   warehouse.businessWarehouseCode = req.body.businessWarehouseCode;
   try {
     const response = await warehouse.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Warehouse updated",
