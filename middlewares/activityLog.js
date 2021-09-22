@@ -12,20 +12,12 @@ async function addActivityLog(req, res, next) {
     if (MODEL != "Upload") {
       let source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1, attributes: ["id"] });
       source = source ? source.id + 1 : 1;
-      console.log(MODEL, "MODEL");
-      console.log(
-        `MODEL == "DispatchOrder" || MODEL == "ProductOutward" ||MODEL == "ProductInward"`,
-        MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward"
-      );
       if (MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward") {
         const numberOfInternalIdForBusiness = digitize(source, 6);
         current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
-        console.log(`current`, current);
       } else if (MODEL == "StockAdjustment") {
-        console.log("----------------dubug -------------------------");
         const numberOfInternalIdForBusiness = digitize(source, 6);
         current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
-        console.log(`current`, current);
       }
       const log = await ActivityLog.create({
         userId: req.userId,
