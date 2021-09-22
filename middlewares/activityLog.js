@@ -18,7 +18,10 @@ async function addActivityLog(req, res, next) {
       } else if (MODEL == "StockAdjustment") {
         const numberOfInternalIdForBusiness = digitize(source, 6);
         current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
+      } else if (MODEL == "User") {
+        current["name"] = current["username"];
       }
+      console.log(`current`, current);
       const log = await ActivityLog.create({
         userId: req.userId,
         currentPayload: current,
