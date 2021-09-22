@@ -1,21 +1,36 @@
 const { ActivityLog, ActivitySourceType } = require("../models");
 const sourceModel = require("../models");
-const { getModel } = require("../services/common.services");
+const { getModel, digitize } = require("../services/common.services");
 
 async function addActivityLog(req, res, next) {
   const modelUrl = req.originalUrl.split("/");
   let MODEL = getModel(modelUrl[3]);
   const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
   if (req.method == "POST") {
+    const current = { ...req.body };
     if (MODEL != "Upload") {
-      console.log("sourceModel", sourceModel);
       let source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1, attributes: ["id"] });
-      source = source ? source.id : 1;
+      source = source ? source.id + 1 : 1;
+      console.log(MODEL, "MODEL");
+      console.log(
+        `MODEL == "DispatchOrder" || MODEL == "ProductOutward" ||MODEL == "ProductInward" ||MODEL == "StockAdjustment"`,
+        MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward" || MODEL == "StockAdjustment"
+      );
+      if (
+        MODEL == "DispatchOrder" ||
+        MODEL == "ProductOutward" ||
+        MODEL == "ProductInward" ||
+        MODEL == "StockAdjustment"
+      ) {
+        const numberOfInternalIdForBusiness = digitize(source, 6);
+        current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
+        console.log(`current`, current);
+      }
       const log = await ActivityLog.create({
         userId: req.userId,
-        currentPayload: req.body,
+        currentPayload: current,
         previousPayload: null,
-        sourceId: source ? source + 1 : 1,
+        sourceId: source,
         sourceType: sourceTypeId,
         activityType: "ADD",
       });

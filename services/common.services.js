@@ -12,6 +12,7 @@ const {
   DISPATCH_ORDER: { STATUS },
 } = require("../enums");
 const digitize = (value, places) => {
+  console.log(`value, places`, value, places);
   let strValue = value + "";
   return new Array(places - strValue.length).fill("0").join("") + strValue;
 };
@@ -226,7 +227,6 @@ const getModel = (modelUrl) => {
 };
 
 const addActivityLog = async (id, current, ActivityLog) => {
-  console.log(`id`, id);
   // const modelUrl = req.originalUrl.split("/");
   // let MODEL = getModel(modelUrl[3]);
   // const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
@@ -237,7 +237,6 @@ const addActivityLog = async (id, current, ActivityLog) => {
     },
     id
   );
-  console.log(`id:${id}\ncurrent${current.id}`);
 };
 
 module.exports = { addActivityLog, getModel, digitize, checkOrderStatusAndUpdate };
