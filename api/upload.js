@@ -7,9 +7,8 @@ const path = require("path");
 const { File } = require("../models");
 const { s3 } = require("../services/s3.service");
 const { maxSize, bucket } = require("../config");
-const activityLog = require("../middlewares/activityLog");
 
-router.post("/:folder", activityLog, async (req, res, next) => {
+router.post("/:folder", async (req, res, next) => {
   const folder = req.params.folder;
   var upload = multer({
     storage: multerS3({
