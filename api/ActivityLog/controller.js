@@ -34,7 +34,7 @@ async function getActivityLogs(params) {
               attributes: ["name"],
             })
           ).name;
-          dataValues.currentPayload.name = `${carmake} carmodel`;
+          dataValues.currentPayload.name = `${carmake} ${carmodel}`;
         }
       }
       return {
