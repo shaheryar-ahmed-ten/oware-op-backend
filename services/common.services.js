@@ -4,7 +4,6 @@ const {
   Inventory,
   ProductOutward,
   OutwardGroup,
-  DispatchOrder,
   ProductInward,
   OrderGroup,
   sequelize,
@@ -120,14 +119,14 @@ const removeChildModelFilters = (where) => {
   return where;
 };
 
-const checkOrderStatusAndUpdate = async (dispatchOrderId, currentOutwardQty, transaction) => {
+const checkOrderStatusAndUpdate = async (model, dispatchOrderId, currentOutwardQty, transaction) => {
   try {
-    const order = await DispatchOrder.findOne({
+    const order = await model.DispatchOrder.findOne({
       where: { id: dispatchOrderId },
       attributes: ["id", ["quantity", "orderQty"]],
       include: [
         {
-          model: ProductOutward,
+          model: model.ProductOutward,
           attributes: ["id", ["quantity", "outwardQty"]],
         },
       ],
