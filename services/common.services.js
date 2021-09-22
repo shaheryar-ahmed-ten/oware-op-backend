@@ -12,7 +12,6 @@ const {
   DISPATCH_ORDER: { STATUS },
 } = require("../enums");
 const digitize = (value, places) => {
-  console.log(`value, places`, value, places);
   let strValue = value + "";
   return new Array(places - strValue.length).fill("0").join("") + strValue;
 };
@@ -153,7 +152,6 @@ const checkOrderStatusAndUpdate = async (model, dispatchOrderId, currentOutwardQ
 };
 
 const getModel = (modelUrl) => {
-  console.log(`modelUrl`, modelUrl);
   let MODEL;
   switch (modelUrl) {
     case "inventory-wastages":
@@ -222,7 +220,6 @@ const getModel = (modelUrl) => {
     case "vehicle-types":
       MODEL = "Car";
   }
-  console.log(`MODEL`, MODEL);
   return MODEL;
 };
 

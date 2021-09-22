@@ -53,7 +53,6 @@ class CrudServiceDao {
         returning: true,
         plain: true,
       });
-      console.log("record update", record);
       record = await this.model.findOne({
         where: { id: id, deletedAt: null },
       });
@@ -75,7 +74,6 @@ class CrudServiceDao {
 
   async destroy(id) {
     const record = await this.model.destroy({ where: { id } });
-    console.log("record delete", record);
   }
 
   async findByPk(id) {

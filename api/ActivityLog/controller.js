@@ -9,11 +9,44 @@ async function getActivityLogs(params) {
     const response = await Dao.ActivityLog.findAndCountAll(params);
     if (response.count) {
       for (const { dataValues } of response.records) {
-        console.log("dataValues", dataValues);
-        console.log(`dataValues.currentPayload.relationType`, dataValues.currentPayload.relationType);
+        // console.log("dataValues", dataValues);
+        // console.log(`dataValues.currentPayload.relationType`, dataValues.currentPayload.relationType);
         if (dataValues.currentPayload.relationType == "VENDOR") {
           console.log("---debug---");
           dataValues.ActivitySourceType.name = "Vendor";
+        }
+        if (
+          dataValues.currentPayload.makeId &&
+          dataValues.currentPayload.modelId &&
+          dataValues.currentPayload.vehicleTypeId
+        ) {
+          dataValues.ActivitySourceType.name = "VehicleType";
+          // const car = await Dao.Car.findOne({
+          //   where: {
+          //     makeId: dataValues.currentPayload.makeId,
+          //     modelId: dataValues.currentPayload.modelId,
+          //     vehicleTypeId: dataValues.currentPayload.vehicleTypeId,
+          //   },
+          // });
+          // console.log("Car", car);
+          const carmake = (
+            await Dao.CarMake.findOne({
+              where: {
+                id: dataValues.currentPayload.makeId,
+              },
+              attributes: ["name"],
+            })
+          ).name;
+          const carmodel = (
+            await Dao.CarModel.findOne({
+              where: {
+                id: dataValues.currentPayload.modelId,
+              },
+              attributes: ["name"],
+            })
+          ).name;
+          console.log("carmake", carmake, "carmodel", carmodel);
+          dataValues.currentPayload.name = `${carmake} carmodel`;
         }
       }
       return {

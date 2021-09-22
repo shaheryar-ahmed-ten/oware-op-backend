@@ -108,8 +108,6 @@ router.get("/:id", async (req, res) => {
 });
 
 router.put("/:id", activityLog, async (req, res) => {
-  console.log(`req.params`, req.params);
-
   const params = {
     include: [{ model: Inventory, as: "Inventories" }],
     where: { id: req.params.id },

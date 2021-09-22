@@ -101,7 +101,7 @@ router.get("/", async (req, res, next) => {
     success: true,
     message: "respond with a resource",
     data: response.rows,
-    pages: Math.ceil(response.count/limit),
+    pages: Math.ceil(response.count / limit),
   });
 });
 
@@ -165,11 +165,9 @@ router.get("/single/:id", async (req, res, next) => {
 
 // get ride product manifest
 router.get("/preview/:id", async (req, res, next) => {
-  console.log("req.params.id", req.params.id);
   const id = req.params.id;
   let file = await File.findOne({ where: { id } });
   let preview = await previewFile(file.bucket, file.key);
-  console.log("preview", preview);
   res.json({ preview });
 });
 /* POST create new ride. */
@@ -445,24 +443,13 @@ router.get("/export", async (req, res, next) => {
   // separate sheet for product details
   worksheet = workbook.addWorksheet("Product Details");
 
-  worksheet.columns = getColumnsConfig([
-    "RIDE ID",
-    "CATEGORY",
-    "PRODUCT NAME",
-    "QUANTITY",
-  ])
+  worksheet.columns = getColumnsConfig(["RIDE ID", "CATEGORY", "PRODUCT NAME", "QUANTITY"]);
 
   response.map((row) => {
     worksheet.addRows(
-      row.RideProducts.map((product) => [
-        row.id,
-        product.Category.name,
-        product.name,
-        product.quantity
-      ])
-    )
-  })
-
+      row.RideProducts.map((product) => [row.id, product.Category.name, product.name, product.quantity])
+    );
+  });
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
