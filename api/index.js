@@ -55,7 +55,7 @@ router.use("/inventory", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_F
 router.use("/driver", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), driverRouter);
 router.use("/vehicle", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleRouter);
 router.use("/ride", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), rideRouter);
-router.use("/upload", checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), uploadRouter);
+router.use("/upload", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), uploadRouter);
 router.use("/inventory-wastages", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), stockAdjustment);
 router.use("/audit-logs", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), activityLogRouter);
 router.use("/vehicle-types", isLoggedIn, checkPermission(PERMISSIONS.OPS_INVENTORY_FULL), vehicleType);

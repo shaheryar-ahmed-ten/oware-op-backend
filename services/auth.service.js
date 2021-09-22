@@ -10,7 +10,7 @@ module.exports.isLoggedIn = (req, res, next) => {
   jwt.verify(token, config.JWT_SECRET, async (err, decoded) => {
     if (err) return res.status(401).json({ success: false, message: "Failed to authenticate token." });
     const user = await User.findOne({
-      where: { id: 12 },
+      where: { id: decoded.id },
       include: [
         {
           model: Role,
