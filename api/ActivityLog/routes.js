@@ -20,13 +20,10 @@ router.get("/", async (req, res) => {
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
   if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
-    if (req.query.days == "1") {
-      where["createdAt"] = { [Op.eq]: currentDate };
-    } else {
-      where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
-    }
+    const currentDate = moment().set("hour", 23).set("minute", 59).set("second", 55);
+    const previousDate = moment().subtract(req.query.days, "days").set("hour", 23).set("minute", 59).set("second", 55);
+    console.log(`currentDate`, currentDate, `previousDate`, previousDate);
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   }
   const params = {
     limit,
