@@ -1,6 +1,7 @@
 const { ActivityLog, ActivitySourceType } = require("../models");
 const sourceModel = require("../models");
 const { getModel, digitize } = require("../services/common.services");
+const { initialInternalIdForBusinessForAdjustment } = require("../enums");
 
 async function addActivityLog(req, res, next) {
   const modelUrl = req.originalUrl.split("/");
@@ -13,17 +14,17 @@ async function addActivityLog(req, res, next) {
       source = source ? source.id + 1 : 1;
       console.log(MODEL, "MODEL");
       console.log(
-        `MODEL == "DispatchOrder" || MODEL == "ProductOutward" ||MODEL == "ProductInward" ||MODEL == "StockAdjustment"`,
-        MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward" || MODEL == "StockAdjustment"
+        `MODEL == "DispatchOrder" || MODEL == "ProductOutward" ||MODEL == "ProductInward"`,
+        MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward"
       );
-      if (
-        MODEL == "DispatchOrder" ||
-        MODEL == "ProductOutward" ||
-        MODEL == "ProductInward" ||
-        MODEL == "StockAdjustment"
-      ) {
+      if (MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward") {
         const numberOfInternalIdForBusiness = digitize(source, 6);
         current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
+        console.log(`current`, current);
+      } else if (MODEL == "StockAdjustment") {
+        console.log("----------------dubug -------------------------");
+        const numberOfInternalIdForBusiness = digitize(source, 6);
+        current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
         console.log(`current`, current);
       }
       const log = await ActivityLog.create({
