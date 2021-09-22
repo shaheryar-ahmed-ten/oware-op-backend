@@ -406,15 +406,9 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF AREA",
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
-<<<<<<< HEAD
-    "CATEGORY",
-    "PRODUCTS",
-    "QUANTITIES",
-=======
     // "CATEGORY",
     // "PRODUCTS",
     // "QUANTITIES"
->>>>>>> bbb8315fa77302e6ffbc467c472a45b7e6f81fe4
   ]);
 
   worksheet.addRows(
@@ -442,15 +436,9 @@ router.get("/export", async (req, res, next) => {
       // row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`),
       // row.RideProducts.map((product, idx) => `Name${idx + 1} = ${product.name}`),
       // row.RideProducts.map((product, idx) => `Qty${idx + 1} = ${product.quantity}`),
-<<<<<<< HEAD
-      row.RideProducts.map((product, idx) => `${idx + 1}: ${product.Category.name}`),
-      row.RideProducts.map((product, idx) => `${idx + 1}: ${product.name}`),
-      row.RideProducts.map((product, idx) => `${idx + 1}: ${product.quantity}`),
-=======
       // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.Category.name}`),
       // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.name}`),
       // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.quantity}`)
->>>>>>> bbb8315fa77302e6ffbc467c472a45b7e6f81fe4
     ])
   );
 
