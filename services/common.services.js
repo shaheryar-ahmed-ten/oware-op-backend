@@ -237,4 +237,4 @@ const addActivityLog = async (id, current, ActivityLog) => {
   console.log(`id:${id}\ncurrent${current.id}`);
 };
 
-module.exports = { addActivityLog, getModel, digitize };
+module.exports = { addActivityLog, getModel, digitize, checkOrderStatusAndUpdate };
