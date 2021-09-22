@@ -101,7 +101,7 @@ router.get("/", async (req, res, next) => {
     success: true,
     message: "respond with a resource",
     data: response.rows,
-    pages: Math.ceil(response.count/limit),
+    pages: Math.ceil(response.count / limit),
   });
 });
 
@@ -392,8 +392,8 @@ router.get("/export", async (req, res, next) => {
     "DRIVER",
     // "DRIVER PHONE",
     "VEHICLE",
-    "PRICE",
-    "COST",
+    "CUSTOMER PRICE",
+    "VENDOR COST",
     "CUSTOMER DISCOUNT",
     "DRIVER INCENTIVE",
     "PICKUP CITY",
