@@ -8,6 +8,8 @@ const { Op } = require("sequelize");
 const { PERMISSIONS, PORTALS, RELATION_TYPES } = require("../enums");
 const PORTALS_LABELS = require("../enums/portals");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 
 async function updateUser(req, res, next) {
   let user = await User.findOne({ where: { id: req.params.id } });
@@ -25,6 +27,7 @@ async function updateUser(req, res, next) {
   user.isActive = req.body.isActive;
   try {
     const response = await user.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "User updated",

@@ -7,6 +7,7 @@ const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const httpStatus = require("http-status");
 const { BULK_PRODUCT_LIMIT } = require("../enums");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET products listing. */
 router.get("/", async (req, res, next) => {

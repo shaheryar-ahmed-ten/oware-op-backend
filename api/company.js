@@ -1,12 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const { Company, User, Role ,File } = require("../models");
+const { Company, User, Role, File } = require("../models");
 const { Op } = require("sequelize");
 const config = require("../config");
 const authService = require("../services/auth.service");
 const { PORTALS } = require("../enums");
 const RELATION_TYPES = require("../enums/relationTypes");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET customers listing. */
 router.get("/:relationType", async (req, res, next) => {
@@ -26,7 +28,7 @@ router.get("/:relationType", async (req, res, next) => {
     offset,
     where,
   });
-  
+
   res.json({
     success: true,
     message: "respond with a resource",
@@ -51,7 +53,7 @@ router.post("/:relationType", activityLog, async (req, res, next) => {
       message: err.message,
     });
   }
-  
+
   res.json({
     success: true,
     message,
@@ -75,9 +77,10 @@ router.put("/:relationType/:id", activityLog, async (req, res, next) => {
   customer.notes = req.body.notes;
   customer.isActive = req.body.isActive;
   customer.logoId = req.body.logoId;
-  
+
   try {
     const response = await customer.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Customer updated",

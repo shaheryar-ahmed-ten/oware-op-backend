@@ -5,6 +5,8 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const { errorHandler } = require("../services/error.service");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET brands listing. */
 router.get("/", async (req, res, next) => {
@@ -65,6 +67,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   brand.isActive = req.body.isActive;
   try {
     const response = await brand.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Brand updated",

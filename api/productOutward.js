@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const model = require("../models");
 const {
   Inventory,
   ProductOutward,
@@ -170,7 +171,7 @@ router.post("/", activityLog, async (req, res, next) => {
         { transaction }
       );
 
-      await checkOrderStatusAndUpdate(req.body.dispatchOrderId, productOutward.quantity, transaction);
+      await checkOrderStatusAndUpdate(model, req.body.dispatchOrderId, productOutward.quantity, transaction);
 
       return Promise.all(
         req.body.inventories.map((_inventory) => {

@@ -5,7 +5,8 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const { RELATION_TYPES } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
-
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 /* GET drivers listing. */
 router.get("/", async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
@@ -82,6 +83,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   driver.drivingLicenseId = req.body.drivingLicenseId;
   try {
     const response = await driver.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "driver updated",
