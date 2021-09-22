@@ -217,12 +217,16 @@ const getModel = (modelUrl) => {
 
     case "ride":
       MODEL = "Ride";
+
+    case "vehicle-types":
+      MODEL = "Car";
   }
   console.log(`MODEL`, MODEL);
   return MODEL;
 };
 
 const addActivityLog = async (id, current, ActivityLog) => {
+  console.log(`id`, id);
   // const modelUrl = req.originalUrl.split("/");
   // let MODEL = getModel(modelUrl[3]);
   // const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;

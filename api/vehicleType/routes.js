@@ -5,6 +5,7 @@ const config = require("../../config");
 const { VehicleType, CarMake, CarModel } = require("../../models");
 const { Op } = require("sequelize");
 const moment = require("moment");
+const activityLog = require("../../middlewares/activityLog");
 
 // Vehicle type listing
 router.get("/", async (req, res) => {
@@ -87,20 +88,20 @@ router.get("/:id", async (req, res) => {
   else res.sendError(response.status, response.message, response.error);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", activityLog, async (req, res) => {
   const response = await controller.addVehicleType(req.body, req.userId, req["activityLogId"]);
   if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.code);
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", activityLog, async (req, res) => {
   const response = await controller.deleteVehicleType(req.params.id);
   if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.code);
 });
 
-router.put("/:id", async (req, res) => {
-  const response = await controller.updateVehicleType(req.body, req.params.id);
+router.put("/:id", activityLog, async (req, res) => {
+  const response = await controller.updateVehicleType(req.body, req.params.id, req["activityLogId"]);
   if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.code);
 });
