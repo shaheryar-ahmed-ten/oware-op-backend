@@ -4,6 +4,10 @@ const { Product, User, Brand, UOM, Category } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const httpStatus = require("http-status");
+const { BULK_PRODUCT_LIMIT } = require("../enums");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET products listing. */
 router.get("/", async (req, res, next) => {
@@ -50,6 +54,64 @@ router.post("/", activityLog, async (req, res, next) => {
   });
 });
 
+router.post("/bulk", activityLog, async (req, res, next) => {
+  let message = "Bulk products registered";
+  let products;
+  try {
+    const allowedValues = ["name", "description", "volume", "weight", "category", "brand", "uom", "isActive"];
+    // req.body.products = req.body.products.map((product) => {
+    if (req.body.products.length > BULK_PRODUCT_LIMIT)
+      return res.sendError(httpStatus.CONFLICT, `Cannot add product above ${BULK_PRODUCT_LIMIT}`);
+    for (const product of req.body.products) {
+      Object.keys(product).forEach((item) => {
+        if (!allowedValues.includes(item))
+          return res.sendError(httpStatus.CONFLICT, `Field ${item} is invalid`, "Failed to add Bulk Products");
+      });
+      const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
+      if (productAlreadyExist)
+        return res.sendError(httpStatus.CONFLICT, `Product Already Exist with name ${productAlreadyExist.name}`);
+      product["userId"] = req.userId;
+      product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
+      product["dimensionsCBM"] = product["volume"];
+      const category = await Dao.Category.findOne({ where: { name: product.category } });
+      const brand = await Dao.Brand.findOne({ where: { name: product.brand } });
+      const uom = await Dao.UOM.findOne({ where: { name: product.uom } });
+      if (category && brand && uom) {
+        product["categoryId"] = category.id;
+        product["brandId"] = brand.id;
+        product["uomId"] = uom.id;
+      } else if (!category) {
+        res.sendError(
+          httpStatus.CONFLICT,
+          `Category Doesn't exist with name ${product.category}`,
+          "Failed to add Bulk Products"
+        );
+      } else if (!brand) {
+        res.sendError(
+          httpStatus.CONFLICT,
+          `Brand Doesn't exist with name ${product.brand}`,
+          "Failed to add Bulk Products"
+        );
+      } else if (!uom) {
+        res.sendError(httpStatus.CONFLICT, `Uom Doesn't exist with name ${product.uom}`, "Failed to add Bulk Products");
+      }
+    }
+    // });
+    products = await Product.bulkCreate(req.body.products);
+  } catch (err) {
+    console.log("err", err);
+    return res.json({
+      success: false,
+      message: err.errors.pop().message,
+    });
+  }
+  res.json({
+    success: true,
+    message,
+    data: products,
+  });
+});
+
 /* PUT update existing product. */
 router.put("/:id", activityLog, async (req, res, next) => {
   let product = await Product.findOne({ where: { id: req.params.id } });
@@ -68,6 +130,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   product.isActive = req.body.isActive;
   try {
     const response = await product.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Product updated",

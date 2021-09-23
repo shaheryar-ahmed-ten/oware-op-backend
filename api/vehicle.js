@@ -6,6 +6,8 @@ const { Op } = require("sequelize");
 const VEHICLE_TYPES = require("../enums/vehicleTypes");
 const { RELATION_TYPES } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET vehicles listing. */
 router.get("/", async (req, res, next) => {
@@ -79,6 +81,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await vehicle.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "vehicle updated",

@@ -5,7 +5,8 @@ const { Op } = require("sequelize");
 const config = require("../config");
 const { errorHandler } = require("../services/error.service");
 const activityLog = require("../middlewares/activityLog");
-
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 /* GET uoms listing. */
 router.get("/", async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
@@ -64,6 +65,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   uom.isActive = req.body.isActive;
   try {
     const response = await uom.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "UOM updated",

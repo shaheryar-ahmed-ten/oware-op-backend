@@ -108,13 +108,11 @@ router.get("/:id", async (req, res) => {
 });
 
 router.put("/:id", activityLog, async (req, res) => {
-  console.log(`req.params`, req.params);
-
   const params = {
     include: [{ model: Inventory, as: "Inventories" }],
     where: { id: req.params.id },
   };
-  const response = await controller.updateWastage(params, req.body["adjustment_products"]);
+  const response = await controller.updateWastage(params, req.body["adjustment_products"], req["activityLogId"]);
   if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.success);
   else res.sendError(response.status, response.message, response.error);
 });

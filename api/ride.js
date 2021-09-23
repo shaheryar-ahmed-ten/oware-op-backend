@@ -21,12 +21,13 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const RIDE_STATUS = require("../enums/rideStatus");
 const { RELATION_TYPES } = require("../enums");
-const { digitize } = require("../services/common.services");
+const { digitize, addActivityLog } = require("../services/common.services");
 const ExcelJS = require("exceljs");
 const authService = require("../services/auth.service");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const { previewFile } = require("../services/s3.service");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
 
 /* GET rides listing. */
 router.get("/", async (req, res, next) => {
@@ -164,11 +165,9 @@ router.get("/single/:id", async (req, res, next) => {
 
 // get ride product manifest
 router.get("/preview/:id", async (req, res, next) => {
-  console.log("req.params.id", req.params.id);
   const id = req.params.id;
   let file = await File.findOne({ where: { id } });
   let preview = await previewFile(file.bucket, file.key);
-  console.log("preview", preview);
   res.json({ preview });
 });
 /* POST create new ride. */
@@ -252,6 +251,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await ride.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Ride updated",
@@ -338,30 +338,6 @@ router.get("/export", async (req, res, next) => {
   const getColumnsConfig = (columns) =>
     columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
 
-  worksheet.columns = getColumnsConfig([
-    "RIDE ID",
-    "STATUS",
-    "COMPANY",
-    "DRIVER",
-    "DRIVER PHONE",
-    "VEHICLE",
-    "PRICE",
-    "COST",
-    "CUSTOMER DISCOUNT",
-    "DRIVER INCENTIVE",
-    "PICKUP CITY",
-    "PICKUP ZONE",
-    "PICKUP AREA",
-    "PICKUP ADDRESS",
-    "PICKUP DATE",
-    "DROPOFF CITY",
-    "DROPOFF ZONE",
-    "DROPOFF AREA",
-    "DROPOFF ADDRESS",
-    "DROPOFF DATE",
-    "PRODUCTS",
-  ]);
-
   let response = await Ride.findAll({
     include: [
       {
@@ -407,13 +383,39 @@ router.get("/export", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
   });
 
+  worksheet.columns = getColumnsConfig([
+    "RIDE ID",
+    "STATUS",
+    "COMPANY",
+    "DRIVER",
+    // "DRIVER PHONE",
+    "VEHICLE",
+    "PRICE",
+    "COST",
+    "CUSTOMER DISCOUNT",
+    "DRIVER INCENTIVE",
+    "PICKUP CITY",
+    "PICKUP ZONE",
+    "PICKUP AREA",
+    "PICKUP ADDRESS",
+    "PICKUP DATE",
+    "DROPOFF CITY",
+    "DROPOFF ZONE",
+    "DROPOFF AREA",
+    "DROPOFF ADDRESS",
+    "DROPOFF DATE",
+    // "CATEGORY",
+    // "PRODUCTS",
+    // "QUANTITIES"
+  ]);
+
   worksheet.addRows(
     response.map((row) => [
       row.id,
       row.status,
       row.Customer.name,
       row.Driver.name,
-      row.Driver.phone,
+      // row.Driver.phone,
       row.Vehicle.registrationNumber,
       row.price,
       row.cost,
@@ -423,25 +425,36 @@ router.get("/export", async (req, res, next) => {
       row.PickupArea.Zone.name,
       row.PickupArea.name,
       row.pickupAddress,
-      moment(row.pickupDate).format("DD/MM/yy HH:mm"),
+      moment(row.pickupDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
       row.DropoffArea.Zone.City.name,
       row.DropoffArea.Zone.name,
       row.DropoffArea.name,
       row.dropoffAddress,
-      moment(row.dropoffDate).format("DD/MM/yy HH:mm"),
-      row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`),
+      moment(row.dropoffDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
+      // row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`),
+      // row.RideProducts.map((product, idx) => `Name${idx + 1} = ${product.name}`),
+      // row.RideProducts.map((product, idx) => `Qty${idx + 1} = ${product.quantity}`),
+      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.Category.name}`),
+      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.name}`),
+      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.quantity}`)
     ])
   );
+
+  // separate sheet for product details
+  worksheet = workbook.addWorksheet("Product Details");
+
+  worksheet.columns = getColumnsConfig(["RIDE ID", "CATEGORY", "PRODUCT NAME", "QUANTITY"]);
+
+  response.map((row) => {
+    worksheet.addRows(
+      row.RideProducts.map((product) => [row.id, product.Category.name, product.name, product.quantity])
+    );
+  });
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
 
   await workbook.xlsx.write(res).then(() => res.end());
-
-  // return res.json({
-  // success: true,
-  // data: response
-  // })
 });
 
 module.exports = router;

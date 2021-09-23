@@ -144,6 +144,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
     });
   try {
     const response = await productInward.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Product Inward updated",

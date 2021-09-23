@@ -7,14 +7,45 @@ const { initialInternalIdForBusinessForAdjustment } = require("../../enums");
 async function getActivityLogs(params) {
   try {
     const response = await Dao.ActivityLog.findAndCountAll(params);
-    if (response.count)
+    if (response.count) {
+      for (const { dataValues } of response.records) {
+        if (dataValues.currentPayload) {
+          if (dataValues.currentPayload.relationType == "VENDOR") {
+            dataValues.ActivitySourceType.name = "Vendor";
+          }
+          if (
+            dataValues.currentPayload.makeId &&
+            dataValues.currentPayload.modelId &&
+            dataValues.currentPayload.vehicleTypeId
+          ) {
+            dataValues.ActivitySourceType.name = "VehicleType";
+            const carmake = (
+              await Dao.CarMake.findOne({
+                where: {
+                  id: dataValues.currentPayload.makeId,
+                },
+                attributes: ["name"],
+              })
+            ).name;
+            const carmodel = (
+              await Dao.CarModel.findOne({
+                where: {
+                  id: dataValues.currentPayload.modelId,
+                },
+                attributes: ["name"],
+              })
+            ).name;
+            dataValues.currentPayload.name = `${carmake} ${carmodel}`;
+          }
+        }
+      }
       return {
         success: httpStatus.OK,
         message: "Data Found",
         data: response.records,
         pages: Math.ceil(response.count / params.limit),
       };
-    else return { success: httpStatus.OK, message: "Data not Found", data: [], count: response.count };
+    } else return { success: httpStatus.OK, message: "Data not Found", data: [], count: response.count };
   } catch (err) {
     console.log("ERROR:", err);
     return {
