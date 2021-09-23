@@ -177,9 +177,8 @@ router.post("/", activityLog, async (req, res, next) => {
   let products = req.body.products;
   delete req.body.products;
   try {
-    console.log(`req.body`, req.body);
-    req.body["pickupDate"] = new Date(req.body["pickupDate"]).toISOString();
-    req.body["dropoffDate"] = new Date(req.body["dropoffDate"]).toISOString();
+    req.body["pickupDate"] = new Date(moment(req.body["pickupDate"]).tz("Africa/Abidjan"));
+    req.body["dropoffDate"] = new Date(moment(req.body["dropoffDate"]).tz("Africa/Abidjan"));
     console.log(`req.body`, req.body);
     new Date().toISOString();
     ride = await Ride.create({
