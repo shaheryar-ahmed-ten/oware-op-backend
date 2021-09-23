@@ -12,7 +12,7 @@ async function addActivityLog(req, res, next) {
     if (MODEL != "Upload") {
       let source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1, attributes: ["id"] });
       source = source ? source.id + 1 : 1;
-      if (MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward") {
+      if (MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward" || MODEL == "Ride") {
         const numberOfInternalIdForBusiness = digitize(source, 6);
         current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
       } else if (MODEL == "StockAdjustment") {
