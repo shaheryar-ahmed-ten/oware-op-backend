@@ -216,6 +216,7 @@ const getModel = (modelUrl) => {
 
     case "ride":
       MODEL = "Ride";
+      break;
 
     case "vehicle-types":
       MODEL = "Car";
