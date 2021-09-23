@@ -225,6 +225,7 @@ const getModel = (modelUrl) => {
 };
 
 const addActivityLog = async (id, current, ActivityLog) => {
+  console.log("current", current);
   // const modelUrl = req.originalUrl.split("/");
   // let MODEL = getModel(modelUrl[3]);
   // const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;

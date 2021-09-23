@@ -130,6 +130,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   product.isActive = req.body.isActive;
   try {
     const response = await product.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Product updated",
