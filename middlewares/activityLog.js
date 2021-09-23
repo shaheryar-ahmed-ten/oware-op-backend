@@ -24,7 +24,7 @@ async function addActivityLog(req, res, next) {
       const log = await ActivityLog.create({
         userId: req.userId,
         currentPayload: current,
-        previousPayload: null,
+        previousPayload: {},
         sourceId: source,
         sourceType: sourceTypeId,
         activityType: "ADD",
@@ -33,7 +33,7 @@ async function addActivityLog(req, res, next) {
       const log = await ActivityLog.create({
         userId: req.userId,
         currentPayload: req.body,
-        previousPayload: null,
+        previousPayload: {},
         sourceId: null,
         sourceType: sourceTypeId,
         activityType: "ADD",
@@ -44,7 +44,7 @@ async function addActivityLog(req, res, next) {
       const source = await sourceModel[MODEL].findOne({ where: { id: req.params.id } });
       const log = await ActivityLog.create({
         userId: req.userId,
-        currentPayload: null,
+        currentPayload: {},
         previousPayload: source,
         sourceId: req.params.id,
         sourceType: sourceTypeId,
@@ -55,7 +55,7 @@ async function addActivityLog(req, res, next) {
       const log = await ActivityLog.create({
         userId: req.userId,
         currentPayload: req.body,
-        previousPayload: null,
+        previousPayload: {},
         sourceId: null,
         sourceType: sourceTypeId,
         activityType: "PUT",
@@ -66,7 +66,7 @@ async function addActivityLog(req, res, next) {
       const source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1 });
       const log = await ActivityLog.create({
         userId: req.userId,
-        currentPayload: null,
+        currentPayload: {},
         previousPayload: source,
         sourceId: req.params.id,
         sourceType: sourceTypeId,
@@ -75,8 +75,8 @@ async function addActivityLog(req, res, next) {
     } else {
       const log = await ActivityLog.create({
         userId: req.userId,
-        currentPayload: null,
-        previousPayload: null,
+        currentPayload: {},
+        previousPayload: {},
         sourceId: req.params.id,
         sourceType: sourceTypeId,
         activityType: "DELETE",
