@@ -9,32 +9,34 @@ async function getActivityLogs(params) {
     const response = await Dao.ActivityLog.findAndCountAll(params);
     if (response.count) {
       for (const { dataValues } of response.records) {
-        if (dataValues.currentPayload.relationType == "VENDOR") {
-          dataValues.ActivitySourceType.name = "Vendor";
-        }
-        if (
-          dataValues.currentPayload.makeId &&
-          dataValues.currentPayload.modelId &&
-          dataValues.currentPayload.vehicleTypeId
-        ) {
-          dataValues.ActivitySourceType.name = "VehicleType";
-          const carmake = (
-            await Dao.CarMake.findOne({
-              where: {
-                id: dataValues.currentPayload.makeId,
-              },
-              attributes: ["name"],
-            })
-          ).name;
-          const carmodel = (
-            await Dao.CarModel.findOne({
-              where: {
-                id: dataValues.currentPayload.modelId,
-              },
-              attributes: ["name"],
-            })
-          ).name;
-          dataValues.currentPayload.name = `${carmake} ${carmodel}`;
+        if (dataValues.currentPayload) {
+          if (dataValues.currentPayload.relationType == "VENDOR") {
+            dataValues.ActivitySourceType.name = "Vendor";
+          }
+          if (
+            dataValues.currentPayload.makeId &&
+            dataValues.currentPayload.modelId &&
+            dataValues.currentPayload.vehicleTypeId
+          ) {
+            dataValues.ActivitySourceType.name = "VehicleType";
+            const carmake = (
+              await Dao.CarMake.findOne({
+                where: {
+                  id: dataValues.currentPayload.makeId,
+                },
+                attributes: ["name"],
+              })
+            ).name;
+            const carmodel = (
+              await Dao.CarModel.findOne({
+                where: {
+                  id: dataValues.currentPayload.modelId,
+                },
+                attributes: ["name"],
+              })
+            ).name;
+            dataValues.currentPayload.name = `${carmake} ${carmodel}`;
+          }
         }
       }
       return {
