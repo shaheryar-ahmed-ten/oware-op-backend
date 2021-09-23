@@ -12,12 +12,14 @@ async function addActivityLog(req, res, next) {
     if (MODEL != "Upload") {
       let source = await sourceModel[MODEL].findOne({ order: [["createdAt", "DESC"]], limit: 1, attributes: ["id"] });
       source = source ? source.id + 1 : 1;
-      if (MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward" || MODEL == "Ride") {
+      if (MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward") {
         const numberOfInternalIdForBusiness = digitize(source, 6);
         current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
       } else if (MODEL == "StockAdjustment") {
         const numberOfInternalIdForBusiness = digitize(source, 6);
         current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
+      } else if (MODEL == "Ride") {
+        current.internalIdForBusiness = digitize(source, 6);
       } else if (MODEL == "User") {
         current["name"] = current["username"];
       }
