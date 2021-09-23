@@ -18,6 +18,7 @@ const { digitize, addActivityLog } = require("../services/common.services");
 const { RELATION_TYPES } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
+const moment = require("moment-timezone");
 
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {
@@ -77,6 +78,7 @@ router.get("/", async (req, res, next) => {
 router.post("/", activityLog, async (req, res, next) => {
   let message = "New dispatchOrder registered";
   let dispatchOrder;
+  req.body["shipmentDate"] = new Date(moment(req.body["shipmentDate"]).tz("Africa/Abidjan"));
   req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
 
   try {
