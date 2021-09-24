@@ -177,6 +177,9 @@ router.post("/", activityLog, async (req, res, next) => {
   let products = req.body.products;
   delete req.body.products;
   try {
+    req.body["pickupDate"] = new Date(moment(req.body["pickupDate"]).tz("Africa/Abidjan"));
+    req.body["dropoffDate"] = new Date(moment(req.body["dropoffDate"]).tz("Africa/Abidjan"));
+    new Date().toISOString();
     ride = await Ride.create({
       userId: req.userId,
       ...req.body,
@@ -191,6 +194,7 @@ router.post("/", activityLog, async (req, res, next) => {
     ride.internalIdForBusiness = digitize(ride.id, 6);
     ride.save();
   } catch (err) {
+    console.log("err", err);
     return res.json({
       success: false,
       message: err.message,
