@@ -18,15 +18,16 @@ async function updateUser(req, res, next) {
       success: false,
       message: "No user found!",
     });
-  user.firstName = req.body.firstName;
-  user.lastName = req.body.lastName;
-  user.roleId = req.body.roleId;
-  user.phone = req.body.phone;
-  user.companyId = req.body.companyId;
-  if (req.body.password) user.password = req.body.password;
-  user.isActive = req.body.isActive;
+  if (req.body.hasOwnProperty("firstName")) user.firstName = req.body.firstName;
+  if (req.body.hasOwnProperty("lastName")) user.lastName = req.body.lastName;
+  if (req.body.hasOwnProperty("roleId")) user.roleId = Number(req.body.roleId);
+  if (req.body.hasOwnProperty("phone")) user.phone = req.body.phone;
+  if (req.body.hasOwnProperty("companyId")) user.companyId = Number(req.body.companyId);
+  if (req.body.hasOwnProperty("password")) user.password = req.body.password;
+  if (req.body.hasOwnProperty("isActive")) user.isActive = req.body.isActive;
   try {
     const response = await user.save();
+    console.log("response", response);
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
@@ -34,6 +35,7 @@ async function updateUser(req, res, next) {
       data: response,
     });
   } catch (err) {
+    console.log("err", err);
     return res.json({
       success: false,
       message: err.message,

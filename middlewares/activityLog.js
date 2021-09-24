@@ -28,7 +28,6 @@ async function addActivityLog(req, res, next) {
       } else if (MODEL == "User") {
         current["name"] = current["username"];
       }
-      console.log("source", source, "current", current);
       const log = await ActivityLog.create({
         userId: req.userId,
         currentPayload: current,
