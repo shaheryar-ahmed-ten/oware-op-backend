@@ -1,59 +1,125 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { Product, User, Brand, UOM, Category } = require('../models')
-const config = require('../config');
+const { Product, User, Brand, UOM, Category } = require("../models");
+const config = require("../config");
 const { Op } = require("sequelize");
+const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const httpStatus = require("http-status");
+const { BULK_PRODUCT_LIMIT } = require("../enums");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET products listing. */
-router.get('/', async (req, res, next) => {
-  const limit = req.query.rowsPerPage || config.rowsPerPage
+router.get("/", async (req, res, next) => {
+  const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  if (req.query.search) where[Op.or] = ["name"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
   const response = await Product.findAndCountAll({
     include: [{ model: User }, { model: UOM }, { model: Category }, { model: Brand }],
-    order: [['updatedAt', 'DESC']],
-    where, limit, offset
+    order: [["updatedAt", "DESC"]],
+    where,
+    limit,
+    offset,
   });
   res.json({
     success: true,
-    message: 'respond with a resource',
+    message: "respond with a resource",
     data: response.rows,
-    pages: Math.ceil(response.count / limit)
+    pages: Math.ceil(response.count / limit),
   });
 });
 
 /* POST create new product. */
-router.post('/', async (req, res, next) => {
-  let message = 'New product registered';
+router.post("/", activityLog, async (req, res, next) => {
+  let message = "New product registered";
   let product;
   try {
     product = await Product.create({
       userId: req.userId,
-      ...req.body
+      ...req.body,
     });
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.errors.pop().message,
     });
   }
   res.json({
     success: true,
     message,
-    data: product
+    data: product,
+  });
+});
+
+router.post("/bulk", activityLog, async (req, res, next) => {
+  let message = "Bulk products registered";
+  let products;
+  try {
+    const allowedValues = ["name", "description", "volume", "weight", "category", "brand", "uom", "isActive"];
+    // req.body.products = req.body.products.map((product) => {
+    if (req.body.products.length > BULK_PRODUCT_LIMIT)
+      return res.sendError(httpStatus.CONFLICT, `Cannot add product above ${BULK_PRODUCT_LIMIT}`);
+    for (const product of req.body.products) {
+      Object.keys(product).forEach((item) => {
+        if (!allowedValues.includes(item))
+          return res.sendError(httpStatus.CONFLICT, `Field ${item} is invalid`, "Failed to add Bulk Products");
+      });
+      const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
+      if (productAlreadyExist)
+        return res.sendError(httpStatus.CONFLICT, `Product Already Exist with name ${productAlreadyExist.name}`);
+      product["userId"] = req.userId;
+      product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
+      product["dimensionsCBM"] = product["volume"];
+      const category = await Dao.Category.findOne({ where: { name: product.category } });
+      const brand = await Dao.Brand.findOne({ where: { name: product.brand } });
+      const uom = await Dao.UOM.findOne({ where: { name: product.uom } });
+      if (category && brand && uom) {
+        product["categoryId"] = category.id;
+        product["brandId"] = brand.id;
+        product["uomId"] = uom.id;
+      } else if (!category) {
+        res.sendError(
+          httpStatus.CONFLICT,
+          `Category Doesn't exist with name ${product.category}`,
+          "Failed to add Bulk Products"
+        );
+      } else if (!brand) {
+        res.sendError(
+          httpStatus.CONFLICT,
+          `Brand Doesn't exist with name ${product.brand}`,
+          "Failed to add Bulk Products"
+        );
+      } else if (!uom) {
+        res.sendError(httpStatus.CONFLICT, `Uom Doesn't exist with name ${product.uom}`, "Failed to add Bulk Products");
+      }
+    }
+    // });
+    products = await Product.bulkCreate(req.body.products);
+  } catch (err) {
+    console.log("err", err);
+    return res.json({
+      success: false,
+      message: err.errors.pop().message,
+    });
+  }
+  res.json({
+    success: true,
+    message,
+    data: products,
   });
 });
 
 /* PUT update existing product. */
-router.put('/:id', async (req, res, next) => {
+router.put("/:id", activityLog, async (req, res, next) => {
   let product = await Product.findOne({ where: { id: req.params.id } });
-  if (!product) return res.status(400).json({
-    success: false,
-    message: 'No product found!'
-  });
+  if (!product)
+    return res.status(400).json({
+      success: false,
+      message: "No product found!",
+    });
   product.name = req.body.name;
   product.description = req.body.description;
   product.dimensionsCBM = req.body.dimensionsCBM;
@@ -64,40 +130,45 @@ router.put('/:id', async (req, res, next) => {
   product.isActive = req.body.isActive;
   try {
     const response = await product.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
-      message: 'Product updated',
-      data: response
+      message: "Product updated",
+      data: response,
     });
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.errors.pop().message,
     });
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete("/:id", activityLog, async (req, res, next) => {
   let response = await Product.destroy({ where: { id: req.params.id } });
-  if (response) res.json({
-    success: true,
-    message: 'Product deleted'
-  });
-  else res.status(400).json({
-    success: false,
-    message: 'No product found!'
-  });
-})
+  if (response)
+    res.json({
+      success: true,
+      message: "Product deleted",
+    });
+  else
+    res.status(400).json({
+      success: false,
+      message: "No product found!",
+    });
+});
 
-router.get('/relations', async (req, res, next) => {
+router.get("/relations", async (req, res, next) => {
   let where = { isActive: true };
   const brands = await Brand.findAll({ where });
   const uoms = await UOM.findAll({ where });
   const categories = await Category.findAll({ where });
   res.json({
     success: true,
-    message: 'respond with a resource',
-    brands, uoms, categories
+    message: "respond with a resource",
+    brands,
+    uoms,
+    categories,
   });
 });
 

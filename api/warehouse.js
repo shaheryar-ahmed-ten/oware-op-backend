@@ -1,62 +1,68 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { Warehouse, User } = require('../models')
-const config = require('../config');
+const { Warehouse, User } = require("../models");
+const config = require("../config");
 const { Op } = require("sequelize");
-const { errorHandler } = require('../services/error.service');
+const { errorHandler } = require("../services/error.service");
+const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { addActivityLog } = require("../services/common.services");
 
 /* GET warehouses listing. */
-router.get('/', async (req, res, next) => {
-  const limit = req.query.rowsPerPage || config.rowsPerPage
+router.get("/", async (req, res, next) => {
+  const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {
     // userId: req.userId
   };
-  if (req.query.search) where[Op.or] = ['name'].map(key => ({ [key]: { [Op.like]: '%' + req.query.search + '%' } }));
+  if (req.query.search) where[Op.or] = ["name"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
   const response = await Warehouse.findAndCountAll({
     include: [{ model: User }],
-    order: [['updatedAt', 'DESC']],
-    where, limit, offset
+    order: [["updatedAt", "DESC"]],
+    where,
+    limit,
+    offset,
   });
   res.json({
     success: true,
-    message: 'respond with a resource',
+    message: "respond with a resource",
     data: response.rows,
-    pages: Math.ceil(response.count / limit)
+    pages: Math.ceil(response.count / limit),
   });
 });
 
 /* POST create new warehouse. */
-router.post('/', async (req, res, next) => {
-  let message = 'New warehouse registered';
+router.post("/", activityLog, async (req, res, next) => {
+  let message = "New warehouse registered";
   let warehouse;
   try {
     warehouse = await Warehouse.create({
       userId: req.userId,
-      ...req.body
+      ...req.body,
     });
     warehouse.save();
   } catch (err) {
-    errorHandler(err)
+    errorHandler(err);
     return res.json({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
   res.json({
     success: true,
     message,
-    data: warehouse
+    data: warehouse,
   });
 });
 
 /* PUT update existing warehouse. */
-router.put('/:id', async (req, res, next) => {
+router.put("/:id", activityLog, async (req, res, next) => {
   let warehouse = await Warehouse.findOne({ where: { id: req.params.id } });
-  if (!warehouse) return res.status(400).json({
-    success: false,
-    message: 'No warehouse found!'
-  });
+  if (!warehouse)
+    return res.status(400).json({
+      success: false,
+      message: "No warehouse found!",
+    });
   warehouse.name = req.body.name;
   warehouse.address = req.body.address;
   warehouse.city = req.body.city;
@@ -64,31 +70,32 @@ router.put('/:id', async (req, res, next) => {
   warehouse.businessWarehouseCode = req.body.businessWarehouseCode;
   try {
     const response = await warehouse.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
-      message: 'Warehouse updated',
-      data: response
+      message: "Warehouse updated",
+      data: response,
     });
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.errors.pop().message,
     });
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete("/:id", activityLog, async (req, res, next) => {
   let response = await Warehouse.destroy({ where: { id: req.params.id } });
-  if (response) res.json({
-    success: true,
-    message: 'Warehouse deleted'
-  });
-  else res.status(400).json({
-    success: false,
-    message: 'No warehouse found!'
-  });
-})
-
-
+  if (response)
+    res.json({
+      success: true,
+      message: "Warehouse deleted",
+    });
+  else
+    res.status(400).json({
+      success: false,
+      message: "No warehouse found!",
+    });
+});
 
 module.exports = router;

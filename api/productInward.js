@@ -9,13 +9,14 @@ const {
   Warehouse,
   Product,
   UOM,
-  sequelize
+  sequelize,
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const authService = require("../services/auth.service");
 const { digitize } = require("../services/common.services");
 const { RELATION_TYPES } = require("../enums");
+const activityLog = require("../middlewares/activityLog");
 
 /* GET productInwards listing. */
 router.get("/", async (req, res, next) => {
@@ -25,8 +26,8 @@ router.get("/", async (req, res, next) => {
     // userId: req.userId
   };
   if (req.query.search)
-    where[Op.or] = ["$Products.name$", "$Company.name$", "$Warehouse.name$"].map(key => ({
-      [key]: { [Op.like]: "%" + req.query.search + "%" }
+    where[Op.or] = ["$Products.name$", "$Company.name$", "$Warehouse.name$"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
   const response = await ProductInward.findAndCountAll({
     distinct: true,
@@ -34,50 +35,50 @@ router.get("/", async (req, res, next) => {
       {
         model: Product,
         as: "Product",
-        include: [{ model: UOM }]
+        include: [{ model: UOM }],
       },
       {
         model: Product,
         as: "Products",
-        include: [{ model: UOM }]
+        include: [{ model: UOM }],
       },
       User,
       {
         model: Company,
         as: "Company",
-        required: true
+        required: true,
       },
       {
         model: Warehouse,
         as: "Warehouse",
-        required: true
-      }
+        required: true,
+      },
     ],
     order: [["updatedAt", "DESC"]],
     where,
     limit,
-    offset
+    offset,
   });
   res.json({
     success: true,
     message: "respond with a resource",
     data: response.rows,
-    pages: Math.ceil(response.count / limit)
+    pages: Math.ceil(response.count / limit),
   });
 });
 
 /* POST create new productInward. */
-router.post("/", async (req, res, next) => {
+router.post("/", activityLog, async (req, res, next) => {
   let productInward;
   let message = "New productInward registered";
   // Hack for backward compatibility
   req.body.products = req.body.products || [{ id: req.body.productId, quantity: req.body.quantity }];
 
-  await sequelize.transaction(async transaction => {
+  await sequelize.transaction(async (transaction) => {
     productInward = await ProductInward.create(
       {
         userId: req.userId,
-        ...req.body
+        ...req.body,
       },
       { transaction }
     );
@@ -87,24 +88,24 @@ router.post("/", async (req, res, next) => {
     await productInward.save({ transaction });
 
     await InwardGroup.bulkCreate(
-      req.body.products.map(product => ({
+      req.body.products.map((product) => ({
         userId: req.userId,
         inwardId: productInward.id,
         productId: product.id,
-        quantity: product.quantity
+        quantity: product.quantity,
       })),
       { transaction }
     );
 
     return await Promise.all(
-      req.body.products.map(product =>
+      req.body.products.map((product) =>
         Inventory.findOne({
           where: {
             customerId: req.body.customerId,
             warehouseId: req.body.warehouseId,
-            productId: product.id
-          }
-        }).then(inventory => {
+            productId: product.id,
+          },
+        }).then((inventory) => {
           if (!inventory)
             return Inventory.create(
               {
@@ -113,7 +114,7 @@ router.post("/", async (req, res, next) => {
                 productId: product.id,
                 availableQuantity: product.quantity,
                 referenceId: req.body.referenceId,
-                totalInwardQuantity: product.quantity
+                totalInwardQuantity: product.quantity,
               },
               { transaction }
             );
@@ -129,44 +130,45 @@ router.post("/", async (req, res, next) => {
   res.json({
     success: true,
     message,
-    data: productInward
+    data: productInward,
   });
 });
 
 /* PUT update existing productInward. */
-router.put("/:id", async (req, res, next) => {
+router.put("/:id", activityLog, async (req, res, next) => {
   let productInward = await ProductInward.findOne({ where: { id: req.params.id } });
   if (!productInward)
     return res.status(400).json({
       success: false,
-      message: "No productInward found!"
+      message: "No productInward found!",
     });
   try {
     const response = await productInward.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Product Inward updated",
-      data: response
+      data: response,
     });
   } catch (err) {
     return res.json({
       success: false,
-      message: err.errors.pop().message
+      message: err.errors.pop().message,
     });
   }
 });
 
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", activityLog, async (req, res, next) => {
   let response = await ProductInward.destroy({ where: { id: req.params.id } });
   if (response)
     res.json({
       success: true,
-      message: "ProductInward deleted"
+      message: "ProductInward deleted",
     });
   else
     res.status(400).json({
       success: false,
-      message: "No productInward found!"
+      message: "No productInward found!",
     });
 });
 
@@ -180,15 +182,15 @@ router.get("/relations", async (req, res, next) => {
   const customers = await Company.findAll({
     where: {
       ...where,
-      relationType: RELATION_TYPES.CUSTOMER
-    }
+      relationType: RELATION_TYPES.CUSTOMER,
+    },
   });
   res.json({
     success: true,
     message: "respond with a resource",
     customers,
     warehouses,
-    products
+    products,
   });
 });
 
