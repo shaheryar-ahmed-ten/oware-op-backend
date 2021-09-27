@@ -1527,5 +1527,986 @@
   { "city": "Islamabad", "zone": "I-11", "area": "I-11" },
   { "city": "Islamabad", "zone": "ramna 5", "area": "ramna 5" },
   { "city": "Islamabad", "zone": "Chah Sultan", "area": "Chah Sultan" },
-  { "city": "Islamabad", "zone": "Bahria Town 7 & 8", "area": "Bahria Town 7 & 8" }
+  { "city": "Islamabad", "zone": "Bahria Town 7 & 8", "area": "Bahria Town 7 & 8" },
+
+  {
+    "city": "Hyderabad",
+    "zone": "Hyderabad",
+    "area": "Hyderabad"
+  },
+  {
+    "city": "Sukkur",
+    "zone": "Sukkur",
+    "area": "Sukkur"
+  },
+  {
+    "city": "Larkana",
+    "zone": "Larkana",
+    "area": "Larkana"
+  },
+  {
+    "city": "Nawabshah",
+    "zone": "Nawabshah",
+    "area": "Nawabshah"
+  },
+  {
+    "city": "Kotri",
+    "zone": "Kotri",
+    "area": "Kotri"
+  },
+  {
+    "city": "Mirpur Khas",
+    "zone": "Mirpur Khas",
+    "area": "Mirpur Khas"
+  },
+  {
+    "city": "Shikarpur",
+    "zone": "Shikarpur",
+    "area": "Shikarpur"
+  },
+  {
+    "city": "Jacobabad",
+    "zone": "Jacobabad",
+    "area": "Jacobabad"
+  },
+  {
+    "city": "Khairpur",
+    "zone": "Khairpur",
+    "area": "Khairpur"
+  },
+  {
+    "city": "Dadu",
+    "zone": "Dadu",
+    "area": "Dadu"
+  },
+  {
+    "city": "Tando Allahyar",
+    "zone": "Tando Allahyar",
+    "area": "Tando Allahyar"
+  },
+  {
+    "city": "Tando Adam Khan",
+    "zone": "Tando Adam Khan",
+    "area": "Tando Adam Khan"
+  },
+  {
+    "city": "Umerkot",
+    "zone": "Umerkot",
+    "area": "Umerkot"
+  },
+  {
+    "city": "Shahdadkot",
+    "zone": "Shahdadkot",
+    "area": "Shahdadkot"
+  },
+  {
+    "city": "Badin",
+    "zone": "Badin",
+    "area": "Badin"
+  },
+  {
+    "city": "Ghotki",
+    "zone": "Ghotki",
+    "area": "Ghotki"
+  },
+  {
+    "city": "Daharki",
+    "zone": "Daharki",
+    "area": "Daharki"
+  },
+  {
+    "city": "Tando Muhammad Khan",
+    "zone": "Tando Muhammad Khan",
+    "area": "Tando Muhammad Khan"
+  },
+  {
+    "city": "Kamber Ali Khan",
+    "zone": "Kamber Ali Khan",
+    "area": "Kamber Ali Khan"
+  },
+  {
+    "city": "Mirpur Mathelo",
+    "zone": "Mirpur Mathelo",
+    "area": "Mirpur Mathelo"
+  },
+  {
+    "city": "Kandhkot",
+    "zone": "Kandhkot",
+    "area": "Kandhkot"
+  },
+  {
+    "city": "Shahdadpur",
+    "zone": "Shahdadpur",
+    "area": "Shahdadpur"
+  },
+  {
+    "city": "Moro",
+    "zone": "Moro",
+    "area": "Moro"
+  },
+  {
+    "city": "Tando Jam",
+    "zone": "Tando Jam",
+    "area": "Tando Jam"
+  },
+  {
+    "city": "Pano Akil",
+    "zone": "Pano Akil",
+    "area": "Pano Akil"
+  },
+  {
+    "city": "Sanghar",
+    "zone": "Sanghar",
+    "area": "Sanghar"
+  },
+  {
+    "city": "Thul",
+    "zone": "Thul",
+    "area": "Thul"
+  },
+  {
+    "city": "Rohri",
+    "zone": "Rohri",
+    "area": "Rohri"
+  },
+  {
+    "city": "Ratodero",
+    "zone": "Ratodero",
+    "area": "Ratodero"
+  },
+  {
+    "city": "Sehwan Sharif",
+    "zone": "Sehwan Sharif",
+    "area": "Sehwan Sharif"
+  },
+  {
+    "city": "Hala",
+    "zone": "Hala",
+    "area": "Hala"
+  },
+  {
+    "city": "Sakrand",
+    "zone": "Sakrand",
+    "area": "Sakrand"
+  },
+  {
+    "city": "Matli",
+    "zone": "Matli",
+    "area": "Matli"
+  },
+  {
+    "city": "Kashmore",
+    "zone": "Kashmore",
+    "area": "Kashmore"
+  },
+  {
+    "city": "Mehar",
+    "zone": "Mehar",
+    "area": "Mehar"
+  },
+  {
+    "city": "Thatta",
+    "zone": "Thatta",
+    "area": "Thatta"
+  },
+  {
+    "city": "Mehrabpur",
+    "zone": "Mehrabpur",
+    "area": "Mehrabpur"
+  },
+  {
+    "city": "Gambat",
+    "zone": "Gambat",
+    "area": "Gambat"
+  },
+  {
+    "city": "Khipro",
+    "zone": "Khipro",
+    "area": "Khipro"
+  },
+  {
+    "city": "Faisalabad",
+    "zone": "Faisalabad",
+    "area": "Faisalabad"
+  },
+  {
+    "city": "Rawalpindi",
+    "zone": "Rawalpindi",
+    "area": "Rawalpindi"
+  },
+  {
+    "city": "Gujranwala",
+    "zone": "Gujranwala",
+    "area": "Gujranwala"
+  },
+  {
+    "city": "Multan",
+    "zone": "Multan",
+    "area": "Multan"
+  },
+  {
+    "city": "Bahawalpur",
+    "zone": "Bahawalpur",
+    "area": "Bahawalpur"
+  },
+  {
+    "city": "Sargodha",
+    "zone": "Sargodha",
+    "area": "Sargodha"
+  },
+  {
+    "city": "Sialkot",
+    "zone": "Sialkot",
+    "area": "Sialkot"
+  },
+  {
+    "city": "Sheikhupura",
+    "zone": "Sheikhupura",
+    "area": "Sheikhupura"
+  },
+  {
+    "city": "Rahim Yar Khan",
+    "zone": "Rahim Yar Khan",
+    "area": "Rahim Yar Khan"
+  },
+  {
+    "city": "Jhang",
+    "zone": "Jhang",
+    "area": "Jhang"
+  },
+  {
+    "city": "Dera Ghazi Khan",
+    "zone": "Dera Ghazi Khan",
+    "area": "Dera Ghazi Khan"
+  },
+  {
+    "city": "Gujrat",
+    "zone": "Gujrat",
+    "area": "Gujrat"
+  },
+  {
+    "city": "Sahiwal",
+    "zone": "Sahiwal",
+    "area": "Sahiwal"
+  },
+  {
+    "city": "Wah Cantonment",
+    "zone": "Wah Cantonment",
+    "area": "Wah Cantonment"
+  },
+  {
+    "city": "Kasur",
+    "zone": "Kasur",
+    "area": "Kasur"
+  },
+  {
+    "city": "Okara",
+    "zone": "Okara",
+    "area": "Okara"
+  },
+  {
+    "city": "Chiniot",
+    "zone": "Chiniot",
+    "area": "Chiniot"
+  },
+  {
+    "city": "Kamoke",
+    "zone": "Kamoke",
+    "area": "Kamoke"
+  },
+  {
+    "city": "Hafizabad",
+    "zone": "Hafizabad",
+    "area": "Hafizabad"
+  },
+  {
+    "city": "Sadiqabad",
+    "zone": "Sadiqabad",
+    "area": "Sadiqabad"
+  },
+  {
+    "city": "Burewala",
+    "zone": "Burewala",
+    "area": "Burewala"
+  },
+  {
+    "city": "Khanewal",
+    "zone": "Khanewal",
+    "area": "Khanewal"
+  },
+  {
+    "city": "Muzaffargarh",
+    "zone": "Muzaffargarh",
+    "area": "Muzaffargarh"
+  },
+  {
+    "city": "Mandi Bahauddin",
+    "zone": "Mandi Bahauddin",
+    "area": "Mandi Bahauddin"
+  },
+  {
+    "city": "Jhelum",
+    "zone": "Jhelum",
+    "area": "Jhelum"
+  },
+  {
+    "city": "Khanpur",
+    "zone": "Khanpur",
+    "area": "Khanpur"
+  },
+  {
+    "city": "Pakpattan",
+    "zone": "Pakpattan",
+    "area": "Pakpattan"
+  },
+  {
+    "city": "Daska",
+    "zone": "Daska",
+    "area": "Daska"
+  },
+  {
+    "city": "Gojra",
+    "zone": "Gojra",
+    "area": "Gojra"
+  },
+  {
+    "city": "Muridke",
+    "zone": "Muridke",
+    "area": "Muridke"
+  },
+  {
+    "city": "Bahawalnagar",
+    "zone": "Bahawalnagar",
+    "area": "Bahawalnagar"
+  },
+  {
+    "city": "Samundri",
+    "zone": "Samundri",
+    "area": "Samundri"
+  },
+  {
+    "city": "Jaranwala",
+    "zone": "Jaranwala",
+    "area": "Jaranwala"
+  },
+  {
+    "city": "Chishtian",
+    "zone": "Chishtian",
+    "area": "Chishtian"
+  },
+  {
+    "city": "Attock",
+    "zone": "Attock",
+    "area": "Attock"
+  },
+  {
+    "city": "Vehari",
+    "zone": "Vehari",
+    "area": "Vehari"
+  },
+  {
+    "city": "Kot Abdul Malik",
+    "zone": "Kot Abdul Malik",
+    "area": "Kot Abdul Malik"
+  },
+  {
+    "city": "Ferozewala",
+    "zone": "Ferozewala",
+    "area": "Ferozewala"
+  },
+  {
+    "city": "Chakwal",
+    "zone": "Chakwal",
+    "area": "Chakwal"
+  },
+  {
+    "city": "Gujranwala Cantonment",
+    "zone": "Gujranwala Cantonment",
+    "area": "Gujranwala Cantonment"
+  },
+  {
+    "city": "Kamalia",
+    "zone": "Kamalia",
+    "area": "Kamalia"
+  },
+  {
+    "city": "Ahmedpur East",
+    "zone": "Ahmedpur East",
+    "area": "Ahmedpur East"
+  },
+  {
+    "city": "Kot Addu",
+    "zone": "Kot Addu",
+    "area": "Kot Addu"
+  },
+  {
+    "city": "Wazirabad",
+    "zone": "Wazirabad",
+    "area": "Wazirabad"
+  },
+  {
+    "city": "Layyah",
+    "zone": "Layyah",
+    "area": "Layyah"
+  },
+  {
+    "city": "Taxila",
+    "zone": "Taxila",
+    "area": "Taxila"
+  },
+  {
+    "city": "Khushab",
+    "zone": "Khushab",
+    "area": "Khushab"
+  },
+  {
+    "city": "Mianwali",
+    "zone": "Mianwali",
+    "area": "Mianwali"
+  },
+  {
+    "city": "Lodhran",
+    "zone": "Lodhran",
+    "area": "Lodhran"
+  },
+  {
+    "city": "Hasilpur",
+    "zone": "Hasilpur",
+    "area": "Hasilpur"
+  },
+  {
+    "city": "Bhakkar",
+    "zone": "Bhakkar",
+    "area": "Bhakkar"
+  },
+  {
+    "city": "Arif Wala",
+    "zone": "Arif Wala",
+    "area": "Arif Wala"
+  },
+  {
+    "city": "Sambrial",
+    "zone": "Sambrial",
+    "area": "Sambrial"
+  },
+  {
+    "city": "Jatoi",
+    "zone": "Jatoi",
+    "area": "Jatoi"
+  },
+  {
+    "city": "Haroonabad",
+    "zone": "Haroonabad",
+    "area": "Haroonabad"
+  },
+  {
+    "city": "Narowal",
+    "zone": "Narowal",
+    "area": "Narowal"
+  },
+  {
+    "city": "Bhalwal",
+    "zone": "Bhalwal",
+    "area": "Bhalwal"
+  },
+  {
+    "city": "Peshawar",
+    "zone": "Peshawar",
+    "area": "Peshawar"
+  },
+  {
+    "city": "Mardan",
+    "zone": "Mardan",
+    "area": "Mardan"
+  },
+  {
+    "city": "Mingora",
+    "zone": "Mingora",
+    "area": "Mingora"
+  },
+  {
+    "city": "Kohat",
+    "zone": "Kohat",
+    "area": "Kohat"
+  },
+  {
+    "city": "Dera Ismail Khan",
+    "zone": "Dera Ismail Khan",
+    "area": "Dera Ismail Khan"
+  },
+  {
+    "city": "Abbottabad",
+    "zone": "Abbottabad",
+    "area": "Abbottabad"
+  },
+  {
+    "city": "Mansehra",
+    "zone": "Mansehra",
+    "area": "Mansehra"
+  },
+  {
+    "city": "Swabi",
+    "zone": "Swabi",
+    "area": "Swabi"
+  },
+  {
+    "city": "Nowshera",
+    "zone": "Nowshera",
+    "area": "Nowshera"
+  },
+  {
+    "city": "Kabal",
+    "zone": "Kabal",
+    "area": "Kabal"
+  },
+  {
+    "city": "Charsadda",
+    "zone": "Charsadda",
+    "area": "Charsadda"
+  },
+  {
+    "city": "Barikot",
+    "zone": "Barikot",
+    "area": "Barikot"
+  },
+  {
+    "city": "Shabqadar",
+    "zone": "Shabqadar",
+    "area": "Shabqadar"
+  },
+  {
+    "city": "Haripur",
+    "zone": "Haripur",
+    "area": "Haripur"
+  },
+  {
+    "city": "Takht-i-Bahi",
+    "zone": "Takht-i-Bahi",
+    "area": "Takht-i-Bahi"
+  },
+  {
+    "city": "Paharpur",
+    "zone": "Paharpur",
+    "area": "Paharpur"
+  },
+  {
+    "city": "Batkhela",
+    "zone": "Batkhela",
+    "area": "Batkhela"
+  },
+  {
+    "city": "Jamrud",
+    "zone": "Jamrud",
+    "area": "Jamrud"
+  },
+  {
+    "city": "Bahrain",
+    "zone": "Bahrain",
+    "area": "Bahrain"
+  },
+  {
+    "city": "Lakki Marwat",
+    "zone": "Lakki Marwat",
+    "area": "Lakki Marwat"
+  },
+  {
+    "city": "Pabbi",
+    "zone": "Pabbi",
+    "area": "Pabbi"
+  },
+  {
+    "city": "Topi",
+    "zone": "Topi",
+    "area": "Topi"
+  },
+  {
+    "city": "Jehangira",
+    "zone": "Jehangira",
+    "area": "Jehangira"
+  },
+  {
+    "city": "Karak",
+    "zone": "Karak",
+    "area": "Karak"
+  },
+  {
+    "city": "Bannu",
+    "zone": "Bannu",
+    "area": "Bannu"
+  },
+  {
+    "city": "Chitral",
+    "zone": "Chitral",
+    "area": "Chitral"
+  },
+  {
+    "city": "Hangu",
+    "zone": "Hangu",
+    "area": "Hangu"
+  },
+  {
+    "city": "Havelian",
+    "zone": "Havelian",
+    "area": "Havelian"
+  },
+  {
+    "city": "Khwazakhela",
+    "zone": "Khwazakhela",
+    "area": "Khwazakhela"
+  },
+  {
+    "city": "Khalabat",
+    "zone": "Khalabat",
+    "area": "Khalabat"
+  },
+  {
+    "city": "Tank",
+    "zone": "Tank",
+    "area": "Tank"
+  },
+  {
+    "city": "Dir",
+    "zone": "Dir",
+    "area": "Dir"
+  },
+  {
+    "city": "Matta",
+    "zone": "Matta",
+    "area": "Matta"
+  },
+  {
+    "city": "Tordher",
+    "zone": "Tordher",
+    "area": "Tordher"
+  },
+  {
+    "city": "Timargara",
+    "zone": "Timargara",
+    "area": "Timargara"
+  },
+  {
+    "city": "Paroa",
+    "zone": "Paroa",
+    "area": "Paroa"
+  },
+  {
+    "city": "Amangarh",
+    "zone": "Amangarh",
+    "area": "Amangarh"
+  },
+  {
+    "city": "Risalpur",
+    "zone": "Risalpur",
+    "area": "Risalpur"
+  },
+  {
+    "city": "Nawan Shehr",
+    "zone": "Nawan Shehr",
+    "area": "Nawan Shehr"
+  },
+  {
+    "city": "Sadda",
+    "zone": "Sadda",
+    "area": "Sadda"
+  },
+  {
+    "city": "Landi Kotal",
+    "zone": "Landi Kotal",
+    "area": "Landi Kotal"
+  },
+  {
+    "city": "Tangi",
+    "zone": "Tangi",
+    "area": "Tangi"
+  },
+  {
+    "city": "Akora Khattak",
+    "zone": "Akora Khattak",
+    "area": "Akora Khattak"
+  },
+  {
+    "city": "Tall",
+    "zone": "Tall",
+    "area": "Tall"
+  },
+  {
+    "city": "Zaida",
+    "zone": "Zaida",
+    "area": "Zaida"
+  },
+  {
+    "city": "Utmanzai",
+    "zone": "Utmanzai",
+    "area": "Utmanzai"
+  },
+  {
+    "city": "Quetta",
+    "zone": "Quetta",
+    "area": "Quetta"
+  },
+  {
+    "city": "Turbat",
+    "zone": "Turbat",
+    "area": "Turbat"
+  },
+  {
+    "city": "Khuzdar",
+    "zone": "Khuzdar",
+    "area": "Khuzdar"
+  },
+  {
+    "city": "Hub",
+    "zone": "Hub",
+    "area": "Hub"
+  },
+  {
+    "city": "Chaman",
+    "zone": "Chaman",
+    "area": "Chaman"
+  },
+  {
+    "city": "Dera Murad Jamali",
+    "zone": "Dera Murad Jamali",
+    "area": "Dera Murad Jamali"
+  },
+  {
+    "city": "Gwadar",
+    "zone": "Gwadar",
+    "area": "Gwadar"
+  },
+  {
+    "city": "Dera Allah Yar",
+    "zone": "Dera Allah Yar",
+    "area": "Dera Allah Yar"
+  },
+  {
+    "city": "Usta Mohammad",
+    "zone": "Usta Mohammad",
+    "area": "Usta Mohammad"
+  },
+  {
+    "city": "Sui Town",
+    "zone": "Sui Town",
+    "area": "Sui Town"
+  },
+  {
+    "city": "Sibi",
+    "zone": "Sibi",
+    "area": "Sibi"
+  },
+  {
+    "city": "Loralai",
+    "zone": "Loralai",
+    "area": "Loralai"
+  },
+  {
+    "city": "Tump",
+    "zone": "Tump",
+    "area": "Tump"
+  },
+  {
+    "city": "Nushki",
+    "zone": "Nushki",
+    "area": "Nushki"
+  },
+  {
+    "city": "Zhob",
+    "zone": "Zhob",
+    "area": "Zhob"
+  },
+  {
+    "city": "Kharan",
+    "zone": "Kharan",
+    "area": "Kharan"
+  },
+  {
+    "city": "Chitkan",
+    "zone": "Chitkan",
+    "area": "Chitkan"
+  },
+  {
+    "city": "Khanozai",
+    "zone": "Khanozai",
+    "area": "Khanozai"
+  },
+  {
+    "city": "Buleda",
+    "zone": "Buleda",
+    "area": "Buleda"
+  },
+  {
+    "city": "Saranan",
+    "zone": "Saranan",
+    "area": "Saranan"
+  },
+  {
+    "city": "Zehri",
+    "zone": "Zehri",
+    "area": "Zehri"
+  },
+  {
+    "city": "Qalat",
+    "zone": "Qalat",
+    "area": "Qalat"
+  },
+  {
+    "city": "Tasp",
+    "zone": "Tasp",
+    "area": "Tasp"
+  },
+  {
+    "city": "Surab",
+    "zone": "Surab",
+    "area": "Surab"
+  },
+  {
+    "city": "Pishin",
+    "zone": "Pishin",
+    "area": "Pishin"
+  },
+  {
+    "city": "Mastung",
+    "zone": "Mastung",
+    "area": "Mastung"
+  },
+  {
+    "city": "Qilla Saifullah",
+    "zone": "Qilla Saifullah",
+    "area": "Qilla Saifullah"
+  },
+  {
+    "city": "Pasni",
+    "zone": "Pasni",
+    "area": "Pasni"
+  },
+  {
+    "city": "Nal",
+    "zone": "Nal",
+    "area": "Nal"
+  },
+  {
+    "city": "Winder",
+    "zone": "Winder",
+    "area": "Winder"
+  },
+  {
+    "city": "Uthal",
+    "zone": "Uthal",
+    "area": "Uthal"
+  },
+  {
+    "city": "Huramzai",
+    "zone": "Huramzai",
+    "area": "Huramzai"
+  },
+  {
+    "city": "Muslim Bagh",
+    "zone": "Muslim Bagh",
+    "area": "Muslim Bagh"
+  },
+  {
+    "city": "Dera Bugti",
+    "zone": "Dera Bugti",
+    "area": "Dera Bugti"
+  },
+  {
+    "city": "Qilla Abdullah",
+    "zone": "Qilla Abdullah",
+    "area": "Qilla Abdullah"
+  },
+  {
+    "city": "Bela",
+    "zone": "Bela",
+    "area": "Bela"
+  },
+  {
+    "city": "Wadh",
+    "zone": "Wadh",
+    "area": "Wadh"
+  },
+  {
+    "city": "Washuk",
+    "zone": "Washuk",
+    "area": "Washuk"
+  },
+  {
+    "city": "Awaran",
+    "zone": "Awaran",
+    "area": "Awaran"
+  },
+  {
+    "city": "Machh",
+    "zone": "Machh",
+    "area": "Machh"
+  },
+  {
+    "city": "Jiwani",
+    "zone": "Jiwani",
+    "area": "Jiwani"
+  },
+  {
+    "city": "Ormara",
+    "zone": "Ormara",
+    "area": "Ormara"
+  },
+  {
+    "city": "Kohlu",
+    "zone": "Kohlu",
+    "area": "Kohlu"
+  },
+  {
+    "city": "Bhag",
+    "zone": "Bhag",
+    "area": "Bhag"
+  },
+  {
+    "city": "Dalbandin",
+    "zone": "Dalbandin",
+    "area": "Dalbandin"
+  },
+  {
+    "city": "Dhadar",
+    "zone": "Dhadar",
+    "area": "Dhadar"
+  },
+  {
+    "city": "Musakhel",
+    "zone": "Musakhel",
+    "area": "Musakhel"
+  },
+  {
+    "city": "Harnai",
+    "zone": "Harnai",
+    "area": "Harnai"
+  },
+  {
+    "city": "Dureji",
+    "zone": "Dureji",
+    "area": "Dureji"
+  },
+  {
+    "city": "Sohbatpur",
+    "zone": "Sohbatpur",
+    "area": "Sohbatpur"
+  },
+  {
+    "city": "Gajjar Mashkay",
+    "zone": "Gajjar Mashkay",
+    "area": "Gajjar Mashkay"
+  },
+  {
+    "city": "Barkhan",
+    "zone": "Barkhan",
+    "area": "Barkhan"
+  },
+  {
+    "city": "Shahrug",
+    "zone": "Shahrug",
+    "area": "Shahrug"
+  },
+  {
+    "city": "Duki",
+    "zone": "Duki",
+    "area": "Duki"
+  }
 ]
