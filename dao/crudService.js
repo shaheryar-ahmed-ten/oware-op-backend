@@ -44,19 +44,19 @@ class CrudServiceDao {
   }
 
   async update(params, id) {
-    let record1 = await this.model.findOne({
-      where: { id: id, deletedAt: null }
+    let record = await this.model.findOne({
+      where: { id: id, deletedAt: null },
     });
-    if (record1) {
-      record1 = await this.model.update(params, {
+    if (record) {
+      record = await this.model.update(params, {
         where: { id: id },
         returning: true,
-        plain: true
+        plain: true,
       });
-      record1 = await this.model.findOne({
-        where: { id: id, deletedAt: null }
+      record = await this.model.findOne({
+        where: { id: id, deletedAt: null },
       });
-      return record1;
+      return record;
     } else return null;
   }
 
@@ -66,13 +66,13 @@ class CrudServiceDao {
       {
         where: { id: id },
         returning: true,
-        plain: true
+        plain: true,
       }
     );
-    return `deleted at id=${id}`;
+    return record;
   }
 
-  async hardDelete(id) {
+  async destroy(id) {
     const record = await this.model.destroy({ where: { id } });
   }
 

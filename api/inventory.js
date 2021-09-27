@@ -11,13 +11,14 @@ const {
   User,
   ProductInward,
   DispatchOrder,
-  ProductOutward
+  ProductOutward,
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const authService = require("../services/auth.service");
 const ExcelJS = require("exceljs");
 const moment = require("moment");
+const activityLog = require("../middlewares/activityLog");
 
 /* GET inventory listing. */
 router.get("/", async (req, res, next) => {
@@ -26,8 +27,8 @@ router.get("/", async (req, res, next) => {
   let where = {};
   if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
   if (req.query.search)
-    where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map(key => ({
-      [key]: { [Op.like]: "%" + req.query.search + "%" }
+    where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
 
   const response = await Inventory.findAndCountAll({
@@ -35,13 +36,13 @@ router.get("/", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
     where,
     limit,
-    offset
+    offset,
   });
   res.json({
     success: true,
     message: "respond with a resource",
     data: response.rows,
-    pages: Math.ceil(response.count / limit)
+    pages: Math.ceil(response.count / limit),
   });
 });
 
@@ -54,8 +55,8 @@ router.get("/export", async (req, res, next) => {
 
   let worksheet = workbook.addWorksheet("Inventory");
 
-  const getColumnsConfig = columns =>
-    columns.map(column => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
 
   worksheet.columns = getColumnsConfig([
     "PRODUCT NAME",
@@ -64,24 +65,24 @@ router.get("/export", async (req, res, next) => {
     "UOM",
     "AVAILABLE QUANTITY",
     "COMMITTED QUANTITY",
-    "DISPATCHED QUANTITY"
+    "DISPATCHED QUANTITY",
   ]);
 
   let response = await Inventory.findAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     order: [["updatedAt", "DESC"]],
-    where
+    where,
   });
 
   worksheet.addRows(
-    response.map(row => [
+    response.map((row) => [
       row.Product.name,
       row.Company.name,
       row.Warehouse.name,
       row.Product.UOM.name,
       row.availableQuantity,
       row.committedQuantity,
-      row.dispatchedQuantity
+      row.dispatchedQuantity,
     ])
   );
 
@@ -94,25 +95,25 @@ router.get("/export", async (req, res, next) => {
     "WEIGHT",
     "UOM",
     "CATEGORY",
-    "STATUS"
+    "STATUS",
   ]);
 
   where = {};
   response = await Product.findAll({
     include: [{ model: UOM }, { model: Category }, { model: Brand }],
     order: [["updatedAt", "DESC"]],
-    where
+    where,
   });
 
   worksheet.addRows(
-    response.map(row => [
+    response.map((row) => [
       row.name,
       row.description,
       row.dimensionsCBM,
       row.weight,
       row.Category.name,
       row.UOM.name,
-      row.isActive ? "Active" : "In-Active"
+      row.isActive ? "Active" : "In-Active",
     ])
   );
 
@@ -125,25 +126,25 @@ router.get("/export", async (req, res, next) => {
     "CONTACT EMAIL",
     "CONTACT PHONE",
     "NOTES",
-    "STATUS"
+    "STATUS",
   ]);
 
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
   response = await Company.findAll({
     include: [{ model: User, as: "Contact" }],
     order: [["updatedAt", "DESC"]],
-    where
+    where,
   });
 
   worksheet.addRows(
-    response.map(row => [
+    response.map((row) => [
       row.name,
       row.type,
       row.Contact.firstName + " " + row.Contact.lastName,
       row.Contact.email,
       row.Contact.phone,
       row.notes,
-      row.isActive ? "Active" : "In-Active"
+      row.isActive ? "Active" : "In-Active",
     ])
   );
 
@@ -154,16 +155,16 @@ router.get("/export", async (req, res, next) => {
   where = {};
   response = await Warehouse.findAll({
     order: [["updatedAt", "DESC"]],
-    where
+    where,
   });
 
   worksheet.addRows(
-    response.map(row => [
+    response.map((row) => [
       row.name,
       row.businessWarehouseCode,
       row.address,
       row.city,
-      row.isActive ? "Active" : "In-Active"
+      row.isActive ? "Active" : "In-Active",
     ])
   );
 
@@ -178,20 +179,20 @@ router.get("/export", async (req, res, next) => {
       { model: User },
       { model: Product, as: "Products", include: [{ model: UOM }] },
       { model: Company },
-      { model: Warehouse }
+      { model: Warehouse },
     ],
     order: [["updatedAt", "DESC"]],
-    where
+    where,
   });
 
   worksheet.addRows(
-    response.map(row => [
+    response.map((row) => [
       row.Company.name,
       row.Products.name,
       row.Warehouse.name,
       //row.Product.UOM.name,
       row.quantity,
-      moment(row.createdAt).format("DD/MM/yy HH:mm")
+      moment(row.createdAt).format("DD/MM/yy HH:mm"),
     ])
   );
 
@@ -205,7 +206,7 @@ router.get("/export", async (req, res, next) => {
     "RECEIVER NAME",
     "RECEIVER PHONE",
     "REQUESTED QUANTITY",
-    "FULFILMENT DATE"
+    "FULFILMENT DATE",
   ]);
 
   response = await DispatchOrder.findAll({
@@ -213,20 +214,20 @@ router.get("/export", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventory",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
       },
       {
         model: Inventory,
         as: "Inventories",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-      }
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+      },
     ],
     order: [["updatedAt", "DESC"]],
-    where
+    where,
   });
 
   worksheet.addRows(
-    response.map(row => [
+    response.map((row) => [
       row.Inventory.Company.name,
       row.Inventory.Product.name,
       row.Inventory.Warehouse.name,
@@ -234,7 +235,7 @@ router.get("/export", async (req, res, next) => {
       row.receiverName,
       row.receiverPhone,
       row.quantity,
-      moment(row.shipmentDate).format("DD/MM/yy HH:mm")
+      moment(row.shipmentDate).format("DD/MM/yy HH:mm"),
     ])
   );
 
@@ -250,7 +251,7 @@ router.get("/export", async (req, res, next) => {
     "Requested Quantity to Dispatch",
     "Actual Quantity Dispatched",
     "EXPECTED SHIPMENT DATE",
-    "ACTUAL DISPATCH DATE"
+    "ACTUAL DISPATCH DATE",
   ]);
 
   response = await ProductOutward.findAll({
@@ -261,22 +262,22 @@ router.get("/export", async (req, res, next) => {
           {
             model: Inventory,
             as: "Inventory",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
           },
           {
             model: Inventory,
             as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }]
-          }
-        ]
-      }
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+          },
+        ],
+      },
     ],
     order: [["updatedAt", "DESC"]],
-    where
+    where,
   });
 
   worksheet.addRows(
-    response.map(row => [
+    response.map((row) => [
       row.DispatchOrder.Inventory.Company.name,
       row.DispatchOrder.Inventory.Product.name,
       row.DispatchOrder.Inventory.Warehouse.name,
@@ -286,7 +287,7 @@ router.get("/export", async (req, res, next) => {
       row.DispatchOrder.quantity,
       row.quantity,
       moment(row.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
-      moment(row.createdAt).format("DD/MM/yy HH:mm")
+      moment(row.createdAt).format("DD/MM/yy HH:mm"),
     ])
   );
 

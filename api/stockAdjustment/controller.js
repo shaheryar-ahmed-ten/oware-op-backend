@@ -1,6 +1,6 @@
 const httpStatus = require("http-status");
 const Dao = require("../../dao");
-const { digitize } = require("../../services/common.services");
+const { digitize, addActivityLog } = require("../../services/common.services");
 const { initialInternalIdForBusinessForAdjustment } = require("../../enums");
 // const { StockAdjustment } = require("../../models");
 
@@ -12,7 +12,7 @@ async function getWastages(params) {
         success: httpStatus.OK,
         message: "Data Found",
         data: response.records,
-        pages: Math.ceil(response.count / params.limit)
+        pages: Math.ceil(response.count / params.limit),
       };
     else return { success: httpStatus.OK, message: "Data not Found", data: [], count: response.count };
   } catch (err) {
@@ -20,7 +20,7 @@ async function getWastages(params) {
     return {
       success: httpStatus.CONFLICT,
       message: err.message,
-      code: "Failed to get data"
+      code: "Failed to get data",
     };
   }
 }
@@ -32,7 +32,7 @@ async function addWastages(params, adminId) {
     const adjustment = await Dao.StockAdjustment.create(
       {
         adminId,
-        internalIdForBusiness: initialInternalIdForBusinessForAdjustment
+        internalIdForBusiness: initialInternalIdForBusinessForAdjustment,
       }
       // { transaction }
     );
@@ -42,7 +42,7 @@ async function addWastages(params, adminId) {
     adjustment.save();
 
     params = await Promise.all(
-      params.map(async param => {
+      params.map(async (param) => {
         const { customerId, productId, warehouseId, adjustmentQuantity } = param;
         const inventory = await Dao.Inventory.findOne({ where: { customerId, productId, warehouseId } });
         inventory.availableQuantity -= adjustmentQuantity;
@@ -73,7 +73,7 @@ async function getWastageById(params) {
   }
 }
 
-async function updateWastage(params, req_body) {
+async function updateWastage(params, req_body, activityLogId) {
   try {
     const stockAdjustment = await Dao.StockAdjustment.findOne(params);
     if (stockAdjustment) {
@@ -81,7 +81,7 @@ async function updateWastage(params, req_body) {
       for (const body of req_body) {
         const { inventoryId } = body;
         const adjustmentInventories = await Dao.AdjustmentInventory.findOne({
-          where: { adjustmentId: stockAdjustment.id, inventoryId }
+          where: { adjustmentId: stockAdjustment.id, inventoryId },
         });
         if (body.adjustmentQuantity >= 0) {
           const inventory = await Dao.Inventory.findOne({ where: { id: inventoryId } });
@@ -100,6 +100,7 @@ async function updateWastage(params, req_body) {
         if (body.reason == "") adjustmentInventories.reason = body.reason;
         if (body.hasOwnProperty("comment")) adjustmentInventories.comment = body.comment;
         await adjustmentInventories.save();
+        await addActivityLog(activityLogId, stockAdjustment, Dao.ActivityLog);
       }
       if (allProductsRemovedFromAdjustment) {
         await stockAdjustment.destroy();
@@ -116,7 +117,7 @@ async function deleteWastage(id) {
   try {
     const response = await Dao.StockAdjustment.findByPk(id);
     if (response) {
-      body = await Dao.StockAdjustment.delete(id);
+      body = await Dao.StockAdjustment.destroy(id);
       return { success: httpStatus.OK, message: "Adjustment deleted", data: response };
     } else {
       return { success: httpStatus.OK, message: "Adjustment doesn't exist", data: null };
@@ -157,5 +158,5 @@ module.exports = {
   updateWastage,
   deleteWastage,
   getRelations,
-  getWastagesType
+  getWastagesType,
 };

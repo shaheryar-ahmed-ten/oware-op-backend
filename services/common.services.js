@@ -1,22 +1,22 @@
 const { Op, or } = require("sequelize");
 const {
+  ActivityLog,
   Inventory,
   ProductOutward,
   OutwardGroup,
-  DispatchOrder,
   ProductInward,
   OrderGroup,
-  sequelize
+  sequelize,
 } = require("../models");
 const {
-  DISPATCH_ORDER: { STATUS }
+  DISPATCH_ORDER: { STATUS },
 } = require("../enums");
-exports.digitize = (value, places) => {
+const digitize = (value, places) => {
   let strValue = value + "";
   return new Array(places - strValue.length).fill("0").join("") + strValue;
 };
 
-exports.sanitizeFilters = (whereClause, transform = {}) => {
+const sanitizeFilters = (whereClause, transform = {}) => {
   for (let item in whereClause) {
     if (whereClause[item] === "true") {
       whereClause[item] = true;
@@ -34,7 +34,7 @@ exports.sanitizeFilters = (whereClause, transform = {}) => {
   return whereClause;
 };
 
-exports.modelWiseFilters = (filters, modelname) => {
+const modelWiseFilters = (filters, modelname) => {
   const filterObj = {};
 
   for (const key in filters) {
@@ -65,7 +65,7 @@ exports.modelWiseFilters = (filters, modelname) => {
       obj = removeFromObject(obj, ["to", "from"])[0];
       obj["createdAt"] = {
         [Op.gte]: moment().set("hour", 0).set("minute", 0).set("second", 0),
-        [Op.lte]: moment().set("hour", 0).set("minute", 0).set("second", 0)
+        [Op.lte]: moment().set("hour", 0).set("minute", 0).set("second", 0),
       };
     }
     return obj;
@@ -73,27 +73,27 @@ exports.modelWiseFilters = (filters, modelname) => {
     return {
       //include all elements
       id: {
-        [Op.gt]: 0
-      }
+        [Op.gt]: 0,
+      },
     };
 };
 
-exports.attachDateFilter = (filters, query) => {
+const attachDateFilter = (filters, query) => {
   const { to, from } = query;
   if (to && from) {
     createdAt = {
       [Op.gte]: moment(from).toISOString(),
-      [Op.lte]: moment(to).add(1, "seconds").toISOString()
+      [Op.lte]: moment(to).add(1, "seconds").toISOString(),
     };
     filters["createdAt"] = createdAt;
   }
   return filters;
 };
 
-exports.removeFromObject = (obj, keys = []) => {
+const removeFromObject = (obj, keys = []) => {
   if (Array.isArray(obj)) {
-    return Object.assign([], obj).map(item => {
-      keys.forEach(key => {
+    return Object.assign([], obj).map((item) => {
+      keys.forEach((key) => {
         if (item.hasOwnProperty(key)) {
           delete item[key];
         }
@@ -101,8 +101,8 @@ exports.removeFromObject = (obj, keys = []) => {
       return item;
     });
   } else {
-    return [Object.assign({}, obj)].map(item => {
-      keys.forEach(key => {
+    return [Object.assign({}, obj)].map((item) => {
+      keys.forEach((key) => {
         if (item.hasOwnProperty(key)) {
           delete item[key];
         }
@@ -112,30 +112,30 @@ exports.removeFromObject = (obj, keys = []) => {
   }
 };
 
-exports.removeChildModelFilters = where => {
+const removeChildModelFilters = (where) => {
   for (const key in where) {
     if (key.includes(".")) delete where[key];
   }
   return where;
 };
 
-exports.checkOrderStatusAndUpdate = async (dispatchOrderId, currentOutwardQty, transaction) => {
+const checkOrderStatusAndUpdate = async (model, dispatchOrderId, currentOutwardQty, transaction) => {
   try {
-    const order = await DispatchOrder.findOne({
+    const order = await model.DispatchOrder.findOne({
       where: { id: dispatchOrderId },
       attributes: ["id", ["quantity", "orderQty"]],
       include: [
         {
-          model: ProductOutward,
-          attributes: ["id", ["quantity", "outwardQty"]]
-        }
-      ]
+          model: model.ProductOutward,
+          attributes: ["id", ["quantity", "outwardQty"]],
+        },
+      ],
     });
 
     let orderStatus,
       totalOutwardQty = currentOutwardQty;
     for (const {
-      dataValues: { outwardQty }
+      dataValues: { outwardQty },
     } of order.ProductOutwards) {
       totalOutwardQty += outwardQty;
     }
@@ -150,3 +150,91 @@ exports.checkOrderStatusAndUpdate = async (dispatchOrderId, currentOutwardQty, t
     throw new Error(err);
   }
 };
+
+const getModel = (modelUrl) => {
+  let MODEL;
+  switch (modelUrl) {
+    case "inventory-wastages":
+      MODEL = "StockAdjustment";
+      break;
+    case "brand":
+      MODEL = "Brand";
+      break;
+    case "company":
+      MODEL = "Company";
+      break;
+
+    case "category":
+      MODEL = "Category";
+      break;
+
+    case "uom":
+      MODEL = "UOM";
+      break;
+
+    case "warehouse":
+      MODEL = "Warehouse";
+      break;
+
+    case "product":
+      MODEL = "Product";
+      break;
+
+    case "product-inward":
+      MODEL = "ProductInward";
+      break;
+
+    case "dispatch-order":
+      MODEL = "DispatchOrder";
+      break;
+
+    case "product-outward":
+      MODEL = "ProductOutward";
+      break;
+
+    case "inventory":
+      MODEL = "Inventory";
+      break;
+
+    case "driver":
+      MODEL = "Driver";
+      break;
+
+    case "vehicle":
+      MODEL = "Vehicle";
+      break;
+    case "user":
+      MODEL = "User";
+      break;
+    case "company":
+      MODEL = "Company";
+      break;
+
+    case "upload":
+      MODEL = "Upload";
+      break;
+
+    case "ride":
+      MODEL = "Ride";
+      break;
+
+    case "vehicle-types":
+      MODEL = "Car";
+  }
+  return MODEL;
+};
+
+const addActivityLog = async (id, current, ActivityLog) => {
+  // const modelUrl = req.originalUrl.split("/");
+  // let MODEL = getModel(modelUrl[3]);
+  // const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
+  // const source = await sourceModel[MODEL].findOne({ where: { id: req.params.id } });
+  const log = await ActivityLog.update(
+    {
+      currentPayload: current,
+    },
+    id
+  );
+};
+
+module.exports = { addActivityLog, getModel, digitize, checkOrderStatusAndUpdate };

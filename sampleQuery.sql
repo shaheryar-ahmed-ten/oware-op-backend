@@ -24,3 +24,10 @@ select
 group by PI.customerId, PI.productId, PI.warehouseId;
 
 INSERT INTO WastagesTypes VALUES (1,"DAMAGED",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),null),(2,"EXPIRED",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),null),(3,"STOLEN",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),null),(4,"OTHER",CURRENT_TIMESTAMP(),CURRENT_TIMESTAMP(),null);
+
+update ProductInwards set internalIdForBusiness = concat('PI-',(select * from(
+	select w.businessWarehouseCode from Warehouses w 
+	inner join ProductInwards pi2 on w.id = pi2.warehouseId 
+	where pi2.id = ProductInwards.id
+)tblTmp),'-')
+update ProductInwards set internalIdForBusiness = CONCAT(internalIdForBusiness,LPAD(id,6,'0')) 
