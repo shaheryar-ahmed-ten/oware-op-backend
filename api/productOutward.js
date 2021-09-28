@@ -297,7 +297,6 @@ router.get("/relations", async (req, res, next) => {
     where: { status: { [Op.not]: DISPATCH_ORDER.STATUS.FULFILLED } },
     attributes: ["id", "internalIdForBusiness", "referenceId"],
     order: [["updatedAt", "DESC"]],
-    logging: console.log,
   });
 
   // for (const order of dispatchOrders) {
@@ -312,7 +311,7 @@ router.get("/relations", async (req, res, next) => {
   //     where: { dispatchOrderId: order.id },
   //   });
   // }
-  const vehicles = await Vehicle.findAll({ where: { isActive: true } });
+  const vehicles = await Vehicle.findAll({ where: { isActive: true }, attributes: ["id", "registrationNumber"] });
   res.json({
     success: true,
     message: "respond with a resource",
