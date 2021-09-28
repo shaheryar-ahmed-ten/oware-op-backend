@@ -14,4 +14,6 @@ module.exports = {
   UOM: require("./UOM"),
   Brand: require("./Brand"),
   Category: require("./Category"),
+  DispatchOrder: require("./DispatchOrder"),
+  ProductOutward: require("./ProductOutward"),
 };
