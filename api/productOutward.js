@@ -21,6 +21,8 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const { digitize, checkOrderStatusAndUpdate } = require("../services/common.services");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { DISPATCH_ORDER } = require("../enums");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
@@ -268,29 +270,29 @@ router.get("/relations", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventory",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+        include: [
+          { model: Company, attributes: ["id", "name"] },
+          { model: Warehouse, attributes: ["id", "name"] },
+        ],
       },
       {
         model: Inventory,
         as: "Inventories",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-      },
-      {
-        model: ProductOutward,
         include: [
-          {
-            model: Vehicle,
-          },
-          {
-            model: Inventory,
-            as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-          },
+          { model: Product, include: [{ model: UOM, attributes: ["id", "name"] }], attributes: ["id", "name"] },
         ],
+        attributes: ["id"],
       },
     ],
+    where: { status: { [Op.not]: DISPATCH_ORDER.STATUS.FULFILLED } },
+    attributes: ["id", "internalIdForBusiness", "referenceId"],
     order: [["updatedAt", "DESC"]],
+    logging: console.log,
   });
+
+  for (const order of dispatchOrders) {
+    order.dataValues["productOutwardsCount"] = await Dao.ProductOutward.count({ where: { dispatchOrderId: order.id } });
+  }
   const vehicles = await Vehicle.findAll({ where: { isActive: true } });
   res.json({
     success: true,
