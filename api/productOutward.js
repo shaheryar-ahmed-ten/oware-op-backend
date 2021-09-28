@@ -283,6 +283,16 @@ router.get("/relations", async (req, res, next) => {
         ],
         attributes: ["id"],
       },
+      {
+        model: ProductOutward,
+        include: [
+          {
+            model: Inventory,
+            as: "Inventories",
+            include: [{ model: Product, include: [{ model: UOM }] }],
+          },
+        ],
+      },
     ],
     where: { status: { [Op.not]: DISPATCH_ORDER.STATUS.FULFILLED } },
     attributes: ["id", "internalIdForBusiness", "referenceId"],
@@ -290,9 +300,18 @@ router.get("/relations", async (req, res, next) => {
     logging: console.log,
   });
 
-  for (const order of dispatchOrders) {
-    order.dataValues["productOutwardsCount"] = await Dao.ProductOutward.count({ where: { dispatchOrderId: order.id } });
-  }
+  // for (const order of dispatchOrders) {
+  //   order.dataValues["productOutward"] = await Dao.ProductOutward.findAndCountAll({
+  //     include: [
+  //       {
+  //         model: Inventory,
+  //         as: "Inventories",
+  //         include: [{ model: Product, include: [{ model: UOM }] }],
+  //       },
+  //     ],
+  //     where: { dispatchOrderId: order.id },
+  //   });
+  // }
   const vehicles = await Vehicle.findAll({ where: { isActive: true } });
   res.json({
     success: true,
