@@ -22,7 +22,11 @@ async function updateUser(req, res, next) {
   if (req.body.hasOwnProperty("lastName")) user.lastName = req.body.lastName;
   if (req.body.hasOwnProperty("roleId")) user.roleId = Number(req.body.roleId);
   if (req.body.hasOwnProperty("phone")) user.phone = req.body.phone;
+<<<<<<< HEAD
   if (req.body.hasOwnProperty("companyId")) user.companyId = Number(req.body.companyId);
+=======
+  if (req.body.hasOwnProperty("companyId") && req.body.companyId.length) user.companyId = Number(req.body.companyId);
+>>>>>>> dda427eb1efd8c9dcda2c850ee79c2cb834e2f04
   if (req.body.hasOwnProperty("password")) user.password = req.body.password;
   if (req.body.hasOwnProperty("isActive")) user.isActive = req.body.isActive;
   try {
