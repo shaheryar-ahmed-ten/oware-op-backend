@@ -80,6 +80,11 @@ class CrudServiceDao {
     const record = await this.model.findByPk(id);
     return record ? record : null;
   }
+
+  async count(params) {
+    const count = await this.model.count(params);
+    return count;
+  }
 }
 
 module.exports = CrudServiceDao;
