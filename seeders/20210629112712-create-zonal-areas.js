@@ -36,11 +36,9 @@ module.exports = {
             })
           ).id;
 
-        console.log("cityIdMap[area.city]", cityIdMap[area.city], "zoneIdMap[area.zone]", zoneIdMap[area.zone]);
         const areaAlreadyExist = await Area.findAll({
           where: { zoneId: zoneIdMap[area.zone], name: area.area },
         });
-        console.log("areaAlreadyExist", areaAlreadyExist);
         if (areaAlreadyExist.length === 0)
           await Area.create({
             userId: defaultAdminUser.id,
