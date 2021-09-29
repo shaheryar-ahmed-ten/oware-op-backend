@@ -308,4 +308,39 @@ router.get("/products", async (req, res, next) => {
     });
 });
 
+// Get single dispatch order
+router.get("/:id", async (req, res, next) => {
+  try {
+    const params = {
+      include: [
+        {
+          model: Inventory,
+          as: "Inventory",
+          required: true,
+          include: [
+            { model: Product, include: [{ model: UOM }] },
+            { model: Company, required: true },
+            { model: Warehouse, required: true },
+          ],
+        },
+        {
+          model: Inventory,
+          as: "Inventories",
+          required: true,
+          include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
+        },
+      ],
+      where: { id: req.params.id },
+    }
+    const response = await Dao.DispatchOrder.findOne(params);
+    res.json({ success: true, message: "Data Found", data: response });
+
+  } catch (err) {
+    res.json({
+      success: false,
+      message: err.toString().replace("Error: ", ""),
+    });
+  }
+})
+
 module.exports = router;
