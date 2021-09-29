@@ -193,52 +193,6 @@ router.delete("/:id", activityLog, async (req, res, next) => {
     });
 });
 
-// Get single dispatch order
-router.get("/:id", async (req, res, next) => {
-  try {
-    const params = {
-      include: [
-        {
-          model: Inventory,
-          as: "Inventory",
-          include: [
-            { model: Company, attributes: ["id", "name"] },
-            { model: Warehouse, attributes: ["id", "name"] },
-          ],
-          attributes: ["id"],
-        },
-        {
-          model: Inventory,
-          as: "Inventories",
-          include: [
-            { model: Product, include: [{ model: UOM, attributes: ["id", "name"] }], attributes: ["id", "name"] },
-          ],
-          attributes: ["id"],
-        },
-        {
-          model: ProductOutward,
-          include: [
-            {
-              model: Inventory,
-              as: "Inventories",
-              include: [{ model: Product, attributes: ["id", "name"] }],
-            },
-          ],
-          attributes: ["id"],
-        },
-      ],
-      where: { id: req.params.id },
-    };
-    const response = await DispatchOrder.findOne(params);
-    res.json({ success: true, message: "Data Found", data: response });
-  } catch (err) {
-    res.json({
-      success: false,
-      message: err.toString().replace("Error: ", ""),
-    });
-  }
-});
-
 router.get("/relations", async (req, res, next) => {
   let where = { isActive: true };
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
