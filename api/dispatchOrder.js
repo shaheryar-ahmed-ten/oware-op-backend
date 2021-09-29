@@ -155,15 +155,17 @@ router.post("/", activityLog, async (req, res, next) => {
 
 /* PUT update existing dispatchOrder. */
 router.put("/:id", activityLog, async (req, res, next) => {
-  let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id } });
+  let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
   if (!dispatchOrder)
     return res.status(400).json({
       success: false,
       message: "No dispatchOrder found!",
     });
-  dispatchOrder.shipmentDate = req.body.shipmentDate;
-  dispatchOrder.receiverName = req.body.receiverName;
-  dispatchOrder.receiverPhone = req.body.receiverPhone;
+  if (req.body.hasOwnProperty("shipmentDate")) dispatchOrder.shipmentDate = req.body.shipmentDate;
+  if (req.body.hasOwnProperty("receiverName")) dispatchOrder.receiverName = req.body.receiverName;
+  if (req.body.hasOwnProperty("receiverPhone")) dispatchOrder.receiverPhone = req.body.receiverPhone;
+  if (req.body.hasOwnProperty("referenceId")) dispatchOrder.referenceId = req.body.referenceId;
+  if (req.body.hasOwnProperty("products")) await updateDispatchOrderInventories(dispatchOrder, req.body.products);
   try {
     const response = await dispatchOrder.save();
     return res.json({
@@ -178,6 +180,17 @@ router.put("/:id", activityLog, async (req, res, next) => {
     });
   }
 });
+
+const updateDispatchOrderInventories = async (DO, products) => {
+  console.log("DO.Inventories1", DO.Inventories);
+  for (const product of products) {
+    DO.Inventories = DO.Inventories.filter((inv) => {
+      console.log("inv === product.inventoryId", inv.id === product.inventoryId);
+      return inv.id === product.inventoryId;
+    });
+  }
+  console.log("DO.Inventories", DO.Inventories);
+};
 
 router.delete("/:id", activityLog, async (req, res, next) => {
   let response = await DispatchOrder.destroy({ where: { id: req.params.id } });
