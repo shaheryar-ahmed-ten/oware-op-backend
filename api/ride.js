@@ -294,24 +294,14 @@ router.get("/relations", async (req, res, next) => {
   const cities = await City.findAll({ where, include: [{ model: Zone, include: [Area] }] });
   const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
   const productCategories = await Category.findAll({ where });
-  
-  // const vendors = await Dao.Company.findAll(
-  //   { where: { relationType: RELATION_TYPES.VENDOR }
-  //   // ,include:[{model:Vehicle,
-  //   //   include:[{model:Car,include:[{model:CarMake},{model:CarModel}] 
-  //   //   }] 
-  //   //   ,as:"Vendor",required: true}]
-  //     // ,required: true, 
-  //   }
-  //     );
   const vendors = await Dao.Company.findAll({
     where: { ...where, relationType: RELATION_TYPES.VENDOR },
     include: [{ model: Vehicle
       ,include:[{ model:Car,include:[{model:CarMake},{model:CarModel}] 
         }]
-      , as: "Vehicles" }],
+      , as: "Vehicles" }
+      ,{model:Driver,as:"Drivers"}],
   });
-
   const cars = await Vehicle.findAll({where, include:[{ model:Car,include:[{model:CarMake},{model:CarModel}]},
     {model:Company,where:{relationType:RELATION_TYPES.VENDOR},as: "Vendor", require:true}
   ]
