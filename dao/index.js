@@ -14,4 +14,5 @@ module.exports = {
   UOM: require("./UOM"),
   Brand: require("./Brand"),
   Category: require("./Category"),
+  Vehicle: require("./Vehicle")
 };

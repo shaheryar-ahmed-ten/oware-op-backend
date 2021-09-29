@@ -235,6 +235,8 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.cost = req.body.cost;
   ride.customerDiscount = req.body.customerDiscount;
   ride.driverIncentive = req.body.driverIncentive;
+  // ride.carId = req.body.carId;
+  // ride.vendorId = req.body.vendorId;
 
   let newProducts = req.body.products.filter((product) => !product.id);
   const oldProductIds = req.body.products.filter((product) => product.id).map((product) => product.id);
@@ -292,6 +294,29 @@ router.get("/relations", async (req, res, next) => {
   const cities = await City.findAll({ where, include: [{ model: Zone, include: [Area] }] });
   const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
   const productCategories = await Category.findAll({ where });
+  
+  // const vendors = await Dao.Company.findAll(
+  //   { where: { relationType: RELATION_TYPES.VENDOR }
+  //   // ,include:[{model:Vehicle,
+  //   //   include:[{model:Car,include:[{model:CarMake},{model:CarModel}] 
+  //   //   }] 
+  //   //   ,as:"Vendor",required: true}]
+  //     // ,required: true, 
+  //   }
+  //     );
+  const vendors = await Dao.Company.findAll({
+    where: { ...where, relationType: RELATION_TYPES.VENDOR },
+    include: [{ model: Vehicle
+      ,include:[{ model:Car,include:[{model:CarMake},{model:CarModel}] 
+        }]
+      , as: "Vehicles" }],
+  });
+
+  const cars = await Vehicle.findAll({where, include:[{ model:Car,include:[{model:CarMake},{model:CarModel}]},
+    {model:Company,where:{relationType:RELATION_TYPES.VENDOR},as: "Vendor", require:true}
+  ]
+  });
+
   const statuses = RIDE_STATUS;
   res.json({
     success: true,
@@ -303,6 +328,8 @@ router.get("/relations", async (req, res, next) => {
     zones,
     areas,
     companies,
+    vendors,
+    cars,
     productCategories,
   });
 });
@@ -328,6 +355,33 @@ router.get("/stats", async (req, res) => {
     success: true,
     stats,
   });
+});
+
+// GetCars for Dependencey List
+router.get("/cars", async (req, res, next) => {
+  if (req.query.vendorId) {
+    const drivers = await Driver.findAll({
+      where: {
+        companyId: req.query.vendorId,
+      },
+      attributes: ["companyId", fn("COUNT", col("companyId"))],
+      include: [
+        {
+          model: Company,
+        },
+      ],
+      group: "companyId",
+    });
+    res.json({
+      success: true,
+      message: "respond with a resource",
+      vehicles: cars.map((car) => car.Car),
+    });
+  } else
+    res.json({
+      success: false,
+      message: "No vehicle found",
+    });
 });
 
 // get excel export
