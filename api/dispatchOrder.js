@@ -182,14 +182,23 @@ router.put("/:id", activityLog, async (req, res, next) => {
 });
 
 const updateDispatchOrderInventories = async (DO, products) => {
-  console.log("DO.Inventories1", DO.Inventories);
+  // console.log("DO.Inventories1", DO.Inventories);
   for (const product of products) {
-    DO.Inventories = DO.Inventories.filter((inv) => {
+    const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
+    const previousInventoryWithOG = DO.Inventories.filter((inv) => {
       console.log("inv === product.inventoryId", inv.id === product.inventoryId);
       return inv.id === product.inventoryId;
-    });
+    })[0];
+    // console.log("inventory", inventory);
+    // console.log("previousInventoryWithOG", previousInventoryWithOG.OrderGroup);
+    inventory.availableQuantity =
+      inventory.availableQuantity + previousInventoryWithOG.OrderGroup.quantity - product.quantity;
+    inventory.committedQuantity =
+      inventory.committedQuantity - previousInventoryWithOG.OrderGroup.quantity + product.quantity;
+    inventory.save();
   }
-  console.log("DO.Inventories", DO.Inventories);
+
+  // console.log("DO.Inventories", DO.Inventories);
 };
 
 router.delete("/:id", activityLog, async (req, res, next) => {
