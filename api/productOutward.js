@@ -21,6 +21,8 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const { digitize, checkOrderStatusAndUpdate } = require("../services/common.services");
 const activityLog = require("../middlewares/activityLog");
+const Dao = require("../dao");
+const { DISPATCH_ORDER } = require("../enums");
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
@@ -268,30 +270,38 @@ router.get("/relations", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventory",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+        include: [
+          { model: Company, attributes: ["id", "name"] },
+          { model: Warehouse, attributes: ["id", "name"] },
+        ],
+        attributes: ["id"],
       },
       {
         model: Inventory,
         as: "Inventories",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+        include: [
+          { model: Product, include: [{ model: UOM, attributes: ["id", "name"] }], attributes: ["id", "name"] },
+        ],
+        attributes: ["id"],
       },
       {
         model: ProductOutward,
         include: [
           {
-            model: Vehicle,
-          },
-          {
             model: Inventory,
             as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+            include: [{ model: Product, attributes: ["id", "name"] }],
           },
         ],
+        attributes: ["id"],
       },
     ],
+    where: { status: { [Op.not]: DISPATCH_ORDER.STATUS.FULFILLED } },
+    attributes: ["id", "internalIdForBusiness", "referenceId"],
     order: [["updatedAt", "DESC"]],
   });
-  const vehicles = await Vehicle.findAll({ where: { isActive: true } });
+
+  const vehicles = await Vehicle.findAll({ where: { isActive: true }, attributes: ["id", "registrationNumber"] });
   res.json({
     success: true,
     message: "respond with a resource",
