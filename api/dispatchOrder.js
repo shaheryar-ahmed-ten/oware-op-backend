@@ -186,7 +186,7 @@ const updateDispatchOrderInventories = async (DO, products) => {
   for (const product of products) {
     const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
     const previousInventoryWithOG = DO.Inventories.filter((inv) => {
-      console.log("inv === product.inventoryId", inv.id === product.inventoryId);
+      // console.log("inv === product.inventoryId", inv.id === product.inventoryId);
       return inv.id === product.inventoryId;
     })[0];
     // console.log("inventory", inventory);
@@ -196,6 +196,10 @@ const updateDispatchOrderInventories = async (DO, products) => {
     inventory.committedQuantity =
       inventory.committedQuantity - previousInventoryWithOG.OrderGroup.quantity + product.quantity;
     inventory.save();
+
+    previousInventoryWithOG.OrderGroup.quantity = product.quantity;
+    previousInventoryWithOG.OrderGroup.save();
+    console.log("previousInventoryWithOG.OrderGroup", previousInventoryWithOG.OrderGroup);
   }
 
   // console.log("DO.Inventories", DO.Inventories);
