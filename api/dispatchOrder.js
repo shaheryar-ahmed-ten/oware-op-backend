@@ -19,6 +19,7 @@ const { RELATION_TYPES } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const moment = require("moment-timezone");
+const httpStatus = require("http-status");
 
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {
@@ -165,8 +166,9 @@ router.put("/:id", activityLog, async (req, res, next) => {
   if (req.body.hasOwnProperty("receiverName")) dispatchOrder.receiverName = req.body.receiverName;
   if (req.body.hasOwnProperty("receiverPhone")) dispatchOrder.receiverPhone = req.body.receiverPhone;
   if (req.body.hasOwnProperty("referenceId")) dispatchOrder.referenceId = req.body.referenceId;
-  if (req.body.hasOwnProperty("products")) await updateDispatchOrderInventories(dispatchOrder, req.body.products);
   try {
+    if (req.body.hasOwnProperty("products"))
+      await updateDispatchOrderInventories(dispatchOrder, req.body.products, req.userId);
     const response = await dispatchOrder.save();
     return res.json({
       success: true,
@@ -174,28 +176,37 @@ router.put("/:id", activityLog, async (req, res, next) => {
       data: response,
     });
   } catch (err) {
+    console.log("err:", err);
     return res.json({
       success: false,
-      message: err.errors.pop().message,
+      message: err.toString().replace("Error: ", ""),
     });
   }
 });
 
-const updateDispatchOrderInventories = async (DO, products) => {
+const updateDispatchOrderInventories = async (DO, products, userId) => {
   for (const product of products) {
     const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
-    const previousInventoryWithOG = DO.Inventories.filter((inv) => {
-      return inv.id === product.inventoryId;
-    })[0];
-    inventory.availableQuantity =
-      inventory.availableQuantity + previousInventoryWithOG.OrderGroup.quantity - product.quantity;
-    inventory.committedQuantity =
-      inventory.committedQuantity - previousInventoryWithOG.OrderGroup.quantity + product.quantity;
+    let OG = await Dao.OrderGroup.findOne({ where: { inventoryId: product.inventoryId, orderId: DO.id } });
+    if (product.quantity > inventory.availableQuantity + OG.quantity)
+      throw new Error("Cannot add quantity above available quantity");
+    if (!OG) {
+      OG = await Dao.OrderGroup.create({
+        userId: userId,
+        orderId: DO.id,
+        inventoryId: product.inventoryId,
+        quantity: product.quantity,
+      });
+      inventory.availableQuantity = inventory.availableQuantity - product.quantity;
+      inventory.committedQuantity = inventory.committedQuantity + product.quantity;
+    } else {
+      inventory.availableQuantity = inventory.availableQuantity + OG.quantity - product.quantity;
+      inventory.committedQuantity = inventory.committedQuantity - OG.quantity + product.quantity;
+      OG.quantity = product.quantity;
+    }
+    OG.save();
+    if (OG.quantity === 0) Dao.OrderGroup.destroy({ where: { id: OG.id } });
     inventory.save();
-
-    previousInventoryWithOG.OrderGroup.quantity = product.quantity;
-    previousInventoryWithOG.OrderGroup.save();
-    console.log("previousInventoryWithOG.OrderGroup", previousInventoryWithOG.OrderGroup);
   }
 };
 
@@ -331,16 +342,15 @@ router.get("/:id", async (req, res, next) => {
         },
       ],
       where: { id: req.params.id },
-    }
+    };
     const response = await Dao.DispatchOrder.findOne(params);
     res.json({ success: true, message: "Data Found", data: response });
-
   } catch (err) {
     res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),
     });
   }
-})
+});
 
 module.exports = router;

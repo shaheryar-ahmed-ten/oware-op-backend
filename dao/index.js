@@ -16,4 +16,5 @@ module.exports = {
   Category: require("./Category"),
   DispatchOrder: require("./DispatchOrder"),
   ProductOutward: require("./ProductOutward"),
+  OrderGroup: require("./OrderGroup"),
 };
