@@ -19,6 +19,7 @@ const { RELATION_TYPES } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const moment = require("moment-timezone");
+const httpStatus = require("http-status");
 
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {
@@ -155,16 +156,19 @@ router.post("/", activityLog, async (req, res, next) => {
 
 /* PUT update existing dispatchOrder. */
 router.put("/:id", activityLog, async (req, res, next) => {
-  let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id } });
+  let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
   if (!dispatchOrder)
     return res.status(400).json({
       success: false,
       message: "No dispatchOrder found!",
     });
-  dispatchOrder.shipmentDate = req.body.shipmentDate;
-  dispatchOrder.receiverName = req.body.receiverName;
-  dispatchOrder.receiverPhone = req.body.receiverPhone;
+  if (req.body.hasOwnProperty("shipmentDate")) dispatchOrder.shipmentDate = req.body.shipmentDate;
+  if (req.body.hasOwnProperty("receiverName")) dispatchOrder.receiverName = req.body.receiverName;
+  if (req.body.hasOwnProperty("receiverPhone")) dispatchOrder.receiverPhone = req.body.receiverPhone;
+  if (req.body.hasOwnProperty("referenceId")) dispatchOrder.referenceId = req.body.referenceId;
   try {
+    if (req.body.hasOwnProperty("products"))
+      await updateDispatchOrderInventories(dispatchOrder, req.body.products, req.userId);
     const response = await dispatchOrder.save();
     return res.json({
       success: true,
@@ -172,12 +176,39 @@ router.put("/:id", activityLog, async (req, res, next) => {
       data: response,
     });
   } catch (err) {
+    console.log("err:", err);
     return res.json({
       success: false,
-      message: err.errors.pop().message,
+      message: err.toString().replace("Error: ", ""),
     });
   }
 });
+
+const updateDispatchOrderInventories = async (DO, products, userId) => {
+  for (const product of products) {
+    const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
+    let OG = await Dao.OrderGroup.findOne({ where: { inventoryId: product.inventoryId, orderId: DO.id } });
+    if (product.quantity > inventory.availableQuantity + OG.quantity)
+      throw new Error("Cannot add quantity above available quantity");
+    if (!OG) {
+      OG = await Dao.OrderGroup.create({
+        userId: userId,
+        orderId: DO.id,
+        inventoryId: product.inventoryId,
+        quantity: product.quantity,
+      });
+      inventory.availableQuantity = inventory.availableQuantity - product.quantity;
+      inventory.committedQuantity = inventory.committedQuantity + product.quantity;
+    } else {
+      inventory.availableQuantity = inventory.availableQuantity + OG.quantity - product.quantity;
+      inventory.committedQuantity = inventory.committedQuantity - OG.quantity + product.quantity;
+      OG.quantity = product.quantity;
+    }
+    OG.save();
+    if (OG.quantity === 0) Dao.OrderGroup.destroy({ where: { id: OG.id } });
+    inventory.save();
+  }
+};
 
 router.delete("/:id", activityLog, async (req, res, next) => {
   let response = await DispatchOrder.destroy({ where: { id: req.params.id } });
@@ -286,6 +317,40 @@ router.get("/products", async (req, res, next) => {
       success: false,
       message: "No inventory found",
     });
+});
+
+// Get single dispatch order
+router.get("/:id", async (req, res, next) => {
+  try {
+    const params = {
+      include: [
+        {
+          model: Inventory,
+          as: "Inventory",
+          required: true,
+          include: [
+            { model: Product, include: [{ model: UOM }] },
+            { model: Company, required: true },
+            { model: Warehouse, required: true },
+          ],
+        },
+        {
+          model: Inventory,
+          as: "Inventories",
+          required: true,
+          include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
+        },
+      ],
+      where: { id: req.params.id },
+    };
+    const response = await Dao.DispatchOrder.findOne(params);
+    res.json({ success: true, message: "Data Found", data: response });
+  } catch (err) {
+    res.json({
+      success: false,
+      message: err.toString().replace("Error: ", ""),
+    });
+  }
 });
 
 module.exports = router;
