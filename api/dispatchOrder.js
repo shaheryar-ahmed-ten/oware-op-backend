@@ -188,8 +188,7 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
   for (const product of products) {
     const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
     let OG = await Dao.OrderGroup.findOne({ where: { inventoryId: product.inventoryId, orderId: DO.id } });
-    if (product.quantity > inventory.availableQuantity + OG.quantity)
-      throw new Error("Cannot add quantity above available quantity");
+
     if (!OG) {
       OG = await Dao.OrderGroup.create({
         userId: userId,
@@ -204,6 +203,8 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       inventory.committedQuantity = inventory.committedQuantity - OG.quantity + product.quantity;
       OG.quantity = product.quantity;
     }
+    if (product.quantity > inventory.availableQuantity + OG.quantity)
+      throw new Error("Cannot add quantity above available quantity");
     OG.save();
     if (OG.quantity === 0) Dao.OrderGroup.destroy({ where: { id: OG.id } });
     inventory.save();
