@@ -62,22 +62,6 @@ router.get("/", async (req, res, next) => {
 
   for (const { dataValues } of response.rows) {
     dataValues["ProductOutwards"] = await ProductOutward.findAll({
-      // include: [
-      //   {
-      //     model: OutwardGroup,
-      //     attributes: [
-      //       `userId`,
-      //       `quantity`,
-      //       `inventoryId`,
-      //       `outwardId`,
-      //       `availableQuantity`,
-      //       `createdAt`,
-      //       `updatedAt`,
-      //       `deletedAt`,
-      //     ],
-      //   },
-      //   "Vehicle",
-      // ],
       attributes: ["quantity", "referenceId", "internalIdForBusiness"],
       required: false,
       where: { dispatchOrderId: dataValues.id },
@@ -204,7 +188,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
 const updateDispatchOrderInventories = async (DO, products, userId) => {
   for (const product of products) {
     const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
-    console.log("product.inventoryId", product.inventoryId, "DO.id ", DO.id);
     let OG = await Dao.OrderGroup.findOne({ where: { inventoryId: product.inventoryId, orderId: DO.id } });
     const PO = await Dao.ProductOutward.findAll({
       where: {
@@ -214,7 +197,6 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
     });
     let outwardQuantity = 0;
     for (const outward of PO) {
-      console.log("outward.OutwardGroups", outward.OutwardGroups);
       if (outward.OutwardGroups && outward.OutwardGroups[0]) outwardQuantity += outward.OutwardGroups[0].quantity;
     }
     if (!OG) {
@@ -229,16 +211,6 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
     } else {
-      console.log(
-        "inventory.availableQuantity",
-        inventory.availableQuantity,
-        "OG.quantity",
-        OG.quantity,
-        "product.quantity",
-        product.quantity,
-        "outwardQuantity",
-        outwardQuantity
-      ); //4 + (5-3) - 6 = 3
       if (product.quantity > inventory.availableQuantity + OG.quantity - outwardQuantity)
         throw new Error("Cannot add quantity above available quantity");
       inventory.availableQuantity = inventory.availableQuantity + OG.quantity - product.quantity;
@@ -246,11 +218,6 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventory.committedQuantity - (OG.quantity - outwardQuantity) + (product.quantity - outwardQuantity); //3-(5-3)+6
       OG.quantity = product.quantity > 0 ? product.quantity : OG.quantity;
     }
-    console.log(
-      "inventory.availableQuantity + OG.quantity - outwardQuantity",
-      inventory.availableQuantity + OG.quantity - outwardQuantity
-    );
-
     OG.save();
     inventory.save();
     if (product.quantity === outwardQuantity) {
@@ -422,7 +389,6 @@ router.get("/:id", async (req, res, next) => {
       if (PO) {
         inv.dataValues["outward"] = await OutwardGroup.findOne({
           where: { outwardId: PO.id, inventoryId: inv.id },
-          logging: console.log,
           attributes: [
             `userId`,
             `quantity`,

@@ -10,6 +10,7 @@ const { BULK_PRODUCT_LIMIT } = require("../enums");
 const { addActivityLog } = require("../services/common.services");
 
 const Joi = require("joi");
+const ActivityLog = require("../dao/ActivityLog");
 
 const AddValidation = Joi.object({
   products: Joi.array().items(
@@ -78,22 +79,29 @@ router.post("/bulk", activityLog, async (req, res, next) => {
   let products;
   try {
     const validationErrors = [];
-    const allowedValues = ["name", "description", "volume", "weight", "category", "brand", "uom", "isActive"];
+    const allowedValues = ["Name", "Description", "Volume in cm3", "Weight", "Category", "Brand", "Uom", "IsActive"];
     // req.body.products = req.body.products.map((product) => {
     if (req.body.products.length > BULK_PRODUCT_LIMIT)
       // return res.sendError(httpStatus.CONFLICT, `Cannot add product above ${BULK_PRODUCT_LIMIT}`);
       validationErrors.push(`At row ${row} :Cannot add product above ${BULK_PRODUCT_LIMIT}`);
     let row = 2;
+    console.log("req.body.products", req.body.products);
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
         if (!allowedValues.includes(item))
-          // return res.sendError(
-          //   httpStatus.CONFLICT,
-          //   `Field ${item} is invalid at row ${row}`,
-          //   "Failed to add Bulk Products"
-          // );
-          validationErrors.push(`At row ${row} :Field ${item} is invalid`);
+          return res.sendError(httpStatus.CONFLICT, `Field ${item} is invalid`, "Failed to add Bulk Products");
       });
+    }
+    for (const product of req.body.products) {
+      product["name"] = product["Name"];
+      product["description"] = product["Description"];
+      product["volume"] = product["Volume in cm3"];
+      product["weight"] = product["Weight"];
+      product["category"] = product["Category"];
+      product["brand"] = product["Brand"];
+      product["uom"] = product["Uom"];
+      product["isActive"] = product["IsActive"];
+
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
         // return res.sendError(
@@ -153,6 +161,10 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
     // });
     products = await Product.bulkCreate(req.body.products);
+    // await ActivityLog.bulkCreate({
+    //   userId: req.userId,
+
+    // });
   } catch (err) {
     console.log("err", err);
     return res.json({
