@@ -260,7 +260,7 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
   }
 };
 
-router.put("/cancel/:id", activityLog, async (req, res, next) => {
+router.patch("/cancel/:id", activityLog, async (req, res, next) => {
   let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
   if (!dispatchOrder) return res.sendError(httpStatus.CONFLICT, "No Dispatch Order Found");
   if (dispatchOrder.status == DISPATCH_ORDER.STATUS.CANCELLED)
