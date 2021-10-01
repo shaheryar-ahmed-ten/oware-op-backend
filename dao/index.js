@@ -18,4 +18,5 @@ module.exports = {
   ProductOutward: require("./ProductOutward"),
   OrderGroup: require("./OrderGroup"),
   OutwardGroup: require("./OutwardGroup"),
+  Vehicle: require("./Vehicle")
 };
