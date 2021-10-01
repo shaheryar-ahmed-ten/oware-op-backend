@@ -235,6 +235,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.cost = req.body.cost;
   ride.customerDiscount = req.body.customerDiscount;
   ride.driverIncentive = req.body.driverIncentive;
+  ride.memo = req.body.memo;
   // ride.carId = req.body.carId;
   // ride.vendorId = req.body.vendorId;
 
