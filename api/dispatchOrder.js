@@ -216,7 +216,6 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       console.log("outward.OutwardGroups", outward.OutwardGroups);
       if (outward.OutwardGroups && outward.OutwardGroups[0]) outwardQuantity += outward.OutwardGroups[0].quantity;
     }
-    console.log("OG", OG);
     if (!OG) {
       OG = await Dao.OrderGroup.create({
         userId: userId,
@@ -224,6 +223,8 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventoryId: product.inventoryId,
         quantity: product.quantity,
       });
+      if (product.quantity > inventory.availableQuantity + OG.quantity - outwardQuantity)
+        throw new Error("Cannot add quantity above available quantity");
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
     } else {
@@ -233,14 +234,21 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         "OG.quantity",
         OG.quantity,
         "product.quantity",
-        product.quantity
-      );
+        product.quantity,
+        "outwardQuantity",
+        outwardQuantity
+      ); //4 + (5-3) - 6 = 3
+      if (product.quantity > inventory.availableQuantity + OG.quantity - outwardQuantity)
+        throw new Error("Cannot add quantity above available quantity");
       inventory.availableQuantity = inventory.availableQuantity + (OG.quantity - outwardQuantity) - product.quantity;
-      inventory.committedQuantity = inventory.committedQuantity - OG.quantity + product.quantity;
+      inventory.committedQuantity = inventory.committedQuantity - (OG.quantity - outwardQuantity) + product.quantity; //3-(5-3)+6
       OG.quantity = product.quantity > 0 ? product.quantity : OG.quantity;
     }
-    if (product.quantity > inventory.availableQuantity + OG.quantity - outwardQuantity)
-      throw new Error("Cannot add quantity above available quantity");
+    console.log(
+      "inventory.availableQuantity + OG.quantity - outwardQuantity",
+      inventory.availableQuantity + OG.quantity - outwardQuantity
+    );
+
     OG.save();
     // if (OG.quantity === 0) await Dao.OrderGroup.destroy({ where: { id: OG.id } });
     inventory.save();
