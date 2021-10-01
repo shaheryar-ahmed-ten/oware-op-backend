@@ -9,6 +9,23 @@ const httpStatus = require("http-status");
 const { BULK_PRODUCT_LIMIT } = require("../enums");
 const { addActivityLog } = require("../services/common.services");
 
+const Joi = require("joi");
+
+const AddValidation = Joi.object({
+  products: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required(),
+      description: Joi.string().required(),
+      volume: Joi.number().integer().required(),
+      weight: Joi.number().integer().required(),
+      category: Joi.string().required(),
+      brand: Joi.string().required(),
+      uom: Joi.string().required(),
+      isActive: Joi.string().required(),
+    })
+  ),
+});
+
 /* GET products listing. */
 router.get("/", async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
@@ -55,6 +72,8 @@ router.post("/", activityLog, async (req, res, next) => {
 });
 
 router.post("/bulk", activityLog, async (req, res, next) => {
+  // const isValid = await AddValidation.validateAsync(req.body);
+  // if (isValid) {
   let message = "Bulk products registered";
   let products;
   try {
@@ -62,14 +81,28 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     // req.body.products = req.body.products.map((product) => {
     if (req.body.products.length > BULK_PRODUCT_LIMIT)
       return res.sendError(httpStatus.CONFLICT, `Cannot add product above ${BULK_PRODUCT_LIMIT}`);
+    let row = 1;
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
         if (!allowedValues.includes(item))
-          return res.sendError(httpStatus.CONFLICT, `Field ${item} is invalid`, "Failed to add Bulk Products");
+          return res.sendError(
+            httpStatus.CONFLICT,
+            `Field ${item} is invalid at row ${row}`,
+            "Failed to add Bulk Products"
+          );
       });
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
-        return res.sendError(httpStatus.CONFLICT, `Product Already Exist with name ${productAlreadyExist.name}`);
+        return res.sendError(
+          httpStatus.CONFLICT,
+          `Product Already Exist with name ${productAlreadyExist.name} at row ${row}`
+        );
+
+      if (product["isActive"] !== "TRUE" && product["isActive"] !== "FALSE")
+        return res.sendError(
+          httpStatus.CONFLICT,
+          `${product.name} has invalid value for column isActive ${product.isActive} at row ${row}`
+        );
       product["userId"] = req.userId;
       product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
       product["dimensionsCBM"] = product["volume"];
@@ -81,20 +114,25 @@ router.post("/bulk", activityLog, async (req, res, next) => {
         product["brandId"] = brand.id;
         product["uomId"] = uom.id;
       } else if (!category) {
-        res.sendError(
+        return res.sendError(
           httpStatus.CONFLICT,
-          `Category Doesn't exist with name ${product.category}`,
+          `Category Doesn't exist with name ${product.category} for product ${product.name} at row ${row}`,
           "Failed to add Bulk Products"
         );
       } else if (!brand) {
-        res.sendError(
+        return res.sendError(
           httpStatus.CONFLICT,
-          `Brand Doesn't exist with name ${product.brand}`,
+          `Brand Doesn't exist with name ${product.brand} for product ${product.name} at row ${row}`,
           "Failed to add Bulk Products"
         );
       } else if (!uom) {
-        res.sendError(httpStatus.CONFLICT, `Uom Doesn't exist with name ${product.uom}`, "Failed to add Bulk Products");
+        return res.sendError(
+          httpStatus.CONFLICT,
+          `Uom Doesn't exist with name ${product.uom} for product ${product.name} at row ${row}`,
+          "Failed to add Bulk Products"
+        );
       }
+      row++;
     }
     // });
     products = await Product.bulkCreate(req.body.products);
@@ -110,6 +148,9 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     message,
     data: products,
   });
+  // } else {
+  //   return { status: httpStatus.UNPROCESSABLE_ENTITY, message: isValid, code: "Validation Error" };
+  // }
 });
 
 /* PUT update existing product. */

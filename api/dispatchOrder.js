@@ -10,12 +10,13 @@ const {
   UOM,
   sequelize,
   ProductOutward,
+  OutwardGroup,
 } = require("../models");
 const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
 const { digitize, addActivityLog } = require("../services/common.services");
-const { RELATION_TYPES } = require("../enums");
+const { RELATION_TYPES, DISPATCH_ORDER } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const moment = require("moment-timezone");
@@ -29,7 +30,7 @@ router.get("/", async (req, res, next) => {
     // userId: req.userId
   };
   if (req.query.search)
-    where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$"].map((key) => ({
+    where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
   const response = await DispatchOrder.findAndCountAll({
@@ -47,11 +48,11 @@ router.get("/", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventories",
-        required: true,
+        required: false,
         include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
       },
     ],
-    order: [["updatedAt", "DESC"]],
+    order: [["createdAt", "DESC"]],
     distinct: true,
     where,
     limit,
@@ -61,7 +62,22 @@ router.get("/", async (req, res, next) => {
 
   for (const { dataValues } of response.rows) {
     dataValues["ProductOutwards"] = await ProductOutward.findAll({
-      include: ["OutwardGroups", "Vehicle"],
+      // include: [
+      //   {
+      //     model: OutwardGroup,
+      //     attributes: [
+      //       `userId`,
+      //       `quantity`,
+      //       `inventoryId`,
+      //       `outwardId`,
+      //       `availableQuantity`,
+      //       `createdAt`,
+      //       `updatedAt`,
+      //       `deletedAt`,
+      //     ],
+      //   },
+      //   "Vehicle",
+      // ],
       attributes: ["quantity", "referenceId", "internalIdForBusiness"],
       required: false,
       where: { dispatchOrderId: dataValues.id },
@@ -187,8 +203,20 @@ router.put("/:id", activityLog, async (req, res, next) => {
 const updateDispatchOrderInventories = async (DO, products, userId) => {
   for (const product of products) {
     const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
+    console.log("product.inventoryId", product.inventoryId, "DO.id ", DO.id);
     let OG = await Dao.OrderGroup.findOne({ where: { inventoryId: product.inventoryId, orderId: DO.id } });
-
+    const PO = await Dao.ProductOutward.findAll({
+      where: {
+        dispatchOrderId: DO.id,
+      },
+      include: [{ model: OutwardGroup, where: { inventoryId: product.inventoryId } }],
+    });
+    let outwardQuantity = 0;
+    for (const outward of PO) {
+      console.log("outward.OutwardGroups", outward.OutwardGroups);
+      if (outward.OutwardGroups && outward.OutwardGroups[0]) outwardQuantity += outward.OutwardGroups[0].quantity;
+    }
+    console.log("OG", OG);
     if (!OG) {
       OG = await Dao.OrderGroup.create({
         userId: userId,
@@ -199,17 +227,48 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
     } else {
-      inventory.availableQuantity = inventory.availableQuantity + OG.quantity - product.quantity;
+      console.log(
+        "inventory.availableQuantity",
+        inventory.availableQuantity,
+        "OG.quantity",
+        OG.quantity,
+        "product.quantity",
+        product.quantity
+      );
+      inventory.availableQuantity = inventory.availableQuantity + (OG.quantity - outwardQuantity) - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity - OG.quantity + product.quantity;
-      OG.quantity = product.quantity;
+      OG.quantity = product.quantity > 0 ? product.quantity : OG.quantity;
     }
-    if (product.quantity > inventory.availableQuantity + OG.quantity)
+    if (product.quantity > inventory.availableQuantity + OG.quantity - outwardQuantity)
       throw new Error("Cannot add quantity above available quantity");
     OG.save();
-    if (OG.quantity === 0) Dao.OrderGroup.destroy({ where: { id: OG.id } });
+    // if (OG.quantity === 0) await Dao.OrderGroup.destroy({ where: { id: OG.id } });
     inventory.save();
   }
 };
+
+router.put("/cancel/:id", async (req, res, next) => {
+  let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
+  if (!dispatchOrder) return res.sendError(httpStatus.CONFLICT, "No Dispatch Order Found");
+  if (dispatchOrder.status == DISPATCH_ORDER.STATUS.CANCELLED)
+    return res.sendError(httpStatus.CONFLICT, "Dispatch Order Already Cancelled");
+  if (
+    dispatchOrder.status === DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED ||
+    dispatchOrder.status === DISPATCH_ORDER.STATUS.FULFILLED
+  )
+    return res.sendError(httpStatus.CONFLICT, "Cannot cancel Dispatch Order having one or more outwards");
+  dispatchOrder.status = DISPATCH_ORDER.STATUS.CANCELLED;
+  await dispatchOrder.save();
+  let OGs = await Dao.OrderGroup.findAll({ where: { orderId: dispatchOrder.id } });
+  for (const OG of OGs) {
+    const inventory = await Dao.Inventory.findOne({ where: { id: OG.inventoryId } });
+    inventory.availableQuantity = inventory.availableQuantity + OG.quantity;
+    inventory.committedQuantity = inventory.committedQuantity - OG.quantity;
+    await inventory.save();
+    // await Dao.OrderGroup.destroy({ where: { id: OG.id } });
+  }
+  return res.sendJson(httpStatus.OK, "Dispatch Order Cancelled");
+});
 
 router.delete("/:id", activityLog, async (req, res, next) => {
   let response = await DispatchOrder.destroy({ where: { id: req.params.id } });
@@ -344,9 +403,29 @@ router.get("/:id", async (req, res, next) => {
       ],
       where: { id: req.params.id },
     };
-    const response = await Dao.DispatchOrder.findOne(params);
-    res.json({ success: true, message: "Data Found", data: response });
+    const DO = await Dao.DispatchOrder.findOne(params);
+    const PO = await Dao.ProductOutward.findOne({ where: { dispatchOrderId: req.params.id } });
+    for (const inv of DO.Inventories) {
+      if (PO) {
+        inv.dataValues["outward"] = await OutwardGroup.findOne({
+          where: { outwardId: PO.id, inventoryId: inv.id },
+          logging: console.log,
+          attributes: [
+            `userId`,
+            `quantity`,
+            `inventoryId`,
+            `outwardId`,
+            `availableQuantity`,
+            `createdAt`,
+            `updatedAt`,
+            `deletedAt`,
+          ],
+        });
+      }
+    }
+    res.json({ success: true, message: "Data Found", data: DO });
   } catch (err) {
+    console.log("err", err);
     res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),

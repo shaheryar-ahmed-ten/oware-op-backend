@@ -12,21 +12,21 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       ProductOutward.belongsTo(models.User, {
-        foreignKey: "userId"
+        foreignKey: "userId",
       });
       ProductOutward.belongsTo(models.Vehicle, {
-        foreignKey: "vehicleId"
+        foreignKey: "vehicleId",
       });
       ProductOutward.belongsTo(models.DispatchOrder, {
-        foreignKey: "dispatchOrderId"
+        foreignKey: "dispatchOrderId",
       });
       ProductOutward.belongsToMany(models.Inventory, {
         through: models.OutwardGroup,
         foreignKey: "outwardId",
-        as: "Inventories"
+        as: "Inventories",
       });
       ProductOutward.hasMany(models.OutwardGroup, {
-        foreignKey: "outwardId"
+        foreignKey: "outwardId",
       });
     }
   }
@@ -35,37 +35,37 @@ module.exports = (sequelize, DataTypes) => {
       userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: { notEmpty: true }
+        validate: { notEmpty: true },
       },
       quantity: {
         type: DataTypes.INTEGER,
         validate: {
-          isInt: { msg: "Please enter quantity" }
-        }
+          isInt: { msg: "Please enter quantity" },
+        },
       },
       referenceId: {
         type: DataTypes.STRING(30),
-        allowNull: true
+        allowNull: true,
       },
       internalIdForBusiness: {
         type: DataTypes.STRING(30),
-        allowNull: true
+        allowNull: true,
       },
       dispatchOrderId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: { notEmpty: { msg: "Dispatch order cannot be empty" } }
+        validate: { notEmpty: { msg: "Dispatch order cannot be empty" } },
       },
       vehicleId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: { notEmpty: { msg: "Dispatch order cannot be empty" } }
-      }
+        validate: { notEmpty: { msg: "Dispatch order cannot be empty" } },
+      },
     },
     {
       sequelize,
       paranoid: true,
-      modelName: "ProductOutward"
+      modelName: "ProductOutward",
     }
   );
 
