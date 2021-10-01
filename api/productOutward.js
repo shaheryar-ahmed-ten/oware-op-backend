@@ -297,7 +297,7 @@ router.get("/relations", async (req, res, next) => {
       },
     ],
     where: { status: { [Op.not]: DISPATCH_ORDER.STATUS.FULFILLED } },
-    attributes: ["id", "internalIdForBusiness", "referenceId"],
+    attributes: ["id", "internalIdForBusiness", "referenceId", "shipmentDate", "receiverName", "receiverPhone"],
     order: [["updatedAt", "DESC"]],
   });
 
