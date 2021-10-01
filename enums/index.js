@@ -53,8 +53,9 @@ module.exports = Object.freeze({
       PENDING: 0,
       PARTIALLY_FULFILLED: 1,
       FULFILLED: 2,
+      CANCELLED: 3,
     },
   },
   initialInternalIdForBusinessForAdjustment: "SA-",
-  BULK_PRODUCT_LIMIT: 50,
+  BULK_PRODUCT_LIMIT: 200,
 });

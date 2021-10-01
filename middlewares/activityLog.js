@@ -89,6 +89,16 @@ async function addActivityLog(req, res, next) {
         activityType: "DELETE",
       });
     }
+  } else if (req.method == "PATCH") {
+    const source = await sourceModel[MODEL].findOne({ where: { id: req.params.id } });
+    const log = await ActivityLog.create({
+      userId: req.userId,
+      currentPayload: {},
+      previousPayload: source,
+      sourceId: req.params.id,
+      sourceType: sourceTypeId,
+      activityType: "CANCEL",
+    });
   }
   next();
 }
