@@ -186,6 +186,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
     if (req.body.hasOwnProperty("products"))
       await updateDispatchOrderInventories(dispatchOrder, req.body.products, req.userId);
     const response = await dispatchOrder.save();
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
       message: "Dispatch Order updated",
@@ -259,7 +260,7 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
   }
 };
 
-router.put("/cancel/:id", async (req, res, next) => {
+router.put("/cancel/:id", activityLog, async (req, res, next) => {
   let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
   if (!dispatchOrder) return res.sendError(httpStatus.CONFLICT, "No Dispatch Order Found");
   if (dispatchOrder.status == DISPATCH_ORDER.STATUS.CANCELLED)
