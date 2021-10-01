@@ -240,8 +240,9 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       ); //4 + (5-3) - 6 = 3
       if (product.quantity > inventory.availableQuantity + OG.quantity - outwardQuantity)
         throw new Error("Cannot add quantity above available quantity");
-      inventory.availableQuantity = inventory.availableQuantity + (OG.quantity - outwardQuantity) - product.quantity;
-      inventory.committedQuantity = inventory.committedQuantity - (OG.quantity - outwardQuantity) + product.quantity; //3-(5-3)+6
+      inventory.availableQuantity = inventory.availableQuantity + OG.quantity - product.quantity;
+      inventory.committedQuantity =
+        inventory.committedQuantity - (OG.quantity - outwardQuantity) + (product.quantity - outwardQuantity); //3-(5-3)+6
       OG.quantity = product.quantity > 0 ? product.quantity : OG.quantity;
     }
     console.log(
@@ -250,8 +251,11 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
     );
 
     OG.save();
-    // if (OG.quantity === 0) await Dao.OrderGroup.destroy({ where: { id: OG.id } });
     inventory.save();
+    if (product.quantity === outwardQuantity) {
+      DO.status = DISPATCH_ORDER.STATUS.FULFILLED;
+      await DO.save();
+    }
   }
 };
 
