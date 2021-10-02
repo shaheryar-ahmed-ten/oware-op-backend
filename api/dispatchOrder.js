@@ -401,11 +401,15 @@ router.get("/:id", async (req, res, next) => {
       where: { id: req.params.id },
     };
     const DO = await Dao.DispatchOrder.findOne(params);
-    const PO = await Dao.ProductOutward.findOne({ where: { dispatchOrderId: req.params.id } });
+    const PO = await Dao.ProductOutward.findAll({ where: { dispatchOrderId: req.params.id } });
+    const outwardArr = [];
+    for (const outward of PO) {
+      outwardArr.push(outward.id);
+    }
     for (const inv of DO.Inventories) {
       if (PO) {
-        inv.dataValues["outward"] = await OutwardGroup.findOne({
-          where: { outwardId: PO.id, inventoryId: inv.id },
+        inv.dataValues["outward"] = await OutwardGroup.findAll({
+          where: { outwardId: { [Op.in]: outwardArr }, inventoryId: inv.id },
           attributes: [
             `userId`,
             `quantity`,
@@ -419,6 +423,7 @@ router.get("/:id", async (req, res, next) => {
         });
       }
     }
+    console.log(`DO`, DO);
     res.json({ success: true, message: "Data Found", data: DO });
   } catch (err) {
     console.log("err", err);
