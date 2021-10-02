@@ -206,12 +206,22 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventoryId: product.inventoryId,
         quantity: product.quantity,
       });
-      if (product.quantity > inventory.availableQuantity + OG.quantity - outwardQuantity)
+      if (product.quantity > inventory.availableQuantity + OG.quantity)
         throw new Error("Cannot add quantity above available quantity");
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
     } else {
-      if (product.quantity > inventory.availableQuantity + OG.quantity - outwardQuantity)
+      console.log(
+        "product.quantity",
+        product.quantity,
+        "inventory.availableQuantity",
+        inventory.availableQuantity,
+        "OG.quantity",
+        OG.quantity,
+        "outwardQuantity",
+        outwardQuantity
+      );
+      if (product.quantity > inventory.availableQuantity + OG.quantity)
         throw new Error("Cannot add quantity above available quantity");
       inventory.availableQuantity = inventory.availableQuantity + OG.quantity - product.quantity;
       inventory.committedQuantity =
