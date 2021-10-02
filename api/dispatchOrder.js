@@ -208,6 +208,9 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       });
       if (product.quantity > inventory.availableQuantity + OG.quantity)
         throw new Error("Cannot add quantity above available quantity");
+      else if (product.quantity < outwardQuantity)
+        throw new Error("Edited Dispatch order quantity cannot be less than total outward quantity");
+
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
     } else {
@@ -220,9 +223,11 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         OG.quantity,
         "outwardQuantity",
         outwardQuantity
-      );
+      ); //7 > 59 + 8
       if (product.quantity > inventory.availableQuantity + OG.quantity)
         throw new Error("Cannot add quantity above available quantity");
+      else if (product.quantity < outwardQuantity)
+        throw new Error("Edited Dispatch order quantity cannot be less than total outward quantity");
       inventory.availableQuantity = inventory.availableQuantity + OG.quantity - product.quantity;
       inventory.committedQuantity =
         inventory.committedQuantity - (OG.quantity - outwardQuantity) + (product.quantity - outwardQuantity); //3-(5-3)+6
