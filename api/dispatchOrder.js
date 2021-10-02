@@ -186,6 +186,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
 });
 
 const updateDispatchOrderInventories = async (DO, products, userId) => {
+  DO.status = DISPATCH_ORDER.STATUS.FULFILLED;
   for (const product of products) {
     const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
     let OG = await Dao.OrderGroup.findOne({ where: { inventoryId: product.inventoryId, orderId: DO.id } });
@@ -235,13 +236,10 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
     }
     OG.save();
     inventory.save();
-    if (product.quantity === outwardQuantity) {
-      DO.status = DISPATCH_ORDER.STATUS.FULFILLED;
-      await DO.save();
-    } else if (DO.status == DISPATCH_ORDER.STATUS.FULFILLED && product.quantity !== outwardQuantity)
+    if (DO.status == DISPATCH_ORDER.STATUS.FULFILLED && product.quantity !== outwardQuantity)
       DO.status = DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED;
-    await DO.save();
   }
+  await DO.save();
 };
 
 router.patch("/cancel/:id", activityLog, async (req, res, next) => {
