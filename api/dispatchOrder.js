@@ -223,7 +223,9 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
     if (product.quantity === outwardQuantity) {
       DO.status = DISPATCH_ORDER.STATUS.FULFILLED;
       await DO.save();
-    }
+    } else if (DO.status == DISPATCH_ORDER.STATUS.FULFILLED && product.quantity !== outwardQuantity)
+      DO.status = DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED;
+    await DO.save();
   }
 };
 
