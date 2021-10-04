@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Product, User, Brand, UOM, Category } = require("../models");
+const { Product, User, Brand, UOM, Category, sequelize } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const activityLog = require("../middlewares/activityLog");
@@ -113,7 +113,10 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
       product["dimensionsCBM"] = product["volume"];
       const category = await Dao.Category.findOne({ where: { name: product.category } });
-      const brand = await Dao.Brand.findOne({ where: { name: product.brand } });
+      const brand = await Dao.Brand.findOne({
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.brand) },
+      });
+      console.log("brand", brand, "product.brand ", product.brand);
       const uom = await Dao.UOM.findOne({ where: { name: product.uom } });
       if (category && brand && uom) {
         product["categoryId"] = category.id;
