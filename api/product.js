@@ -86,8 +86,7 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     console.log("req.body.products", req.body.products);
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
-        if (!allowedValues.includes(item))
-          validationErrors.push(`Field ${item} is invalid`, "Failed to add Bulk Products");
+        if (!allowedValues.includes(item)) validationErrors.push(`Field ${item} is invalid`);
       });
     }
     if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, `Failed to add Bulk Products`);
