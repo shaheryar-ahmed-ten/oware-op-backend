@@ -398,12 +398,17 @@ router.get("/:id", async (req, res, next) => {
       ],
       where: { id: req.params.id },
     };
+    //Include PO in DO's Inventories instead of directly including it
     const DO = await Dao.DispatchOrder.findOne(params);
-    const PO = await Dao.ProductOutward.findOne({ where: { dispatchOrderId: req.params.id } });
+    const PO = await Dao.ProductOutward.findAll({ where: { dispatchOrderId: req.params.id } });
+    const outwardArr = [];
+    for (const outward of PO) {
+      outwardArr.push(outward.id);
+    }
     for (const inv of DO.Inventories) {
       if (PO) {
-        inv.dataValues["outward"] = await OutwardGroup.findOne({
-          where: { outwardId: PO.id, inventoryId: inv.id },
+        inv.dataValues["outwards"] = await OutwardGroup.findAll({
+          where: { outwardId: { [Op.in]: outwardArr }, inventoryId: inv.id },
           attributes: [
             `userId`,
             `quantity`,
@@ -416,7 +421,16 @@ router.get("/:id", async (req, res, next) => {
           ],
         });
       }
+
+      inv.dataValues["outwardQty"] = inv.dataValues["outwards"].reduce((acc, item) => {
+        return acc + item.quantity;
+      }, 0);
     }
+    // let outwardQty = 0;
+    // for (const inv of DO.Inventories) {
+    //   outwardQty += out.quantity;
+    // }
+
     res.json({ success: true, message: "Data Found", data: DO });
   } catch (err) {
     console.log("err", err);
