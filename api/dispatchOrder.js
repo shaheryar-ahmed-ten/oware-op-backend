@@ -424,7 +424,10 @@ router.get("/:id", async (req, res, next) => {
         });
       }
 
-      console.log("inv.outwards", inv);
+      console.log("inv.outwards", inv.dataValues["outwards"]);
+      inv.dataValues["outwardQty"] = inv.dataValues["outwards"].reduce((acc, item) => {
+        return acc + item.quantity;
+      }, 0);
     }
     // let outwardQty = 0;
     // for (const inv of DO.Inventories) {
