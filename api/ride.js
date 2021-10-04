@@ -77,6 +77,14 @@ router.get("/", async (req, res, next) => {
         model: Driver,
         include: [{ model: Company, as: "Vendor" }],
       },
+      {
+        model: City,
+        as: "pickupCity",
+      },
+      {
+        model: City,
+        as: "dropoffCity",
+      },
     ],
     order: [["updatedAt", "DESC"]],
     where,
@@ -124,6 +132,14 @@ router.get("/single/:id", async (req, res, next) => {
       {
         model: Driver,
         include: [{ model: Company, as: "Vendor" }],
+      },
+      {
+        model: City,
+        as: "pickupCity",
+      },
+      {
+        model: City,
+        as: "dropoffCity",
       },
     ],
   });
@@ -390,6 +406,14 @@ router.get("/export", async (req, res, next) => {
       {
         model: Driver,
         include: [{ model: Company, as: "Vendor" }],
+      },
+      {
+        model: City,
+        as: "pickupCity",
+      },
+      {
+        model: City,
+        as: "dropoffCity",
       },
     ],
     order: [["updatedAt", "DESC"]],

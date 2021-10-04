@@ -54,10 +54,18 @@ module.exports = {
       onUpdate: "RESTRICT",
       onDelete: "RESTRICT",
     });
-    await queryInterface.removeColumn("Rides", "pickupAreaId");
-    await queryInterface.removeColumn("Rides", "dropoffAreaId");
-    await queryInterface.dropTable("Areas");
-    await queryInterface.dropTable("Zones");
+    await queryInterface.changeColumn("Rides", "pickupAreaId", {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    });
+    await queryInterface.changeColumn("Rides", "dropoffAreaId", {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    });
+    // await queryInterface.removeColumn("Rides", "pickupAreaId");
+    // await queryInterface.removeColumn("Rides", "dropoffAreaId");
+    // await queryInterface.dropTable("Areas");
+    // await queryInterface.dropTable("Zones");
   },
 
   down: async (queryInterface, Sequelize) => {
@@ -69,107 +77,127 @@ module.exports = {
      */
     await queryInterface.removeColumn("Rides", "pickupCityId");
     await queryInterface.removeColumn("Rides", "dropoffCityId");
-    await queryInterface.addColumn("Rides", "pickupAreaId", {
+    await queryInterface.changeColumn("Rides", "pickupAreaId", {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "Areas", // name of Target model
         key: "id", // key in Target model that we're referencing
       },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
     });
-    await queryInterface.addColumn("Rides", "dropoffAreaId", {
+    await queryInterface.changeColumn("Rides", "dropoffAreaId", {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
         model: "Areas", // name of Target model
         key: "id", // key in Target model that we're referencing
       },
-      onUpdate: "CASCADE",
-      onDelete: "CASCADE",
+      onUpdate: "RESTRICT",
+      onDelete: "RESTRICT",
     });
-    await queryInterface.createTable("Zones", {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER,
-      },
-      name: { type: Sequelize.STRING },
-      cityId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Cities", // name of Target model
-          key: "id", // key in Target model that we're referencing
-        },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
-      },
-      userId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Users", // name of Target model
-          key: "id", // key in Target model that we're referencing
-        },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
-      },
-      isActive: Sequelize.BOOLEAN,
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-      deletedAt: {
-        type: Sequelize.DATE,
-      },
-    });
-    await queryInterface.createTable("Areas", {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER,
-      },
-      name: { type: Sequelize.STRING },
-      zoneId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Zones", // name of Target model
-          key: "id", // key in Target model that we're referencing
-        },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
-      },
-      userId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Users", // name of Target model
-          key: "id", // key in Target model that we're referencing
-        },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
-      },
-      isActive: Sequelize.BOOLEAN,
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE,
-      },
-      deletedAt: {
-        type: Sequelize.DATE,
-      },
-    });
+    // await queryInterface.addColumn("Rides", "pickupAreaId", {
+    //   type: Sequelize.INTEGER,
+    //   allowNull: false,
+    //   references: {
+    //     model: "Areas", // name of Target model
+    //     key: "id", // key in Target model that we're referencing
+    //   },
+    //   onUpdate: "CASCADE",
+    //   onDelete: "CASCADE",
+    // });
+    // await queryInterface.addColumn("Rides", "dropoffAreaId", {
+    //   type: Sequelize.INTEGER,
+    //   allowNull: false,
+    //   references: {
+    //     model: "Areas", // name of Target model
+    //     key: "id", // key in Target model that we're referencing
+    //   },
+    //   onUpdate: "CASCADE",
+    //   onDelete: "CASCADE",
+    // });
+    // await queryInterface.createTable("Zones", {
+    //   id: {
+    //     allowNull: false,
+    //     autoIncrement: true,
+    //     primaryKey: true,
+    //     type: Sequelize.INTEGER,
+    //   },
+    //   name: { type: Sequelize.STRING },
+    //   cityId: {
+    //     type: Sequelize.INTEGER,
+    //     allowNull: false,
+    //     references: {
+    //       model: "Cities", // name of Target model
+    //       key: "id", // key in Target model that we're referencing
+    //     },
+    //     onUpdate: "CASCADE",
+    //     onDelete: "CASCADE",
+    //   },
+    //   userId: {
+    //     type: Sequelize.INTEGER,
+    //     allowNull: false,
+    //     references: {
+    //       model: "Users", // name of Target model
+    //       key: "id", // key in Target model that we're referencing
+    //     },
+    //     onUpdate: "CASCADE",
+    //     onDelete: "CASCADE",
+    //   },
+    //   isActive: Sequelize.BOOLEAN,
+    //   createdAt: {
+    //     allowNull: false,
+    //     type: Sequelize.DATE,
+    //   },
+    //   updatedAt: {
+    //     allowNull: false,
+    //     type: Sequelize.DATE,
+    //   },
+    //   deletedAt: {
+    //     type: Sequelize.DATE,
+    //   },
+    // });
+    // await queryInterface.createTable("Areas", {
+    //   id: {
+    //     allowNull: false,
+    //     autoIncrement: true,
+    //     primaryKey: true,
+    //     type: Sequelize.INTEGER,
+    //   },
+    //   name: { type: Sequelize.STRING },
+    //   zoneId: {
+    //     type: Sequelize.INTEGER,
+    //     allowNull: false,
+    //     references: {
+    //       model: "Zones", // name of Target model
+    //       key: "id", // key in Target model that we're referencing
+    //     },
+    //     onUpdate: "CASCADE",
+    //     onDelete: "CASCADE",
+    //   },
+    //   userId: {
+    //     type: Sequelize.INTEGER,
+    //     allowNull: false,
+    //     references: {
+    //       model: "Users", // name of Target model
+    //       key: "id", // key in Target model that we're referencing
+    //     },
+    //     onUpdate: "CASCADE",
+    //     onDelete: "CASCADE",
+    //   },
+    //   isActive: Sequelize.BOOLEAN,
+    //   createdAt: {
+    //     allowNull: false,
+    //     type: Sequelize.DATE,
+    //   },
+    //   updatedAt: {
+    //     allowNull: false,
+    //     type: Sequelize.DATE,
+    //   },
+    //   deletedAt: {
+    //     type: Sequelize.DATE,
+    //   },
+    // });
   },
 };
