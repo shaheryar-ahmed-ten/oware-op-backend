@@ -80,18 +80,17 @@ router.post("/bulk", activityLog, async (req, res, next) => {
   try {
     const validationErrors = [];
     const allowedValues = ["Name", "Description", "Volume in cm3", "Weight", "Category", "Brand", "Uom", "IsActive"];
-    // req.body.products = req.body.products.map((product) => {
     if (req.body.products.length > BULK_PRODUCT_LIMIT)
-      // return res.sendError(httpStatus.CONFLICT, `Cannot add product above ${BULK_PRODUCT_LIMIT}`);
-      validationErrors.push(`At row ${row} :Cannot add product above ${BULK_PRODUCT_LIMIT}`);
+      validationErrors.push(`Cannot add product above ${BULK_PRODUCT_LIMIT}`);
     let row = 2;
     console.log("req.body.products", req.body.products);
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
         if (!allowedValues.includes(item))
-          return res.sendError(httpStatus.CONFLICT, `Field ${item} is invalid`, "Failed to add Bulk Products");
+          validationErrors.push(`Field ${item} is invalid`, "Failed to add Bulk Products");
       });
     }
+    if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, `Failed to add Bulk Products`);
     for (const product of req.body.products) {
       product["name"] = product["Name"];
       product["description"] = product["Description"];
