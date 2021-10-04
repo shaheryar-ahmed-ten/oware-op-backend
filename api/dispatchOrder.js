@@ -234,11 +234,19 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventory.committedQuantity - (OG.quantity - outwardQuantity) + (product.quantity - outwardQuantity); //3-(5-3)+6
       OG.quantity = product.quantity > 0 ? product.quantity : OG.quantity;
     }
-    OG.save();
+    await OG.save();
     inventory.save();
     if (DO.status == DISPATCH_ORDER.STATUS.FULFILLED && product.quantity !== outwardQuantity)
       DO.status = DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED;
   }
+
+  const outwardExist = await Dao.ProductOutward.findAll({
+    where: {
+      dispatchOrderId: DO.id,
+    },
+  });
+  console.log("outwardExist", outwardExist);
+  if (outwardExist.length === 0) DO.status = DISPATCH_ORDER.STATUS.PENDING;
   await DO.save();
 };
 
