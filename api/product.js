@@ -6,7 +6,7 @@ const { Op } = require("sequelize");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const httpStatus = require("http-status");
-const { BULK_PRODUCT_LIMIT } = require("../enums");
+const { BULK_PRODUCT_LIMIT, SPECIAL_CHARACTERS } = require("../enums");
 const { addActivityLog } = require("../services/common.services");
 
 const Joi = require("joi");
@@ -98,14 +98,16 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       product["uom"] = product["Uom"];
       product["isActive"] = product["IsActive"];
 
+      if (product["name"].length === 0) validationErrors.push(`Row ${row} : product name cannot be empty`);
+
+      if (SPECIAL_CHARACTERS.test(product["name"]))
+        validationErrors.push(`Row ${row} : product ${product.name} has invalid characters`);
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
         validationErrors.push(`Row ${row} : product already exist with name ${productAlreadyExist.name}.`);
 
       if (product["isActive"] !== "TRUE" && product["isActive"] !== "FALSE")
-        validationErrors.push(
-          `Row ${row} : ${product.name} has invalid value for column isActive ${product.isActive}`
-        );
+        validationErrors.push(`Row ${row} : ${product.name} has invalid value for column isActive ${product.isActive}`);
 
       product["userId"] = req.userId;
       product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
@@ -156,13 +158,22 @@ router.get("/bulk-template", async (req, res, next) => {
   const getColumnsConfig = (columns) =>
     columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
 
-  worksheet.columns = getColumnsConfig(["Name", "Description", "Volume in cm3", "Weight", "Category", "Brand", "Uom", "IsActive"]);
+  worksheet.columns = getColumnsConfig([
+    "Name",
+    "Description",
+    "Volume in cm3",
+    "Weight",
+    "Category",
+    "Brand",
+    "Uom",
+    "IsActive",
+  ]);
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
 
   await workbook.xlsx.write(res).then(() => res.end());
-})
+});
 
 /* PUT update existing product. */
 router.put("/:id", activityLog, async (req, res, next) => {
