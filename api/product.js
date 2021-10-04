@@ -11,6 +11,7 @@ const { addActivityLog } = require("../services/common.services");
 
 const Joi = require("joi");
 const ActivityLog = require("../dao/ActivityLog");
+const ExcelJS = require("exceljs");
 
 const AddValidation = Joi.object({
   products: Joi.array().items(
@@ -73,8 +74,6 @@ router.post("/", activityLog, async (req, res, next) => {
 });
 
 router.post("/bulk", activityLog, async (req, res, next) => {
-  // const isValid = await AddValidation.validateAsync(req.body);
-  // if (isValid) {
   let message = "Bulk products registered";
   let products;
   try {
@@ -83,11 +82,9 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     if (req.body.products.length > BULK_PRODUCT_LIMIT)
       validationErrors.push(`Cannot add product above ${BULK_PRODUCT_LIMIT}`);
     let row = 2;
-    console.log("req.body.products", req.body.products);
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
-        if (!allowedValues.includes(item))
-          validationErrors.push(`Field ${item} is invalid`, "Failed to add Bulk Products");
+        if (!allowedValues.includes(item)) validationErrors.push(`Field ${item} is invalid`);
       });
     }
     if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, `Failed to add Bulk Products`);
@@ -103,19 +100,11 @@ router.post("/bulk", activityLog, async (req, res, next) => {
 
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Product Already Exist with name ${productAlreadyExist.name} at row ${row}`
-        // );
-        validationErrors.push(`At row ${row} :Product Already Exist with name ${productAlreadyExist.name}`);
+        validationErrors.push(`Row ${row} : product already exist with name ${productAlreadyExist.name}.`);
 
       if (product["isActive"] !== "TRUE" && product["isActive"] !== "FALSE")
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `${product.name} has invalid value for column isActive ${product.isActive} at row ${row}`
-        // );
         validationErrors.push(
-          `At row ${row} :{product.name} has invalid value for column isActive ${product.isActive}`
+          `Row ${row} : ${product.name} has invalid value for column isActive ${product.isActive}`
         );
 
       product["userId"] = req.userId;
@@ -129,41 +118,21 @@ router.post("/bulk", activityLog, async (req, res, next) => {
         product["brandId"] = brand.id;
         product["uomId"] = uom.id;
       } else if (!category) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Category Doesn't exist with name ${product.category} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
         validationErrors.push(
-          `At row ${row} :Category Doesn't exist with name ${product.category} for product ${product.name}`
+          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.name}.`
         );
       } else if (!brand) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Brand Doesn't exist with name ${product.brand} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
         validationErrors.push(
-          `At row ${row} :Brand Doesn't exist with name ${product.brand} for product ${product.name} `
+          `Row ${row} : brand Doesn't exist with name ${product.brand} for product ${product.name}.`
         );
       } else if (!uom) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Uom Doesn't exist with name ${product.uom} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
-        validationErrors.push(`At row ${row} :Uom Doesn't exist with name ${product.uom} for product ${product.name}`);
+        validationErrors.push(`Row ${row} : uom doesn't exist with name ${product.uom} for product ${product.name}.`);
       }
       row++;
     }
 
     if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
-    // });
     products = await Product.bulkCreate(req.body.products);
-    // await ActivityLog.bulkCreate({
-    //   userId: req.userId,
-
-    // });
   } catch (err) {
     console.log("err", err);
     return res.json({
@@ -176,10 +145,24 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     message,
     data: products,
   });
-  // } else {
-  //   return { status: httpStatus.UNPROCESSABLE_ENTITY, message: isValid, code: "Validation Error" };
-  // }
 });
+
+/* Get bulk upload template. */
+router.get("/bulk-template", async (req, res, next) => {
+  let workbook = new ExcelJS.Workbook();
+
+  let worksheet = workbook.addWorksheet("Products");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig(["Name", "Description", "Volume in cm3", "Weight", "Category", "Brand", "Uom", "IsActive"]);
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
+})
 
 /* PUT update existing product. */
 router.put("/:id", activityLog, async (req, res, next) => {
