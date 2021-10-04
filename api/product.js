@@ -11,6 +11,7 @@ const { addActivityLog } = require("../services/common.services");
 
 const Joi = require("joi");
 const ActivityLog = require("../dao/ActivityLog");
+const ExcelJS = require("exceljs");
 
 const AddValidation = Joi.object({
   products: Joi.array().items(
@@ -145,6 +146,23 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     data: products,
   });
 });
+
+/* Get bulk upload template. */
+router.get("/bulk-template", async (req, res, next) => {
+  let workbook = new ExcelJS.Workbook();
+
+  let worksheet = workbook.addWorksheet("Products");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig(["Name", "Description", "Volume in cm3", "Weight", "Category", "Brand", "Uom", "IsActive"]);
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
+})
 
 /* PUT update existing product. */
 router.put("/:id", activityLog, async (req, res, next) => {
