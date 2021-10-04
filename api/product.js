@@ -81,7 +81,6 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     if (req.body.products.length > BULK_PRODUCT_LIMIT)
       validationErrors.push(`Cannot add product above ${BULK_PRODUCT_LIMIT}`);
     let row = 2;
-    console.log("req.body.products", req.body.products);
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
         if (!allowedValues.includes(item)) validationErrors.push(`Field ${item} is invalid`);
@@ -100,11 +99,11 @@ router.post("/bulk", activityLog, async (req, res, next) => {
 
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
-        validationErrors.push(`At row ${row} :Product Already Exist with name ${productAlreadyExist.name}`);
+        validationErrors.push(`Row ${row} : product already exist with name ${productAlreadyExist.name}.`);
 
       if (product["isActive"] !== "TRUE" && product["isActive"] !== "FALSE")
         validationErrors.push(
-          `At row ${row} :{product.name} has invalid value for column isActive ${product.isActive}`
+          `Row ${row} : ${product.name} has invalid value for column isActive ${product.isActive}`
         );
 
       product["userId"] = req.userId;
@@ -119,14 +118,14 @@ router.post("/bulk", activityLog, async (req, res, next) => {
         product["uomId"] = uom.id;
       } else if (!category) {
         validationErrors.push(
-          `At row ${row} :Category Doesn't exist with name ${product.category} for product ${product.name}`
+          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.name}.`
         );
       } else if (!brand) {
         validationErrors.push(
-          `At row ${row} :Brand Doesn't exist with name ${product.brand} for product ${product.name} `
+          `Row ${row} : brand Doesn't exist with name ${product.brand} for product ${product.name}.`
         );
       } else if (!uom) {
-        validationErrors.push(`At row ${row} :Uom Doesn't exist with name ${product.uom} for product ${product.name}`);
+        validationErrors.push(`Row ${row} : uom doesn't exist with name ${product.uom} for product ${product.name}.`);
       }
       row++;
     }
