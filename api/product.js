@@ -73,8 +73,6 @@ router.post("/", activityLog, async (req, res, next) => {
 });
 
 router.post("/bulk", activityLog, async (req, res, next) => {
-  // const isValid = await AddValidation.validateAsync(req.body);
-  // if (isValid) {
   let message = "Bulk products registered";
   let products;
   try {
@@ -102,17 +100,9 @@ router.post("/bulk", activityLog, async (req, res, next) => {
 
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Product Already Exist with name ${productAlreadyExist.name} at row ${row}`
-        // );
         validationErrors.push(`At row ${row} :Product Already Exist with name ${productAlreadyExist.name}`);
 
       if (product["isActive"] !== "TRUE" && product["isActive"] !== "FALSE")
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `${product.name} has invalid value for column isActive ${product.isActive} at row ${row}`
-        // );
         validationErrors.push(
           `At row ${row} :{product.name} has invalid value for column isActive ${product.isActive}`
         );
@@ -128,41 +118,21 @@ router.post("/bulk", activityLog, async (req, res, next) => {
         product["brandId"] = brand.id;
         product["uomId"] = uom.id;
       } else if (!category) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Category Doesn't exist with name ${product.category} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
         validationErrors.push(
           `At row ${row} :Category Doesn't exist with name ${product.category} for product ${product.name}`
         );
       } else if (!brand) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Brand Doesn't exist with name ${product.brand} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
         validationErrors.push(
           `At row ${row} :Brand Doesn't exist with name ${product.brand} for product ${product.name} `
         );
       } else if (!uom) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Uom Doesn't exist with name ${product.uom} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
         validationErrors.push(`At row ${row} :Uom Doesn't exist with name ${product.uom} for product ${product.name}`);
       }
       row++;
     }
 
     if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
-    // });
     products = await Product.bulkCreate(req.body.products);
-    // await ActivityLog.bulkCreate({
-    //   userId: req.userId,
-
-    // });
   } catch (err) {
     console.log("err", err);
     return res.json({
@@ -175,9 +145,6 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     message,
     data: products,
   });
-  // } else {
-  //   return { status: httpStatus.UNPROCESSABLE_ENTITY, message: isValid, code: "Validation Error" };
-  // }
 });
 
 /* PUT update existing product. */
