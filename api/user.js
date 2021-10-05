@@ -141,7 +141,7 @@ router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activit
     console.log("err", err);
     return res.json({
       success: false,
-      message: err.errors.pop().message,
+      message: err.errors.pop()?.message.includes("users.username must be unique") ? "Username and email must be unique" : err.errors.pop()?.message,
     });
   }
   res.json({
