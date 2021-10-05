@@ -106,18 +106,22 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       product["userId"] = req.userId;
       product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
       product["dimensionsCBM"] = product["volume"];
-      const category = await Dao.Category.findOne({ where: { name: product.category } });
+      const category = await Dao.Category.findOne({
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.category) },
+      });
       const brand = await Dao.Brand.findOne({
         where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.brand) },
       });
-      const uom = await Dao.UOM.findOne({ where: { name: product.uom } });
+      const uom = await Dao.UOM.findOne({
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.uom) },
+      });
       if (category && brand && uom) {
         product["categoryId"] = category.id;
         product["brandId"] = brand.id;
         product["uomId"] = uom.id;
       } else if (!category) {
         validationErrors.push(
-          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.name}.`
+          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.category}.`
         );
       } else if (!brand) {
         validationErrors.push(
