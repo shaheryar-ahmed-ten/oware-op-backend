@@ -234,8 +234,9 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventory.committedQuantity - (OG.quantity - outwardQuantity) + (product.quantity - outwardQuantity); //3-(5-3)+6
       OG.quantity = product.quantity > 0 ? product.quantity : OG.quantity;
     }
-    await OG.save();
-    inventory.save();
+    if (product.quantity === 0) await OG.destroy();
+    else await OG.save();
+    await inventory.save();
     if (DO.status == DISPATCH_ORDER.STATUS.FULFILLED && product.quantity !== outwardQuantity)
       DO.status = DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED;
   }
