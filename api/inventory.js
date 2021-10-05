@@ -185,16 +185,32 @@ router.get("/export", async (req, res, next) => {
     where,
   });
 
-  worksheet.addRows(
-    response.map((row) => [
-      row.Company.name,
-      row.Products.name,
-      row.Warehouse.name,
-      //row.Product.UOM.name,
-      row.quantity,
-      moment(row.createdAt).format("DD/MM/yy HH:mm"),
-    ])
-  );
+  const inwardArray = [];
+  for (const inward of response) {
+    for (const Product of inward.Products) {
+      inwardArray.push([
+        inward.Company.name,
+        Product.name,
+        inward.Warehouse.name,
+        Product.UOM.name,
+        inward.quantity,
+        moment(inward.createdAt).format("DD/MM/yy HH:mm"),
+      ]);
+    }
+  }
+
+  worksheet.addRows(inwardArray);
+
+  // worksheet.addRows(
+  //   response.map((row) => [
+  //     row.Company.name,
+  //     row.Products.name,
+  //     row.Warehouse.name,
+  //     row.Product.UOM.name,
+  //     row.quantity,
+  //     moment(row.createdAt).format("DD/MM/yy HH:mm"),
+  //   ])
+  // );
 
   worksheet = workbook.addWorksheet("Dispatch Orders");
 
@@ -206,7 +222,7 @@ router.get("/export", async (req, res, next) => {
     "RECEIVER NAME",
     "RECEIVER PHONE",
     "REQUESTED QUANTITY",
-    "FULFILMENT DATE",
+    "CREATED DATE",
   ]);
 
   response = await DispatchOrder.findAll({
@@ -226,18 +242,23 @@ router.get("/export", async (req, res, next) => {
     where,
   });
 
-  worksheet.addRows(
-    response.map((row) => [
-      row.Inventory.Company.name,
-      row.Inventory.Product.name,
-      row.Inventory.Warehouse.name,
-      row.Inventory.Product.UOM.name,
-      row.receiverName,
-      row.receiverPhone,
-      row.quantity,
-      moment(row.shipmentDate).format("DD/MM/yy HH:mm"),
-    ])
-  );
+  const orderArray = [];
+  for (const order of response) {
+    for (const inv of order.Inventories) {
+      orderArray.push([
+        order.Inventory.Company.name,
+        inv.Product.name,
+        order.Inventory.Warehouse.name,
+        inv.Product.UOM.name,
+        order.receiverName,
+        order.receiverPhone,
+        inv.OrderGroup.quantity,
+        moment(order.createdAt).format("DD/MM/yy HH:mm"),
+      ]);
+    }
+  }
+
+  worksheet.addRows(orderArray);
 
   worksheet = workbook.addWorksheet("Product Outwards");
 
@@ -275,6 +296,24 @@ router.get("/export", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
     where,
   });
+
+  // const outwardArray = [];
+  // for (const outward of response) {
+  //   for (const inv of outward.DispatchOrder.Inventories) {
+  //     outwardArray.push([
+  //       inv.Company.name,
+  //       inv.Product.name,
+  //       inv.Warehouse.name,
+  //       inv.Product.UOM.name,
+  //       outward.DispatchOrder.receiverName,
+  //       outward.DispatchOrder.receiverPhone,
+  //       outward.DispatchOrder.quantity,
+  //       outward.quantity,
+  //       moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
+  //       moment(outward.createdAt).format("DD/MM/yy HH:mm"),
+  //     ]);
+  //   }
+  // }
 
   worksheet.addRows(
     response.map((row) => [
