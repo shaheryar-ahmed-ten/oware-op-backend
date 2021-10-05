@@ -58,7 +58,7 @@ router.post("/", activityLog, async (req, res, next) => {
 
 router.post("/bulk", activityLog, async (req, res, next) => {
   const totalProducts = req.body.products.length;
-  let message = `${totalProducts} products uploaded successfully`;
+  let message = `${totalProducts} products uploaded successfully.`;
   let products;
   try {
     const validationErrors = [];
