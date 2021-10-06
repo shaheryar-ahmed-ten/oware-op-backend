@@ -438,7 +438,7 @@ router.get("/export", async (req, res, next) => {
     "DRIVER",
     // "DRIVER PHONE",
     "VEHICLE",
-    "MEMO",
+    // "MEMO",
     "CUSTOMER PRICE",
     "VENDOR COST",
     "CUSTOMER DISCOUNT",
@@ -458,7 +458,7 @@ router.get("/export", async (req, res, next) => {
     // "PRODUCTS",
     // "QUANTITIES"
   ]);
-  
+
   worksheet.addRows(
     response.map((row) => [
       row.id,
@@ -469,7 +469,7 @@ router.get("/export", async (req, res, next) => {
       row.Driver.name,
       // // row.Driver.phone,
       row.Vehicle.registrationNumber,
-      row.memo,
+      // row.memo,
       row.price,
       row.cost,
       row.customerDiscount,
