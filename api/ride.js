@@ -434,7 +434,7 @@ router.get("/export", async (req, res, next) => {
     "STATUS",
     "COMPANY",
     "VENDOR",
-    // "VEHICLE TYPE",
+    "VEHICLE TYPE",
     "DRIVER",
     // "DRIVER PHONE",
     "VEHICLE",
@@ -453,18 +453,19 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF AREA",
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
+    "MEMO"
     // "CATEGORY",
     // "PRODUCTS",
     // "QUANTITIES"
   ]);
-
+  
   worksheet.addRows(
     response.map((row) => [
       row.id,
       row.status,
       row.Customer.name,
       row.Driver.Vendor.name,
-      // row.Vehicle.Car.CarMake.name+" "+ row.Vehicle.Car.CarModel.name,
+      row.Vehicle.Car.CarMake.name+" "+row.Vehicle.Car.CarModel.name,
       row.Driver.name,
       // // row.Driver.phone,
       row.Vehicle.registrationNumber,
@@ -483,6 +484,7 @@ router.get("/export", async (req, res, next) => {
       row.DropoffArea.name,
       row.dropoffAddress,
       moment(row.dropoffDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
+      row.memo
       // row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`),
       // row.RideProducts.map((product, idx) => `Name${idx + 1} = ${product.name}`),
       // row.RideProducts.map((product, idx) => `Qty${idx + 1} = ${product.quantity}`),
