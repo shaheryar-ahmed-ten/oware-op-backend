@@ -272,7 +272,7 @@ router.get("/relations", async (req, res, next) => {
         as: "Inventory",
         include: [
           { model: Company, attributes: ["id", "name"] },
-          { model: Warehouse, attributes: ["id", "name"] },
+          { model: Warehouse, attributes: ["id", "name", "businessWarehouseCode"] },
         ],
         attributes: ["id"],
       },
