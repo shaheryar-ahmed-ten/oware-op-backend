@@ -127,21 +127,44 @@ router.post("/auth/login", async (req, res, next) => {
 
 /* POST create new user. */
 router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activityLog, async (req, res, next) => {
+  // check if username/email in unique
+  try {
+    const tempUser = await User.findOne({
+      where: {
+        [Op.or]: [
+          { username: req.body.username },
+          { email: req.body.email },
+        ]
+      }
+    })
+    if (tempUser)
+      return res.json({
+        success: false,
+        message: "User already exist with username/email.",
+      });
+  } catch (error) {
+    return res.json({
+      success: false,
+      message: "User already exist with username/email.",
+    });
+  }
+  // find role
   const adminRole = await Role.findOne({ where: { type: "admin" } });
   let message = "New user registered";
   let user;
   try {
+    // check if user belongs to customer portal
     if (req.body["companyId"] === "") req.body["companyId"] = null;
+    // create user
     user = await User.create({
       roleId: adminRole.id,
       ...req.body,
     });
     user.password = undefined;
   } catch (err) {
-    console.log("err", err);
     return res.json({
       success: false,
-      message: err.errors.pop()?.message.includes("users.username must be unique") ? "Username and email must be unique" : err.errors.pop()?.message,
+      message: err.errors.pop().message,
     });
   }
   res.json({
