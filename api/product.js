@@ -133,7 +133,7 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       row++;
     }
 
-    if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
+    if (validationErrors.length) return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
     products = await Product.bulkCreate(req.body.products);
   } catch (err) {
     console.log("err", err);
