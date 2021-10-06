@@ -51,7 +51,7 @@ router.get("/", async (req, res, next) => {
   if (req.query.status) where["status"] = req.query.status;
   const response = await Ride.findAndCountAll({
     distinct: true,
-    subQuery: false,
+    // subQuery: false,
     include: [
       {
         model: Company,
