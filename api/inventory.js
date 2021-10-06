@@ -12,6 +12,7 @@ const {
   ProductInward,
   DispatchOrder,
   ProductOutward,
+  OutwardGroup,
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
@@ -296,39 +297,43 @@ router.get("/export", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
     where,
   });
+  console.log("response[0]", response[0]);
 
-  // const outwardArray = [];
-  // for (const outward of response) {
-  //   for (const inv of outward.DispatchOrder.Inventories) {
-  //     outwardArray.push([
-  //       inv.Company.name,
-  //       inv.Product.name,
-  //       inv.Warehouse.name,
-  //       inv.Product.UOM.name,
-  //       outward.DispatchOrder.receiverName,
-  //       outward.DispatchOrder.receiverPhone,
-  //       outward.DispatchOrder.quantity,
-  //       outward.quantity,
-  //       moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
-  //       moment(outward.createdAt).format("DD/MM/yy HH:mm"),
-  //     ]);
-  //   }
-  // }
+  const outwardArray = [];
+  for (const outward of response) {
+    for (const inv of outward.DispatchOrder.Inventories) {
+      console.log("inv", inv);
+      outwardArray.push([
+        inv.Company.name,
+        inv.Product.name,
+        inv.Warehouse.name,
+        inv.Product.UOM.name,
+        outward.DispatchOrder.receiverName,
+        outward.DispatchOrder.receiverPhone,
+        inv.OrderGroup.quantity,
+        inv.dispatchedQuantity,
+        moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
+        moment(outward.createdAt).format("DD/MM/yy HH:mm"),
+      ]);
+    }
+  }
 
-  worksheet.addRows(
-    response.map((row) => [
-      row.DispatchOrder.Inventory.Company.name,
-      row.DispatchOrder.Inventory.Product.name,
-      row.DispatchOrder.Inventory.Warehouse.name,
-      row.DispatchOrder.Inventory.Product.UOM.name,
-      row.DispatchOrder.receiverName,
-      row.DispatchOrder.receiverPhone,
-      row.DispatchOrder.quantity,
-      row.quantity,
-      moment(row.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
-      moment(row.createdAt).format("DD/MM/yy HH:mm"),
-    ])
-  );
+  worksheet.addRows(outwardArray);
+
+  // worksheet.addRows(
+  //   response.map((row) => [
+  //     row.DispatchOrder.Inventory.Company.name,
+  //     row.DispatchOrder.Inventory.Product.name,
+  //     row.DispatchOrder.Inventory.Warehouse.name,
+  //     row.DispatchOrder.Inventory.Product.UOM.name,
+  //     row.DispatchOrder.receiverName,
+  //     row.DispatchOrder.receiverPhone,
+  //     row.DispatchOrder.quantity,
+  //     row.quantity,
+  //     moment(row.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
+  //     moment(row.createdAt).format("DD/MM/yy HH:mm"),
+  //   ])
+  // );
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");

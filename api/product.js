@@ -95,7 +95,7 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       if (product["name"].length === 0) validationErrors.push(`Row ${row} : product name cannot be empty`);
 
       if (SPECIAL_CHARACTERS.test(product["name"]))
-        validationErrors.push(`Row ${row} : product ${product.name} has invalid characters`);
+        validationErrors.push(`Row ${row} : product ${product.name} has invalid characters for column Name`);
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
         validationErrors.push(`Row ${row} : product already exist with name ${productAlreadyExist.name}.`);
