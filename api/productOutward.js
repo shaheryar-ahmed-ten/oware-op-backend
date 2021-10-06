@@ -272,7 +272,7 @@ router.get("/relations", async (req, res, next) => {
         as: "Inventory",
         include: [
           { model: Company, attributes: ["id", "name"] },
-          { model: Warehouse, attributes: ["id", "name"] },
+          { model: Warehouse, attributes: ["id", "name", "businessWarehouseCode"] },
         ],
         attributes: ["id"],
       },
@@ -296,7 +296,7 @@ router.get("/relations", async (req, res, next) => {
         attributes: ["id"],
       },
     ],
-    where: { status: { [Op.not]: DISPATCH_ORDER.STATUS.FULFILLED } },
+    where: { status: { [Op.notIn]: [DISPATCH_ORDER.STATUS.FULFILLED, DISPATCH_ORDER.STATUS.CANCELLED] } },
     attributes: ["id", "internalIdForBusiness", "referenceId", "shipmentDate", "receiverName", "receiverPhone"],
     order: [["updatedAt", "DESC"]],
   });

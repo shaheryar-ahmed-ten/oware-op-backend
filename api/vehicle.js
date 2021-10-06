@@ -8,18 +8,31 @@ const { RELATION_TYPES } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const { addActivityLog } = require("../services/common.services");
+const { number } = require("joi");
 
 /* GET vehicles listing. */
 router.get("/", async (req, res, next) => {
-  const limit = req.query.rowsPerPage || config.rowsPerPage;
+  try {
+    const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {
     // userId: req.userId
   };
+  console.log("req------------", req.query);
   if (req.query.search)
     where[Op.or] = ["registrationNumber", "$Vendor.name$", "$Car.CarMake.name$", "$Car.CarModel.name$"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+    // number(req.query.carId)
+    // number(req.query.companyId)
+    if(req.query.carId)
+      where[Op.and]  = [{carId:Number(req.query.carId)}]
+
+    if(req.query.companyId)
+      where[Op.and].push({companyId:Number(req.query.companyId)})
+
+      console.log("where",where)
+
   const response = await Vehicle.findAndCountAll({
     include: [
       Driver,
@@ -38,7 +51,11 @@ router.get("/", async (req, res, next) => {
     message: "respond with a resource",
     data: response.rows,
     pages: Math.ceil(response.count / limit),
+    where: where
   });
+  } catch (error) {
+    console.log("APi Error", error);
+  }
 });
 
 /* POST create new vehicle. */
