@@ -92,7 +92,8 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       product["uom"] = product["Uom"];
       product["isActive"] = product["IsActive"];
 
-      if (product["name"].length === 0) validationErrors.push(`Row ${row} : product name cannot be empty`);
+      if (product["name"].length === 0) validationErrors.push(`Row ${row} : product name cannot be empty.`);
+      if (product["description"].length === 0) validationErrors.push(`Row ${row} : description cannot be empty.`);
 
       if (SPECIAL_CHARACTERS.test(product["name"]))
         validationErrors.push(`Row ${row} : product ${product.name} has invalid characters for column Name`);
