@@ -128,26 +128,26 @@ router.post("/auth/login", async (req, res, next) => {
 /* POST create new user. */
 router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activityLog, async (req, res, next) => {
   // check if username/email in unique
-  try {
-    const tempUser = await User.findOne({
-      where: {
-        [Op.or]: [
-          { username: req.body.username },
-          { email: req.body.email },
-        ]
-      }
-    })
-    if (tempUser)
-      return res.json({
-        success: false,
-        message: "User already exist with username/email.",
-      });
-  } catch (error) {
-    return res.json({
-      success: false,
-      message: "User already exist with username/email.",
-    });
-  }
+  // try {
+  //   const tempUser = await User.findOne({
+  //     where: {
+  //       [Op.or]: [
+  //         { username: req.body.username },
+  //         { email: req.body.email },
+  //       ]
+  //     }
+  //   })
+  //   if (tempUser)
+  //     return res.json({
+  //       success: false,
+  //       message: "User already exist with username/email.",
+  //     });
+  // } catch (error) {
+  //   return res.json({
+  //     success: false,
+  //     message: "User already exist with username/email.",
+  //   });
+  // }
   // find role
   const adminRole = await Role.findOne({ where: { type: "admin" } });
   let message = "New user registered";
