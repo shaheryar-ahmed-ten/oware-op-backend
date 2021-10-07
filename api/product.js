@@ -92,7 +92,8 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       product["uom"] = product["Uom"];
       product["isActive"] = product["IsActive"];
 
-      if (product["name"].length === 0) validationErrors.push(`Row ${row} : product name cannot be empty`);
+      if (product["name"].length === 0) validationErrors.push(`Row ${row} : product name cannot be empty.`);
+      if (product["description"].length === 0) validationErrors.push(`Row ${row} : description cannot be empty.`);
 
       if (SPECIAL_CHARACTERS.test(product["name"]))
         validationErrors.push(`Row ${row} : product ${product.name} has invalid characters for column Name`);
@@ -107,29 +108,31 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
       product["dimensionsCBM"] = product["volume"];
       const category = await Dao.Category.findOne({
-        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.category) },
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.category), isActive: 1 },
       });
+      if (!category)
+        validationErrors.push(
+          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.category}.`
+        );
       const brand = await Dao.Brand.findOne({
-        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.brand) },
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.brand), isActive: 1 },
       });
+      if (!brand)
+        validationErrors.push(
+          `Row ${row} : brand doesn't exist with name ${product.brand} for product ${product.name}.`
+        );
       const uom = await Dao.UOM.findOne({
-        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.uom) },
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.uom), isActive: 1 },
       });
+      if (!uom)
+        validationErrors.push(`Row ${row} : uom doesn't exist with name ${product.uom} for product ${product.name}.`);
+
       if (category && brand && uom) {
         product["categoryId"] = category.id;
         product["brandId"] = brand.id;
         product["uomId"] = uom.id;
-      } else if (!category) {
-        validationErrors.push(
-          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.category}.`
-        );
-      } else if (!brand) {
-        validationErrors.push(
-          `Row ${row} : brand doesn't exist with name ${product.brand} for product ${product.name}.`
-        );
-      } else if (!uom) {
-        validationErrors.push(`Row ${row} : uom doesn't exist with name ${product.uom} for product ${product.name}.`);
       }
+
       row++;
     }
 

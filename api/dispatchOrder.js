@@ -81,7 +81,9 @@ router.post("/", activityLog, async (req, res, next) => {
   let dispatchOrder;
   req.body["shipmentDate"] = new Date(moment(req.body["shipmentDate"]).tz("Africa/Abidjan"));
   req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
-
+  req.body.inventories = req.body.inventories.filter((inv) => {
+    if (inv.quantity > 0) return inv;
+  });
   try {
     await sequelize.transaction(async (transaction) => {
       dispatchOrder = await DispatchOrder.create(
@@ -207,10 +209,32 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventoryId: product.inventoryId,
         quantity: product.quantity,
       });
-      if (product.quantity > inventory.availableQuantity + OG.quantity)
+      console.log(
+        "(1)--->\n",
+        "product.quantity",
+        product.quantity,
+        "inventory.availableQuantity",
+        inventory.availableQuantity,
+        "OG.quantity",
+        OG.quantity,
+        "outwardQuantity",
+        outwardQuantity,
+        "inventory.committedQuantity",
+        inventory.committedQuantity,
+        "inventory.id",
+        inventory.id
+      );
+      console.log(
+        `product.quantity > inventory.availableQuantity + OG.quantity`,
+        product.quantity > inventory.availableQuantity + OG.quantity
+      );
+      if (parseInt(product.quantity) > parseInt(inventory.availableQuantity)) {
+        await OG.destroy();
         throw new Error("Cannot add quantity above available quantity");
-      else if (outwardQuantity > 0 && product.quantity < outwardQuantity)
+      } else if (parseInt(outwardQuantity) > 0 && parseInt(product.quantity) < parseInt(outwardQuantity)) {
+        await OG.destroy();
         throw new Error("Edited Dispatch order quantity cannot be less than total outward quantity");
+      }
 
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
