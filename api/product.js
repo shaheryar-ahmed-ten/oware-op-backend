@@ -112,7 +112,7 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       });
       if (!category)
         validationErrors.push(
-          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.category}.`
+          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.name}.`
         );
       const brand = await Dao.Brand.findOne({
         where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.brand), isActive: 1 },
@@ -136,7 +136,8 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       row++;
     }
 
-    if (validationErrors.length) return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
+    if (validationErrors.length)
+      return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
     products = await Product.bulkCreate(req.body.products);
   } catch (err) {
     console.log("err", err);
