@@ -77,6 +77,7 @@ router.get("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (r
 
 /* GET current logged in user. */
 router.get("/me", isLoggedIn, async (req, res, next) => {
+  console.log("user/me->", "req.user", req.user);
   return res.json({
     success: true,
     data: req.user,
@@ -101,6 +102,7 @@ router.post("/auth/login", async (req, res, next) => {
     where: { [loginKey]: req.body.username },
     include: [Role],
   });
+  console.log("LOGIN API", "user", user);
   if (!user)
     return res.status(401).json({
       success: false,
@@ -118,6 +120,7 @@ router.post("/auth/login", async (req, res, next) => {
       message: "Not allowed to enter operations portal",
     });
   var token = jwt.sign({ id: user.id }, config.JWT_SECRET, { expiresIn: "12h" });
+  console.log("token", token);
   res.json({
     success: isPasswordValid,
     message: "Login successful",
@@ -192,11 +195,15 @@ router.delete("/:id", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), ac
 });
 
 router.get("/relations", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (req, res, next) => {
+  console.log("user/relations ->");
   const roles = await Role.findAll();
   const portals = Object.keys(PORTALS_LABELS).map((portal) => ({ id: portal, label: PORTALS_LABELS[portal] }));
+  console.log("roles", roles);
+  console.log("portals", portals);
   let where = {};
   if (!isSuperAdmin(req)) where.contactId = req.userId;
   const customers = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
+  console.log("customers", customers);
   res.json({
     success: true,
     message: "respond with a resource",
