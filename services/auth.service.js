@@ -18,7 +18,6 @@ module.exports.isLoggedIn = (req, res, next) => {
         },
       ],
     });
-    console.log("isLoggedIn", "user", user);
     if (!user) return res.status(401).json({ status: false, message: "User doesn't exist" });
     if (!user.isActive) return res.status(401).json({ status: false, message: "User is inactive" });
     if (user.Role.allowedApps.split(",").indexOf(PORTALS.OPERATIONS) < 0)
@@ -31,7 +30,6 @@ module.exports.isLoggedIn = (req, res, next) => {
 };
 
 module.exports.isSuperAdmin = (req, res, next) => {
-  console.log("isSuperAdmin", "req.user.Role", req.user.Role);
   if (req.user.Role.type == ROLES.SUPER_ADMIN)
     if (next) next();
     else return true;
