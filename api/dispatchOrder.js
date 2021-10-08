@@ -276,6 +276,14 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
   });
   console.log("outwardExist", outwardExist);
   if (outwardExist.length === 0) DO.status = DISPATCH_ORDER.STATUS.PENDING;
+
+  //Update DO total quantity
+  let totalDoQty = 0;
+  for (const product of products) {
+    totalDoQty += product.quantity;
+  }
+  DO.quantity = totalDoQty;
+
   await DO.save();
 };
 
