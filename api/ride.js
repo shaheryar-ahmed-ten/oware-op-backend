@@ -48,6 +48,13 @@ router.get("/", async (req, res, next) => {
       "$Driver.Vendor.name$",
       "$Driver.name$",
     ].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  }
+
   if (req.query.status) where["status"] = req.query.status;
   const response = await Ride.findAndCountAll({
     distinct: true,
@@ -335,19 +342,6 @@ router.get("/relations", async (req, res, next) => {
   });
 });
 
-// router.get("/vehicle", async (req, res, next) => {
-//   const carId = req.params.carId;
-//   const vendorId = req.params.vendorId;
-//   const vehicle = await Dao.Vehicle.findAll({
-//     where:{
-//       companyId:vendorId &&
-//       carId:carId
-//     }
-
-//   })
-// });
-
-
 router.get("/stats", async (req, res) => {
   const stats = [
     {
@@ -382,6 +376,12 @@ router.get("/export", async (req, res, next) => {
 
   const getColumnsConfig = (columns) =>
     columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+  
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  }
 
   let response = await Dao.Ride.findAll({
     include: [
@@ -427,6 +427,7 @@ router.get("/export", async (req, res, next) => {
       },
     ],
     order: [["updatedAt", "DESC"]],
+    where,
   });
 
   worksheet.columns = getColumnsConfig([
