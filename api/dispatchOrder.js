@@ -33,6 +33,8 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+  if (req.query.status)
+    where = { status: req.query.status }
   const response = await DispatchOrder.findAndCountAll({
     include: [
       {
