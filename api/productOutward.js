@@ -316,7 +316,7 @@ router.get("/relations", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
 
   // find PO
-  let productOutward = await ProductOutward.findOne({
+  let productOutward = await Dao.ProductOutward.findOne({
     where: { id: req.params.id },
     include: [
       {
