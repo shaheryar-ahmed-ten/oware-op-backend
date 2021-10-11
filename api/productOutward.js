@@ -35,6 +35,7 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = [
       "$DispatchOrder.Inventory.Company.name$",
       "$DispatchOrder.Inventory.Warehouse.name$",
+      "$DispatchOrder.internalIdForBusiness$",
       // "$Inventories->Product.name$"
     ].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
