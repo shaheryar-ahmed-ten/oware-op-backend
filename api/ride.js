@@ -63,10 +63,12 @@ router.get("/", async (req, res, next) => {
       {
         model: Company,
         as: "Customer",
+        required: true 
       },
       {
         model: File,
         as: "Manifest",
+        required: true 
       },
       {
         model: RideProduct,
@@ -76,11 +78,13 @@ router.get("/", async (req, res, next) => {
         model: Area,
         include: [{ model: Zone, include: [City] }],
         as: "PickupArea",
+        required: true 
       },
       {
         model: Area,
         include: [{ model: Zone, include: [City] }],
         as: "DropoffArea",
+        required: true 
       },
       {
         model: Vehicle,
@@ -88,16 +92,21 @@ router.get("/", async (req, res, next) => {
           {
             model: Company,
             as: "Vendor",
+            required: true 
           },
           {
             model: Car,
-            include: [CarModel, CarMake, VehicleType],
+            include: [{model:CarModel,required:true}, CarMake, VehicleType],
+            required: true 
           },
+          
         ],
+        required: true 
       },
       {
         model: Driver,
-        include: [{ model: Company, as: "Vendor" }],
+        include: [{ model: Company, as: "Vendor" ,required: true }],
+        required: true 
       },
     ],
     order: [["updatedAt", "DESC"]],
