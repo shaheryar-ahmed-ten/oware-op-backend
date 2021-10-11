@@ -27,6 +27,7 @@ async function updateUser(req, res, next) {
   if (req.body.hasOwnProperty("isActive")) user.isActive = req.body.isActive;
   try {
     const response = await user.save();
+    console.log("response", response);
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
@@ -34,6 +35,7 @@ async function updateUser(req, res, next) {
       data: response,
     });
   } catch (err) {
+    console.log("err", err);
     return res.json({
       success: false,
       message: err.message,
@@ -75,6 +77,7 @@ router.get("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (r
 
 /* GET current logged in user. */
 router.get("/me", isLoggedIn, async (req, res, next) => {
+  console.log("user/me->", "req.user", req.user);
   return res.json({
     success: true,
     data: req.user,
@@ -125,18 +128,41 @@ router.post("/auth/login", async (req, res, next) => {
 
 /* POST create new user. */
 router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activityLog, async (req, res, next) => {
+  // check if username/email in unique
+  try {
+    const tempUser = await User.findOne({
+      where: {
+        [Op.or]: [
+          { username: req.body.username },
+          { email: req.body.email },
+        ]
+      }
+    })
+    if (tempUser)
+      return res.json({
+        success: false,
+        message: "User already exist with username/email.",
+      });
+  } catch (error) {
+    return res.json({
+      success: false,
+      message: "User already exist with username/email.",
+    });
+  }
+  // find role
   const adminRole = await Role.findOne({ where: { type: "admin" } });
   let message = "New user registered";
   let user;
   try {
+    // check if user belongs to customer portal
     if (req.body["companyId"] === "") req.body["companyId"] = null;
+    // create user
     user = await User.create({
       roleId: adminRole.id,
       ...req.body,
     });
     user.password = undefined;
   } catch (err) {
-    console.log("err", err);
     return res.json({
       success: false,
       message: err.errors.pop().message,
@@ -167,11 +193,15 @@ router.delete("/:id", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), ac
 });
 
 router.get("/relations", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (req, res, next) => {
+  console.log("user/relations ->");
   const roles = await Role.findAll();
   const portals = Object.keys(PORTALS_LABELS).map((portal) => ({ id: portal, label: PORTALS_LABELS[portal] }));
+  console.log("roles", roles);
+  console.log("portals", portals);
   let where = {};
   if (!isSuperAdmin(req)) where.contactId = req.userId;
   const customers = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
+  console.log("customers", customers);
   res.json({
     success: true,
     message: "respond with a resource",

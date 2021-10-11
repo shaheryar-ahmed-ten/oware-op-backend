@@ -1,6 +1,6 @@
-'use strict';
-const { Model } = require('sequelize');
-const bcrypt = require('bcrypt');
+"use strict";
+const { Model } = require("sequelize");
+const bcrypt = require("bcrypt");
 
 module.exports = (sequelize, DataTypes) => {
   class OrderGroup extends Model {
@@ -12,43 +12,53 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       OrderGroup.belongsTo(models.User, {
-        foreignKey: 'userId'
+        foreignKey: "userId",
       });
       OrderGroup.belongsTo(models.Inventory, {
-        foreignKey: 'inventoryId'
+        foreignKey: "inventoryId",
       });
       OrderGroup.belongsTo(models.DispatchOrder, {
-        foreignKey: 'orderId'
+        foreignKey: "orderId",
       });
-    };
-  };
-  OrderGroup.init({
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: true }
+    }
+  }
+  OrderGroup.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: true },
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: true },
+      },
+      quantity: {
+        type: DataTypes.INTEGER,
+        validate: {
+          isInt: { msg: "Please enter quantity" },
+        },
+      },
+      inventoryId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Inventory cannot be empty" } },
+      },
+      orderId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: { msg: "Order cannot be empty" } },
+      },
     },
-    quantity: {
-      type: DataTypes.INTEGER,
-      validate: {
-        isInt: { msg: 'Please enter quantity' }
-      }
-    },
-    inventoryId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Inventory cannot be empty' } }
-    },
-    orderId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: { msg: 'Order cannot be empty' } }
-    },
-  }, {
-    sequelize,
-    paranoid: true,
-    modelName: 'OrderGroup',
-  });
+    {
+      sequelize,
+      paranoid: true,
+      modelName: "OrderGroup",
+    }
+  );
 
   return OrderGroup;
 };

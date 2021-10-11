@@ -28,6 +28,7 @@ const moment = require("moment-timezone");
 const { previewFile } = require("../services/s3.service");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
+const { CloudWatchLogs } = require("aws-sdk");
 
 /* GET rides listing. */
 router.get("/", async (req, res, next) => {
@@ -50,7 +51,7 @@ router.get("/", async (req, res, next) => {
   if (req.query.status) where["status"] = req.query.status;
   const response = await Ride.findAndCountAll({
     distinct: true,
-    subQuery: false,
+    // subQuery: false,
     include: [
       {
         model: Company,
@@ -235,6 +236,9 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.cost = req.body.cost;
   ride.customerDiscount = req.body.customerDiscount;
   ride.driverIncentive = req.body.driverIncentive;
+  ride.memo = req.body.memo;
+  // ride.carId = req.body.carId;
+  // ride.vendorId = req.body.vendorId;
 
   let newProducts = req.body.products.filter((product) => !product.id);
   const oldProductIds = req.body.products.filter((product) => product.id).map((product) => product.id);
@@ -285,13 +289,35 @@ router.delete("/:id", activityLog, async (req, res, next) => {
 
 router.get("/relations", async (req, res, next) => {
   let where = { isActive: true };
-  const vehicles = await Vehicle.findAll({ where, include: [Driver] });
+  const vehicles = await Vehicle.findAll({ where, include: [Driver]
+ });
   const drivers = await Driver.findAll({ where });
   const areas = await Area.findAll({ where, include: [{ model: Zone, include: [City] }] });
   const zones = await Zone.findAll({ where });
   const cities = await City.findAll({ where, include: [{ model: Zone, include: [Area] }] });
   const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
   const productCategories = await Category.findAll({ where });
+  const vendors = await Dao.Company.findAll({
+    where: { ...where, relationType: RELATION_TYPES.VENDOR },
+    include: [
+      { model: Vehicle
+      ,include:[
+        { model:Car,
+          include:[{model:CarMake},{model:CarModel}],
+        }
+      ]
+      
+        , as: "Vehicles" }
+      ,{model:Driver,as:"Drivers"},
+    ],
+  });
+  const cars = await Vehicle.findAll({where, include:[{ model:Car,include:[{model:CarMake},{model:CarModel}]},
+    {model:Company,where:{relationType:RELATION_TYPES.VENDOR},as: "Vendor", require:true}
+  ]
+  });
+
+  
+
   const statuses = RIDE_STATUS;
   res.json({
     success: true,
@@ -303,9 +329,24 @@ router.get("/relations", async (req, res, next) => {
     zones,
     areas,
     companies,
+    vendors,
+    cars,
     productCategories,
   });
 });
+
+// router.get("/vehicle", async (req, res, next) => {
+//   const carId = req.params.carId;
+//   const vendorId = req.params.vendorId;
+//   const vehicle = await Dao.Vehicle.findAll({
+//     where:{
+//       companyId:vendorId &&
+//       carId:carId
+//     }
+
+//   })
+// });
+
 
 router.get("/stats", async (req, res) => {
   const stats = [
@@ -342,7 +383,7 @@ router.get("/export", async (req, res, next) => {
   const getColumnsConfig = (columns) =>
     columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
 
-  let response = await Ride.findAll({
+  let response = await Dao.Ride.findAll({
     include: [
       {
         model: Company,
@@ -378,6 +419,7 @@ router.get("/export", async (req, res, next) => {
             include: [CarModel, CarMake, VehicleType],
           },
         ],
+        // attributes:["registrationNumber"]
       },
       {
         model: Driver,
@@ -391,11 +433,14 @@ router.get("/export", async (req, res, next) => {
     "RIDE ID",
     "STATUS",
     "COMPANY",
+    "VENDOR",
+    "VEHICLE TYPE",
     "DRIVER",
     // "DRIVER PHONE",
     "VEHICLE",
-    "PRICE",
-    "COST",
+    // "MEMO",
+    "CUSTOMER PRICE",
+    "VENDOR COST",
     "CUSTOMER DISCOUNT",
     "DRIVER INCENTIVE",
     "PICKUP CITY",
@@ -408,6 +453,7 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF AREA",
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
+    "MEMO"
     // "CATEGORY",
     // "PRODUCTS",
     // "QUANTITIES"
@@ -418,9 +464,12 @@ router.get("/export", async (req, res, next) => {
       row.id,
       row.status,
       row.Customer.name,
+      row.Driver.Vendor.name,
+      row.Vehicle.Car.CarMake.name+" "+row.Vehicle.Car.CarModel.name,
       row.Driver.name,
-      // row.Driver.phone,
+      // // row.Driver.phone,
       row.Vehicle.registrationNumber,
+      // row.memo,
       row.price,
       row.cost,
       row.customerDiscount,
@@ -435,6 +484,7 @@ router.get("/export", async (req, res, next) => {
       row.DropoffArea.name,
       row.dropoffAddress,
       moment(row.dropoffDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
+      row.memo
       // row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`),
       // row.RideProducts.map((product, idx) => `Name${idx + 1} = ${product.name}`),
       // row.RideProducts.map((product, idx) => `Qty${idx + 1} = ${product.quantity}`),
