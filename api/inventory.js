@@ -18,7 +18,7 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const authService = require("../services/auth.service");
 const ExcelJS = require("exceljs");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const activityLog = require("../middlewares/activityLog");
 
 /* GET inventory listing. */
@@ -69,6 +69,17 @@ router.get("/export", async (req, res, next) => {
     "DISPATCHED QUANTITY",
   ]);
 
+  if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
   let response = await Inventory.findAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     order: [["updatedAt", "DESC"]],
@@ -100,6 +111,16 @@ router.get("/export", async (req, res, next) => {
   ]);
 
   where = {};
+  if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
   response = await Product.findAll({
     include: [{ model: UOM }, { model: Category }, { model: Brand }],
     order: [["updatedAt", "DESC"]],
@@ -154,6 +175,16 @@ router.get("/export", async (req, res, next) => {
   worksheet.columns = getColumnsConfig(["NAME", "BUSINESS WAREHOUSE CODE", "ADDRESS", "CITY", "STATUS"]);
 
   where = {};
+  if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
   response = await Warehouse.findAll({
     order: [["updatedAt", "DESC"]],
     where,
@@ -297,12 +328,10 @@ router.get("/export", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
     where,
   });
-  console.log("response[0]", response[0]);
 
   const outwardArray = [];
   for (const outward of response) {
     for (const inv of outward.DispatchOrder.Inventories) {
-      console.log("inv", inv);
       outwardArray.push([
         inv.Company.name,
         inv.Product.name,
