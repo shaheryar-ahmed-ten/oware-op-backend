@@ -33,6 +33,8 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+  if (req.query.status)
+    where = { status: req.query.status }
   const response = await DispatchOrder.findAndCountAll({
     include: [
       {
@@ -81,7 +83,9 @@ router.post("/", activityLog, async (req, res, next) => {
   let dispatchOrder;
   req.body["shipmentDate"] = new Date(moment(req.body["shipmentDate"]).tz("Africa/Abidjan"));
   req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
-
+  req.body.inventories = req.body.inventories.filter((inv) => {
+    if (inv.quantity > 0) return inv;
+  });
   try {
     await sequelize.transaction(async (transaction) => {
       dispatchOrder = await DispatchOrder.create(
@@ -207,10 +211,32 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventoryId: product.inventoryId,
         quantity: product.quantity,
       });
-      if (product.quantity > inventory.availableQuantity + OG.quantity)
+      console.log(
+        "(1)--->\n",
+        "product.quantity",
+        product.quantity,
+        "inventory.availableQuantity",
+        inventory.availableQuantity,
+        "OG.quantity",
+        OG.quantity,
+        "outwardQuantity",
+        outwardQuantity,
+        "inventory.committedQuantity",
+        inventory.committedQuantity,
+        "inventory.id",
+        inventory.id
+      );
+      console.log(
+        `product.quantity > inventory.availableQuantity + OG.quantity`,
+        product.quantity > inventory.availableQuantity + OG.quantity
+      );
+      if (parseInt(product.quantity) > parseInt(inventory.availableQuantity)) {
+        await OG.destroy();
         throw new Error("Cannot add quantity above available quantity");
-      else if (outwardQuantity > 0 && product.quantity < outwardQuantity)
+      } else if (parseInt(outwardQuantity) > 0 && parseInt(product.quantity) < parseInt(outwardQuantity)) {
+        await OG.destroy();
         throw new Error("Edited Dispatch order quantity cannot be less than total outward quantity");
+      }
 
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
@@ -223,7 +249,11 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         "OG.quantity",
         OG.quantity,
         "outwardQuantity",
-        outwardQuantity
+        outwardQuantity,
+        "inventory.committedQuantity",
+        inventory.committedQuantity,
+        "inventory.id",
+        inventory.id
       ); //7 > 59 + 8
       if (product.quantity > inventory.availableQuantity + OG.quantity)
         throw new Error("Cannot add quantity above available quantity");
@@ -234,11 +264,28 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventory.committedQuantity - (OG.quantity - outwardQuantity) + (product.quantity - outwardQuantity); //3-(5-3)+6
       OG.quantity = product.quantity > 0 ? product.quantity : OG.quantity;
     }
-    OG.save();
-    inventory.save();
+    if (product.quantity === 0) await OG.destroy();
+    else await OG.save();
+    await inventory.save();
     if (DO.status == DISPATCH_ORDER.STATUS.FULFILLED && product.quantity !== outwardQuantity)
       DO.status = DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED;
   }
+
+  const outwardExist = await Dao.ProductOutward.findAll({
+    where: {
+      dispatchOrderId: DO.id,
+    },
+  });
+  console.log("outwardExist", outwardExist);
+  if (outwardExist.length === 0) DO.status = DISPATCH_ORDER.STATUS.PENDING;
+
+  //Update DO total quantity
+  let totalDoQty = 0;
+  for (const product of products) {
+    totalDoQty += product.quantity;
+  }
+  DO.quantity = totalDoQty;
+
   await DO.save();
 };
 
@@ -398,12 +445,17 @@ router.get("/:id", async (req, res, next) => {
       ],
       where: { id: req.params.id },
     };
+    //Include PO in DO's Inventories instead of directly including it
     const DO = await Dao.DispatchOrder.findOne(params);
-    const PO = await Dao.ProductOutward.findOne({ where: { dispatchOrderId: req.params.id } });
+    const PO = await Dao.ProductOutward.findAll({ where: { dispatchOrderId: req.params.id } });
+    const outwardArr = [];
+    for (const outward of PO) {
+      outwardArr.push(outward.id);
+    }
     for (const inv of DO.Inventories) {
       if (PO) {
-        inv.dataValues["outward"] = await OutwardGroup.findOne({
-          where: { outwardId: PO.id, inventoryId: inv.id },
+        inv.dataValues["outwards"] = await OutwardGroup.findAll({
+          where: { outwardId: { [Op.in]: outwardArr }, inventoryId: inv.id },
           attributes: [
             `userId`,
             `quantity`,
@@ -416,7 +468,16 @@ router.get("/:id", async (req, res, next) => {
           ],
         });
       }
+
+      inv.dataValues["outwardQty"] = inv.dataValues["outwards"].reduce((acc, item) => {
+        return acc + item.quantity;
+      }, 0);
     }
+    // let outwardQty = 0;
+    // for (const inv of DO.Inventories) {
+    //   outwardQty += out.quantity;
+    // }
+
     res.json({ success: true, message: "Data Found", data: DO });
   } catch (err) {
     console.log("err", err);

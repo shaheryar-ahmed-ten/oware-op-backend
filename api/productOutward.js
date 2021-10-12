@@ -35,6 +35,7 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = [
       "$DispatchOrder.Inventory.Company.name$",
       "$DispatchOrder.Inventory.Warehouse.name$",
+      "$DispatchOrder.internalIdForBusiness$",
       // "$Inventories->Product.name$"
     ].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
@@ -264,6 +265,8 @@ router.delete("/:id", async (req, res, next) => {
       message: "No productOutward found!",
     });
 });
+
+
 router.get("/relations", async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
     include: [
@@ -272,7 +275,7 @@ router.get("/relations", async (req, res, next) => {
         as: "Inventory",
         include: [
           { model: Company, attributes: ["id", "name"] },
-          { model: Warehouse, attributes: ["id", "name"] },
+          { model: Warehouse, attributes: ["id", "name", "businessWarehouseCode"] },
         ],
         attributes: ["id"],
       },
@@ -296,7 +299,7 @@ router.get("/relations", async (req, res, next) => {
         attributes: ["id"],
       },
     ],
-    where: { status: { [Op.not]: DISPATCH_ORDER.STATUS.FULFILLED } },
+    where: { status: { [Op.notIn]: [DISPATCH_ORDER.STATUS.FULFILLED, DISPATCH_ORDER.STATUS.CANCELLED] } },
     attributes: ["id", "internalIdForBusiness", "referenceId", "shipmentDate", "receiverName", "receiverPhone"],
     order: [["updatedAt", "DESC"]],
   });
@@ -309,5 +312,66 @@ router.get("/relations", async (req, res, next) => {
     vehicles,
   });
 });
+
+router.get("/:id", async (req, res, next) => {
+
+  // find PO
+  let productOutward = await Dao.ProductOutward.findOne({
+    where: { id: req.params.id },
+    include: [
+      {
+        duplicating: false,
+        model: DispatchOrder,
+        required: true,
+        include: [
+          {
+            model: Inventory,
+            required: true,
+            as: "Inventory",
+            include: [
+              { model: Product, include: [{ model: UOM }] },
+              { model: Company, required: true },
+              { model: Warehouse, required: true },
+            ],
+          },
+          {
+            model: Inventory,
+            required: true,
+            as: "Inventories",
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+          },
+        ],
+      },
+      {
+        model: Vehicle,
+        include: [{ model: Car, include: [CarMake, CarModel] }],
+      },
+      {
+        model: Inventory,
+        as: "Inventories",
+        required: true,
+        include: [
+          { model: Product, as: "Product", include: [{ model: UOM }] },
+          { model: Company },
+          { model: Warehouse },
+        ],
+      },
+    ],
+  });
+  // Check if PO exists
+  if (!productOutward)
+    return res.status(400).json({
+      success: false,
+      message: "No productOutward found!",
+    });
+
+  return res.json({
+    success: true,
+    message: "Product Outward found",
+    data: productOutward,
+  });
+
+})
+
 
 module.exports = router;

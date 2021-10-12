@@ -1,9 +1,9 @@
 const CrudServiceDao = require("./crudService");
 
-class RideDao extends CrudServiceDao {
+class Ride extends CrudServiceDao {
   constructor() {
     super("Ride");
   }
 }
 
-module.exports = new RideDao();
+module.exports = new Ride();

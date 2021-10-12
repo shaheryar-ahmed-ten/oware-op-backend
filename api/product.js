@@ -1,31 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const { Product, User, Brand, UOM, Category } = require("../models");
+const { Product, User, Brand, UOM, Category, sequelize } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const httpStatus = require("http-status");
-const { BULK_PRODUCT_LIMIT } = require("../enums");
+const { BULK_PRODUCT_LIMIT, SPECIAL_CHARACTERS } = require("../enums");
 const { addActivityLog } = require("../services/common.services");
-
-const Joi = require("joi");
 const ActivityLog = require("../dao/ActivityLog");
-
-const AddValidation = Joi.object({
-  products: Joi.array().items(
-    Joi.object({
-      name: Joi.string().required(),
-      description: Joi.string().required(),
-      volume: Joi.number().integer().required(),
-      weight: Joi.number().integer().required(),
-      category: Joi.string().required(),
-      brand: Joi.string().required(),
-      uom: Joi.string().required(),
-      isActive: Joi.string().required(),
-    })
-  ),
-});
+const ExcelJS = require("exceljs");
 
 /* GET products listing. */
 router.get("/", async (req, res, next) => {
@@ -73,98 +57,88 @@ router.post("/", activityLog, async (req, res, next) => {
 });
 
 router.post("/bulk", activityLog, async (req, res, next) => {
-  // const isValid = await AddValidation.validateAsync(req.body);
-  // if (isValid) {
-  let message = "Bulk products registered";
+  const totalProducts = req.body.products.length;
+  let message = `${totalProducts} products uploaded successfully.`;
   let products;
   try {
     const validationErrors = [];
-    const allowedValues = ["Name", "Description", "Volume in cm3", "Weight", "Category", "Brand", "Uom", "IsActive"];
-    // req.body.products = req.body.products.map((product) => {
-    if (req.body.products.length > BULK_PRODUCT_LIMIT)
-      // return res.sendError(httpStatus.CONFLICT, `Cannot add product above ${BULK_PRODUCT_LIMIT}`);
-      validationErrors.push(`At row ${row} :Cannot add product above ${BULK_PRODUCT_LIMIT}`);
+    const allowedValues = [
+      "Name",
+      "Description",
+      "Volume in cm3",
+      "Weight in Kgs",
+      "Category",
+      "Brand",
+      "Uom",
+      "IsActive",
+    ];
+    if (totalProducts > BULK_PRODUCT_LIMIT) validationErrors.push(`Cannot add product above ${BULK_PRODUCT_LIMIT}`);
+    else if (totalProducts === 0)
+      return res.sendError(httpStatus.CONFLICT, "Cannot add empty sheet", `Failed to add Bulk Products`);
     let row = 2;
-    console.log("req.body.products", req.body.products);
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
-        if (!allowedValues.includes(item))
-          return res.sendError(httpStatus.CONFLICT, `Field ${item} is invalid`, "Failed to add Bulk Products");
+        if (!allowedValues.includes(item)) validationErrors.push(`Field ${item} is invalid`);
       });
     }
+    if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, `Failed to add Bulk Products`);
     for (const product of req.body.products) {
       product["name"] = product["Name"];
       product["description"] = product["Description"];
       product["volume"] = product["Volume in cm3"];
-      product["weight"] = product["Weight"];
+      product["weight"] = product["Weight in Kgs"];
       product["category"] = product["Category"];
       product["brand"] = product["Brand"];
       product["uom"] = product["Uom"];
       product["isActive"] = product["IsActive"];
 
+      if (product["name"].length === 0) validationErrors.push(`Row ${row} : product name cannot be empty.`);
+      if (product["description"].length === 0) validationErrors.push(`Row ${row} : description cannot be empty.`);
+
+      if (SPECIAL_CHARACTERS.test(product["name"]))
+        validationErrors.push(`Row ${row} : product ${product.name} has invalid characters for column Name`);
       const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
       if (productAlreadyExist)
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Product Already Exist with name ${productAlreadyExist.name} at row ${row}`
-        // );
-        validationErrors.push(`At row ${row} :Product Already Exist with name ${productAlreadyExist.name}`);
+        validationErrors.push(`Row ${row} : product already exist with name ${productAlreadyExist.name}.`);
 
       if (product["isActive"] !== "TRUE" && product["isActive"] !== "FALSE")
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `${product.name} has invalid value for column isActive ${product.isActive} at row ${row}`
-        // );
-        validationErrors.push(
-          `At row ${row} :{product.name} has invalid value for column isActive ${product.isActive}`
-        );
+        validationErrors.push(`Row ${row} : ${product.name} has invalid value for column isActive ${product.isActive}`);
 
       product["userId"] = req.userId;
       product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
       product["dimensionsCBM"] = product["volume"];
-      const category = await Dao.Category.findOne({ where: { name: product.category } });
-      const brand = await Dao.Brand.findOne({ where: { name: product.brand } });
-      const uom = await Dao.UOM.findOne({ where: { name: product.uom } });
+      const category = await Dao.Category.findOne({
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.category), isActive: 1 },
+      });
+      if (!category)
+        validationErrors.push(
+          `Row ${row} : category doesn't exist with name ${product.category} for product ${product.name}.`
+        );
+      const brand = await Dao.Brand.findOne({
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.brand), isActive: 1 },
+      });
+      if (!brand)
+        validationErrors.push(
+          `Row ${row} : brand doesn't exist with name ${product.brand} for product ${product.name}.`
+        );
+      const uom = await Dao.UOM.findOne({
+        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.uom), isActive: 1 },
+      });
+      if (!uom)
+        validationErrors.push(`Row ${row} : uom doesn't exist with name ${product.uom} for product ${product.name}.`);
+
       if (category && brand && uom) {
         product["categoryId"] = category.id;
         product["brandId"] = brand.id;
         product["uomId"] = uom.id;
-      } else if (!category) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Category Doesn't exist with name ${product.category} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
-        validationErrors.push(
-          `At row ${row} :Category Doesn't exist with name ${product.category} for product ${product.name}`
-        );
-      } else if (!brand) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Brand Doesn't exist with name ${product.brand} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
-        validationErrors.push(
-          `At row ${row} :Brand Doesn't exist with name ${product.brand} for product ${product.name} `
-        );
-      } else if (!uom) {
-        // return res.sendError(
-        //   httpStatus.CONFLICT,
-        //   `Uom Doesn't exist with name ${product.uom} for product ${product.name} at row ${row}`,
-        //   "Failed to add Bulk Products"
-        // );
-        validationErrors.push(`At row ${row} :Uom Doesn't exist with name ${product.uom} for product ${product.name}`);
       }
+
       row++;
     }
 
-    if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
-    // });
+    if (validationErrors.length)
+      return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
     products = await Product.bulkCreate(req.body.products);
-    // await ActivityLog.bulkCreate({
-    //   userId: req.userId,
-
-    // });
   } catch (err) {
     console.log("err", err);
     return res.json({
@@ -177,9 +151,32 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     message,
     data: products,
   });
-  // } else {
-  //   return { status: httpStatus.UNPROCESSABLE_ENTITY, message: isValid, code: "Validation Error" };
-  // }
+});
+
+/* Get bulk upload template. */
+router.get("/bulk-template", async (req, res, next) => {
+  let workbook = new ExcelJS.Workbook();
+
+  let worksheet = workbook.addWorksheet("Products");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig([
+    "Name",
+    "Description",
+    "Volume in cm3",
+    "Weight in Kgs",
+    "Category",
+    "Brand",
+    "Uom",
+    "IsActive",
+  ]);
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
 });
 
 /* PUT update existing product. */
