@@ -23,7 +23,7 @@ async function updateUser(req, res, next) {
   if (req.body.hasOwnProperty("roleId")) user.roleId = Number(req.body.roleId);
   if (req.body.hasOwnProperty("phone")) user.phone = req.body.phone;
   if (req.body.hasOwnProperty("companyId") && req.body.companyId.length) user.companyId = Number(req.body.companyId);
-  if (req.body.hasOwnProperty("password")) user.password = req.body.password;
+  if (req.body.hasOwnProperty("password") && req.body.password.length > 0) user.password = req.body.password;
   if (req.body.hasOwnProperty("isActive")) user.isActive = req.body.isActive;
   try {
     const response = await user.save();
@@ -132,12 +132,9 @@ router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activit
   try {
     const tempUser = await User.findOne({
       where: {
-        [Op.or]: [
-          { username: req.body.username },
-          { email: req.body.email },
-        ]
-      }
-    })
+        [Op.or]: [{ username: req.body.username }, { email: req.body.email }],
+      },
+    });
     if (tempUser)
       return res.json({
         success: false,
