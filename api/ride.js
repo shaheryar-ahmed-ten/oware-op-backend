@@ -26,7 +26,6 @@ const moment = require("moment-timezone");
 const { previewFile } = require("../services/s3.service");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
-const { CloudWatchLogs } = require("aws-sdk");
 
 /* GET rides listing. */
 router.get("/", async (req, res, next) => {
@@ -70,18 +69,18 @@ router.get("/", async (req, res, next) => {
         model: RideProduct,
         include: [Category],
       },
-      {
-        model: Area,
-        include: [{ model: Zone, include: [City] }],
-        as: "PickupArea",
-        required: true,
-      },
-      {
-        model: Area,
-        include: [{ model: Zone, include: [City] }],
-        as: "DropoffArea",
-        required: true,
-      },
+      // {
+      //   model: Area,
+      //   include: [{ model: Zone, include: [City] }],
+      //   as: "PickupArea",
+      //   required: true,
+      // },
+      // {
+      //   model: Area,
+      //   include: [{ model: Zone, include: [City] }],
+      //   as: "DropoffArea",
+      //   required: true,
+      // },
       {
         model: Vehicle,
         include: [
