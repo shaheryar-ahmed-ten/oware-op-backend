@@ -78,7 +78,7 @@ router.get("/", async (req, res, next) => {
       {
         model: File,
         as: "Manifest",
-        required: true 
+        // required: true 
       },
       {
         model: RideProduct,
