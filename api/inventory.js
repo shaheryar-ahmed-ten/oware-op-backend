@@ -75,7 +75,7 @@ router.get("/export", async (req, res, next) => {
       hour: 23,
       minute: 53,
       second: 59,
-      millisecond: 0
+      millisecond: 0,
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
@@ -117,7 +117,7 @@ router.get("/export", async (req, res, next) => {
       hour: 23,
       minute: 53,
       second: 59,
-      millisecond: 0
+      millisecond: 0,
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
@@ -181,7 +181,7 @@ router.get("/export", async (req, res, next) => {
       hour: 23,
       minute: 53,
       second: 59,
-      millisecond: 0
+      millisecond: 0,
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
@@ -220,12 +220,13 @@ router.get("/export", async (req, res, next) => {
   const inwardArray = [];
   for (const inward of response) {
     for (const Product of inward.Products) {
+      console.log("Product.InwardGroup", Product.InwardGroup);
       inwardArray.push([
         inward.Company.name,
         Product.name,
         inward.Warehouse.name,
         Product.UOM.name,
-        inward.quantity,
+        Product.InwardGroup.quantity,
         moment(inward.createdAt).format("DD/MM/yy HH:mm"),
       ]);
     }
