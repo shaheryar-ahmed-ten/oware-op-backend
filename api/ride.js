@@ -66,6 +66,8 @@ router.get("/", async (req, res, next) => {
   }
 
   if (req.query.status) where["status"] = req.query.status;
+  // if (req.query.searchstatus) where["status"] = req.query.searchstatus;
+
   const response = await Ride.findAndCountAll({
     distinct: true,
     // subQuery: false,
@@ -413,6 +415,8 @@ router.get("/export", async (req, res, next) => {
     });
     where["createdAt"] = { [Op.between]: [startingDate,endingDate] };
   }
+
+  if (req.query.status) where["status"] = req.query.status;
 
   let response = await Dao.Ride.findAll({
     include: [
