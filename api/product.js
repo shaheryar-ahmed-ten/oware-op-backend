@@ -38,6 +38,12 @@ router.get("/", async (req, res, next) => {
 router.post("/", activityLog, async (req, res, next) => {
   let message = "New product registered";
   let product;
+  if (SPECIAL_CHARACTERS.test(req.body.name))
+    return res.json({
+      success: false,
+      message: "Product name can not contain special characters.",
+    });
+
   try {
     product = await Product.create({
       userId: req.userId,
