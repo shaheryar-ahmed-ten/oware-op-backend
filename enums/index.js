@@ -58,5 +58,5 @@ module.exports = Object.freeze({
   },
   initialInternalIdForBusinessForAdjustment: "SA-",
   BULK_PRODUCT_LIMIT: 200,
-  SPECIAL_CHARACTERS: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
+  SPECIAL_CHARACTERS: /[!@#$%^*\=\[\]{};':"\\|>\/?]/,
 });
