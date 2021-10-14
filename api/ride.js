@@ -49,8 +49,20 @@ router.get("/", async (req, res, next) => {
     const previousDate = moment().subtract(req.query.days, "days");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   }
+  if (req.query.start && req.query.end) {
+    const startingDate = moment(req.query.start);
+    const endingDate = moment(req.query.end).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startingDate, endingDate] };
+  }
 
   if (req.query.status) where["status"] = req.query.status;
+  // if (req.query.searchstatus) where["status"] = req.query.searchstatus;
+
   const response = await Ride.findAndCountAll({
     distinct: true,
     // subQuery: false,
@@ -63,7 +75,6 @@ router.get("/", async (req, res, next) => {
       {
         model: File,
         as: "Manifest",
-        required: true,
       },
       {
         model: RideProduct,
@@ -121,6 +132,7 @@ router.get("/", async (req, res, next) => {
     message: "respond with a resource",
     data: response.rows,
     pages: Math.ceil(response.count / limit),
+    count: response.count,
   });
 });
 
@@ -383,6 +395,19 @@ router.get("/export", async (req, res, next) => {
     const previousDate = moment().subtract(req.query.days, "days");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   }
+
+  if (req.query.start || req.query.end) {
+    const startingDate = moment(req.query.start);
+    const endingDate = moment(req.query.end).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startingDate, endingDate] };
+  }
+
+  if (req.query.status) where["status"] = req.query.status;
 
   let response = await Dao.Ride.findAll({
     include: [

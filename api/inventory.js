@@ -18,8 +18,10 @@ const config = require("../config");
 const { Op } = require("sequelize");
 const authService = require("../services/auth.service");
 const ExcelJS = require("exceljs");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const activityLog = require("../middlewares/activityLog");
+const dao = require("../dao");
+const OrderGroup = require("../dao/OrderGroup");
 
 /* GET inventory listing. */
 router.get("/", async (req, res, next) => {
@@ -31,6 +33,21 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  }
+  else if (req.query.startDate && req.query.endDate) {
+    const startDate = moment(req.query.startDate);
+    const endDate = moment(req.query.endDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
 
   const response = await Inventory.findAndCountAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
@@ -69,6 +86,17 @@ router.get("/export", async (req, res, next) => {
     "DISPATCHED QUANTITY",
   ]);
 
+  if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
   let response = await Inventory.findAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     order: [["updatedAt", "DESC"]],
@@ -100,6 +128,16 @@ router.get("/export", async (req, res, next) => {
   ]);
 
   where = {};
+  if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
   response = await Product.findAll({
     include: [{ model: UOM }, { model: Category }, { model: Brand }],
     order: [["updatedAt", "DESC"]],
@@ -154,6 +192,16 @@ router.get("/export", async (req, res, next) => {
   worksheet.columns = getColumnsConfig(["NAME", "BUSINESS WAREHOUSE CODE", "ADDRESS", "CITY", "STATUS"]);
 
   where = {};
+  if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
   response = await Warehouse.findAll({
     order: [["updatedAt", "DESC"]],
     where,
@@ -194,7 +242,7 @@ router.get("/export", async (req, res, next) => {
         Product.name,
         inward.Warehouse.name,
         Product.UOM.name,
-        inward.quantity,
+        Product.InwardGroup.quantity,
         moment(inward.createdAt).format("DD/MM/yy HH:mm"),
       ]);
     }
@@ -297,12 +345,32 @@ router.get("/export", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
     where,
   });
-  console.log("response[0]", response[0]);
+  console.log("response[0].OutwardGroup", response[0].OutwardGroup);
 
   const outwardArray = [];
   for (const outward of response) {
     for (const inv of outward.DispatchOrder.Inventories) {
-      console.log("inv", inv);
+      // console.log("inv.id", inv.id, "outward", outward.id);
+      // const outwardGroup = await OutwardGroup.findOne({
+      //   where: { inventoryId: inv.id, outwardId: outward.id },
+      // });
+      // console.log("outwardGroup", outwardGroup);
+      const OG = await OrderGroup.findOne({
+        where: { inventoryId: inv.id, orderId: outward.DispatchOrder.id },
+      });
+      console.log(
+        "inventoryId",
+        inv.id,
+        "orderId",
+        outward.DispatchOrder.id,
+        "OG.id",
+        OG.id,
+        "OG.quantity",
+        OG.quantity
+      );
+      const OutG = await OutwardGroup.findOne({
+        where: { inventoryId: inv.id, outwardId: outward.id },
+      });
       outwardArray.push([
         inv.Company.name,
         inv.Product.name,
@@ -310,8 +378,8 @@ router.get("/export", async (req, res, next) => {
         inv.Product.UOM.name,
         outward.DispatchOrder.receiverName,
         outward.DispatchOrder.receiverPhone,
-        inv.OrderGroup.quantity,
-        inv.dispatchedQuantity,
+        OG.quantity,
+        OutG.quantity,
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
         moment(outward.createdAt).format("DD/MM/yy HH:mm"),
       ]);
