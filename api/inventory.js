@@ -241,7 +241,7 @@ router.get("/export", async (req, res, next) => {
 
   worksheet = workbook.addWorksheet("Product Inwards");
 
-  worksheet.columns = getColumnsConfig(["CUSTOMER", "PRODUCT", "WAREHOUSE", "UOM", "QUANTITY", "DATE"]);
+  worksheet.columns = getColumnsConfig(["CUSTOMER", "PRODUCT", "WAREHOUSE", "UOM", "QUANTITY", "REFERENCE ID", "DATE"]);
 
   if (req.query.days) {
     const currentDate = moment();
@@ -279,6 +279,7 @@ router.get("/export", async (req, res, next) => {
         inward.Warehouse.name,
         Product.UOM.name,
         Product.InwardGroup.quantity,
+        inward.referenceId || '',
         moment(inward.createdAt).format("DD/MM/yy HH:mm"),
       ]);
     }
@@ -307,6 +308,7 @@ router.get("/export", async (req, res, next) => {
     "RECEIVER NAME",
     "RECEIVER PHONE",
     "REQUESTED QUANTITY",
+    "REFERENCE ID",
     "CREATED DATE",
   ]);
 
@@ -354,6 +356,7 @@ router.get("/export", async (req, res, next) => {
         order.receiverName,
         order.receiverPhone,
         inv.OrderGroup.quantity,
+        order.referenceId || '',
         moment(order.createdAt).format("DD/MM/yy HH:mm"),
       ]);
     }
@@ -374,6 +377,7 @@ router.get("/export", async (req, res, next) => {
     "RECEIVER PHONE",
     "Requested Quantity to Dispatch",
     "Actual Quantity Dispatched",
+    "REFERENCE ID",
     "EXPECTED SHIPMENT DATE",
     "ACTUAL DISPATCH DATE",
   ]);
@@ -424,6 +428,7 @@ router.get("/export", async (req, res, next) => {
         OG.quantity || 0,
         // OutG ? OutG.quantity || 0 : 'issue',
         OutG.quantity || 0,
+        outward.referenceId || '',
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
         moment(outward.createdAt).format("DD/MM/yy HH:mm"),
       ]);
