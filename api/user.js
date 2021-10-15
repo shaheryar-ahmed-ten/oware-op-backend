@@ -27,7 +27,6 @@ async function updateUser(req, res, next) {
   if (req.body.hasOwnProperty("isActive")) user.isActive = req.body.isActive;
   try {
     const response = await user.save();
-    console.log("response", response);
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
@@ -77,7 +76,6 @@ router.get("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (r
 
 /* GET current logged in user. */
 router.get("/me", isLoggedIn, async (req, res, next) => {
-  console.log("user/me->", "req.user", req.user);
   return res.json({
     success: true,
     data: req.user,
@@ -190,15 +188,13 @@ router.delete("/:id", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), ac
 });
 
 router.get("/relations", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (req, res, next) => {
-  console.log("user/relations ->");
   const roles = await Role.findAll();
   const portals = Object.keys(PORTALS_LABELS).map((portal) => ({ id: portal, label: PORTALS_LABELS[portal] }));
-  console.log("roles", roles);
-  console.log("portals", portals);
+
   let where = {};
   if (!isSuperAdmin(req)) where.contactId = req.userId;
   const customers = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
-  console.log("customers", customers);
+
   res.json({
     success: true,
     message: "respond with a resource",

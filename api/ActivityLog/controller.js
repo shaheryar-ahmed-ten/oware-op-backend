@@ -6,7 +6,6 @@ const { initialInternalIdForBusinessForAdjustment } = require("../../enums");
 
 async function getActivityLogs(params) {
   try {
-    console.log("params", params);
     const response = await Dao.ActivityLog.findAndCountAll(params);
     if (response.count) {
       for (const { dataValues } of response.records) {
