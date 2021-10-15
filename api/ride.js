@@ -248,6 +248,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
       success: false,
       message: "No ride found!",
     });
+  console.log("req.body", req.body);
   ride.vehicleId = req.body.vehicleId;
   ride.driverId = req.body.driverId;
   ride.pickupDate = req.body.pickupDate;
@@ -264,6 +265,8 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.customerDiscount = req.body.customerDiscount;
   ride.driverIncentive = req.body.driverIncentive;
   ride.memo = req.body.memo;
+  if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
+  if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
   // ride.carId = req.body.carId;
   // ride.vendorId = req.body.vendorId;
 

@@ -131,6 +131,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      pickupLocation: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
+      dropoffLocation: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
     },
     {
       sequelize,
