@@ -241,7 +241,7 @@ router.get("/export", async (req, res, next) => {
 
   worksheet = workbook.addWorksheet("Product Inwards");
 
-  worksheet.columns = getColumnsConfig(["CUSTOMER", "PRODUCT", "WAREHOUSE", "UOM", "QUANTITY", "REFERENCE ID", "DATE"]);
+  worksheet.columns = getColumnsConfig(["CUSTOMER", "PRODUCT", "WAREHOUSE", "UOM", "QUANTITY", "REFERENCE ID", "CREATOR", "DATE"]);
 
   if (req.query.days) {
     const currentDate = moment();
@@ -280,6 +280,7 @@ router.get("/export", async (req, res, next) => {
         Product.UOM.name,
         Product.InwardGroup.quantity,
         inward.referenceId || '',
+        `${inward.User.firstName || ''} ${inward.User.lastName || ''}`,
         moment(inward.createdAt).format("DD/MM/yy HH:mm"),
       ]);
     }
@@ -309,6 +310,7 @@ router.get("/export", async (req, res, next) => {
     "RECEIVER PHONE",
     "REQUESTED QUANTITY",
     "REFERENCE ID",
+    "CREATOR",
     "CREATED DATE",
   ]);
 
@@ -340,6 +342,7 @@ router.get("/export", async (req, res, next) => {
         as: "Inventories",
         include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
       },
+      { model: User },
     ],
     order: [["updatedAt", "DESC"]],
     where,
@@ -357,6 +360,7 @@ router.get("/export", async (req, res, next) => {
         order.receiverPhone,
         inv.OrderGroup.quantity,
         order.referenceId || '',
+        `${order.User.firstName || ''} ${order.User.lastName || ''}`,
         moment(order.createdAt).format("DD/MM/yy HH:mm"),
       ]);
     }
@@ -378,6 +382,7 @@ router.get("/export", async (req, res, next) => {
     "Requested Quantity to Dispatch",
     "Actual Quantity Dispatched",
     "REFERENCE ID",
+    "CREATOR",
     "EXPECTED SHIPMENT DATE",
     "ACTUAL DISPATCH DATE",
   ]);
@@ -399,6 +404,7 @@ router.get("/export", async (req, res, next) => {
           },
         ],
       },
+      { model: User },
     ],
     order: [["updatedAt", "DESC"]],
     where,
@@ -429,6 +435,7 @@ router.get("/export", async (req, res, next) => {
         // OutG ? OutG.quantity || 0 : 'issue',
         OutG.quantity || 0,
         outward.referenceId || '',
+        `${outward.User.firstName || ''} ${outward.User.lastName || ''}`,
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
         moment(outward.createdAt).format("DD/MM/yy HH:mm"),
       ]);
