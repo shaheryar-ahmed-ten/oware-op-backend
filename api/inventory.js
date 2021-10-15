@@ -361,70 +361,76 @@ router.get("/export", async (req, res, next) => {
 
   worksheet.addRows(orderArray);
 
-// Commenting outwards
+  // Commenting outwards
 
-  // worksheet = workbook.addWorksheet("Product Outwards");
+  worksheet = workbook.addWorksheet("Product Outwards");
 
-  // worksheet.columns = getColumnsConfig([
-  //   "CUSTOMER",
-  //   "PRODUCT",
-  //   "WAREHOUSE",
-  //   "UOM",
-  //   "RECEIVER NAME",
-  //   "RECEIVER PHONE",
-  //   "Requested Quantity to Dispatch",
-  //   "Actual Quantity Dispatched",
-  //   "EXPECTED SHIPMENT DATE",
-  //   "ACTUAL DISPATCH DATE",
-  // ]);
+  worksheet.columns = getColumnsConfig([
+    "CUSTOMER",
+    "PRODUCT",
+    "WAREHOUSE",
+    "UOM",
+    "RECEIVER NAME",
+    "RECEIVER PHONE",
+    "Requested Quantity to Dispatch",
+    "Actual Quantity Dispatched",
+    "EXPECTED SHIPMENT DATE",
+    "ACTUAL DISPATCH DATE",
+  ]);
 
-  // response = await ProductOutward.findAll({
-  //   include: [
-  //     {
-  //       model: DispatchOrder,
-  //       include: [
-  //         {
-  //           model: Inventory,
-  //           as: "Inventory",
-  //           include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-  //         },
-  //         {
-  //           model: Inventory,
-  //           as: "Inventories",
-  //           include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-  //         },
-  //       ],
-  //     },
-  //   ],
-  //   order: [["updatedAt", "DESC"]],
-  //   where,
-  // });
+  response = await ProductOutward.findAll({
+    include: [
+      {
+        model: DispatchOrder,
+        include: [
+          {
+            model: Inventory,
+            as: "Inventory",
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+          },
+          {
+            model: Inventory,
+            as: "Inventories",
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+          },
+        ],
+      },
+    ],
+    order: [["updatedAt", "DESC"]],
+    where,
+  });
 
-  // const outwardArray = [];
-  // for (const outward of response) {
-  //   for (const inv of outward.DispatchOrder.Inventories) {
-  //     const OG = await OrderGroup.findOne({
-  //       where: { inventoryId: inv.id, orderId: outward.DispatchOrder.id },
-  //     });
-  //     const OutG = await OutwardGroup.findOne({
-  //       where: { inventoryId: inv.id, outwardId: outward.id },
-  //     });
-  //     outwardArray.push([
-  //       inv.Company.name,
-  //       inv.Product.name,
-  //       inv.Warehouse.name,
-  //       inv.Product.UOM.name,
-  //       outward.DispatchOrder.receiverName,
-  //       outward.DispatchOrder.receiverPhone,
-  //       OG.quantity || 0,
-  //       OutG.quantity || 0,
-  //       moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
-  //       moment(outward.createdAt).format("DD/MM/yy HH:mm"),
-  //     ]);
-  //   }
-  // }
 
-  // worksheet.addRows(outwardArray);
+  const outwardArray = [];
+  for (const outward of response) {
+    for (const inv of outward.DispatchOrder.Inventories) {
+      const OG = await OrderGroup.findOne({
+        where: { inventoryId: inv.id, orderId: outward.DispatchOrder.id },
+      });
+      const OutG = await OutwardGroup.findOne({
+        where: { inventoryId: inv.id, outwardId: outward.id },
+      });
+      // if (!OutG) {
+      //   console.log('inv.id', inv.id)
+      //   console.log('outward.id', outward.id)
+      // }
+      outwardArray.push([
+        inv.Company.name,
+        inv.Product.name,
+        inv.Warehouse.name,
+        inv.Product.UOM.name,
+        outward.DispatchOrder.receiverName,
+        outward.DispatchOrder.receiverPhone,
+        OG.quantity || 0,
+        // OutG ? OutG.quantity || 0 : 'issue',
+        OutG.quantity || 0,
+        moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
+        moment(outward.createdAt).format("DD/MM/yy HH:mm"),
+      ]);
+    }
+  }
+
+  worksheet.addRows(outwardArray);
 
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
