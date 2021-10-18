@@ -33,6 +33,7 @@ router.get("/", async (req, res, next) => {
   };
   if (req.query.search)
     where[Op.or] = [
+      "internalIdForBusiness",
       "$DispatchOrder.Inventory.Company.name$",
       "$DispatchOrder.Inventory.Warehouse.name$",
       "$DispatchOrder.internalIdForBusiness$",
