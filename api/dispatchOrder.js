@@ -276,7 +276,7 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       dispatchOrderId: DO.id,
     },
   });
-  console.log("outwardExist", outwardExist);
+
   if (outwardExist.length === 0) DO.status = DISPATCH_ORDER.STATUS.PENDING;
 
   //Update DO total quantity
