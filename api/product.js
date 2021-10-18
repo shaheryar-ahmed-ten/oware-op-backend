@@ -179,6 +179,35 @@ router.get("/bulk-template", async (req, res, next) => {
     "IsActive",
   ]);
 
+  worksheet.addRows([{
+    name: 'Product One',
+    description: 'Dummy Description',
+    volume: '1.4',
+    weight: '2',
+    category: 'Food',
+    brand: 'Nestle',
+    uom: 'kg',
+    isActive: 'TRUE',
+  }, {
+    name: 'Product Two',
+    description: 'Dummy Description',
+    volume: '4',
+    weight: '10',
+    category: 'Electronic',
+    brand: 'Nestle',
+    uom: 'ltr',
+    isActive: 'FALSE',
+  }].map((el, idx) => [
+    el.name,
+    el.description,
+    el.volume,
+    el.weight,
+    el.category,
+    el.brand,
+    el.uom,
+    el.isActive
+  ]))
+
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
 
