@@ -241,7 +241,7 @@ router.get("/export", async (req, res, next) => {
 
   worksheet = workbook.addWorksheet("Product Inwards");
 
-  worksheet.columns = getColumnsConfig(["CUSTOMER", "PRODUCT", "WAREHOUSE", "UOM", "QUANTITY", "REFERENCE ID", "CREATOR", "DATE"]);
+  worksheet.columns = getColumnsConfig(["CUSTOMER", "PRODUCT", "WAREHOUSE", "UOM", "QUANTITY", "REFERENCE ID", "CREATOR", "INWARD DATE"]);
 
   if (req.query.days) {
     const currentDate = moment();
@@ -379,10 +379,10 @@ router.get("/export", async (req, res, next) => {
     "UOM",
     "RECEIVER NAME",
     "RECEIVER PHONE",
-    "Requested Quantity to Dispatch",
-    "Actual Quantity Dispatched",
     "REFERENCE ID",
     "CREATOR",
+    "Requested Quantity to Dispatch",
+    "Actual Quantity Dispatched",
     "EXPECTED SHIPMENT DATE",
     "ACTUAL DISPATCH DATE",
   ]);
@@ -421,8 +421,8 @@ router.get("/export", async (req, res, next) => {
         where: { inventoryId: inv.id, outwardId: outward.id },
       });
       // if (!OutG) {
-      //   console.log('inv.id', inv.id)
-      //   console.log('outward.id', outward.id)
+      //   console.log('inventoryId', inv.id, "orderId", outward.DispatchOrder.id)
+      //   console.log('inventoryId', inv.id, 'outwardId', outward.id)
       // }
       outwardArray.push([
         inv.Company.name,
@@ -431,11 +431,11 @@ router.get("/export", async (req, res, next) => {
         inv.Product.UOM.name,
         outward.DispatchOrder.receiverName,
         outward.DispatchOrder.receiverPhone,
-        OG.quantity || 0,
-        // OutG ? OutG.quantity || 0 : 'issue',
-        OutG.quantity || 0,
         outward.referenceId || '',
         `${outward.User.firstName || ''} ${outward.User.lastName || ''}`,
+        OG.quantity || 0,
+        OutG ? OutG.quantity || 0 : 'Not available',
+        // OutG.quantity || 0,
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
         moment(outward.createdAt).format("DD/MM/yy HH:mm"),
       ]);
