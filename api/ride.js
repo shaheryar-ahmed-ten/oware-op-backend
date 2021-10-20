@@ -34,10 +34,10 @@ router.get("/", async (req, res, next) => {
   let where = {};
   if (req.query.search)
     where[Op.or] = [
-      "pickupAddress",
-      "dropoffAddress",
-      "$Vehicle.Car.CarModel.name$",
-      "$Vehicle.registrationNumber$",
+      // "pickupAddress",
+      // "dropoffAddress",
+      // "$Vehicle.Car.CarModel.name$",
+      // "$Vehicle.registrationNumber$",
       "id",
       "$Customer.name$",
       "$Driver.Vendor.name$",
