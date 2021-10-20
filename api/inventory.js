@@ -281,7 +281,7 @@ router.get("/export", async (req, res, next) => {
         Product.InwardGroup.quantity,
         inward.referenceId || '',
         `${inward.User.firstName || ''} ${inward.User.lastName || ''}`,
-        moment(inward.createdAt).format("DD/MM/yy HH:mm"),
+        moment(inward.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
       ]);
     }
   }
@@ -361,7 +361,7 @@ router.get("/export", async (req, res, next) => {
         inv.OrderGroup.quantity,
         order.referenceId || '',
         `${order.User.firstName || ''} ${order.User.lastName || ''}`,
-        moment(order.createdAt).format("DD/MM/yy HH:mm"),
+        moment(order.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
       ]);
     }
   }
@@ -437,7 +437,7 @@ router.get("/export", async (req, res, next) => {
         OutG ? OutG.quantity || 0 : 'Not available',
         // OutG.quantity || 0,
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
-        moment(outward.createdAt).format("DD/MM/yy HH:mm"),
+        moment(outward.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
       ]);
     }
   }
