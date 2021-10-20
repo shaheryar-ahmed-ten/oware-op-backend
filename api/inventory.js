@@ -33,21 +33,21 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
-  if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
-    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
-  }
-  else if (req.query.startDate && req.query.endDate) {
-    const startDate = moment(req.query.startDate);
-    const endDate = moment(req.query.endDate).set({
-      hour: 23,
-      minute: 53,
-      second: 59,
-      millisecond: 0
-    });
-    where["createdAt"] = { [Op.between]: [startDate, endDate] };
-  }
+  // if (req.query.days) {
+  //   const currentDate = moment();
+  //   const previousDate = moment().subtract(req.query.days, "days");
+  //   where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  // }
+  // else if (req.query.startDate && req.query.endDate) {
+  //   const startDate = moment(req.query.startDate);
+  //   const endDate = moment(req.query.endDate).set({
+  //     hour: 23,
+  //     minute: 53,
+  //     second: 59,
+  //     millisecond: 0
+  //   });
+  //   where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  // }
 
   const response = await Inventory.findAndCountAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
@@ -86,21 +86,21 @@ router.get("/export", async (req, res, next) => {
     "DISPATCHED QUANTITY",
   ]);
 
-  if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
-    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
-  }
-  else if (req.query.startingDate && req.query.endingDate) {
-    const startDate = moment(req.query.startingDate);
-    const endDate = moment(req.query.endingDate).set({
-      hour: 23,
-      minute: 53,
-      second: 59,
-      millisecond: 0
-    });
-    where["createdAt"] = { [Op.between]: [startDate, endDate] };
-  }
+  // if (req.query.days) {
+  //   const currentDate = moment();
+  //   const previousDate = moment().subtract(req.query.days, "days");
+  //   where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  // }
+  // else if (req.query.startingDate && req.query.endingDate) {
+  //   const startDate = moment(req.query.startingDate);
+  //   const endDate = moment(req.query.endingDate).set({
+  //     hour: 23,
+  //     minute: 53,
+  //     second: 59,
+  //     millisecond: 0
+  //   });
+  //   where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  // }
 
   let response = await Inventory.findAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
