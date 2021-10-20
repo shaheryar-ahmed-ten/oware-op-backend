@@ -180,22 +180,22 @@ router.get("/bulk-template", async (req, res, next) => {
   ]);
 
   worksheet.addRows([{
-    name: 'Product One',
-    description: 'Dummy Description',
+    name: 'COKE ZERO',
+    description: 'product of Coco Cola(sample product)',
     volume: '1.4',
     weight: '2',
-    category: 'Food',
-    brand: 'Nestle',
-    uom: 'kg',
+    category: 'Drinks',
+    brand: 'CocoCola',
+    uom: 'Bottles',
     isActive: 'TRUE',
   }, {
-    name: 'Product Two',
-    description: 'Dummy Description',
+    name: 'COKE',
+    description: 'product of Coco Cola(sample product)',
     volume: '4',
     weight: '10',
-    category: 'Electronic',
-    brand: 'Nestle',
-    uom: 'ltr',
+    category: 'liquids',
+    brand: 'CocoCola',
+    uom: 'PCs',
     isActive: 'FALSE',
   }].map((el, idx) => [
     el.name,
