@@ -18,7 +18,6 @@ router.get("/", async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
-  console.log("req------------", req.query);
   if (req.query.search)
     where[Op.or] = ["registrationNumber", "$Vendor.name$", "$Car.CarMake.name$", "$Car.CarModel.name$"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
@@ -31,7 +30,6 @@ router.get("/", async (req, res, next) => {
     if(req.query.companyId)
       where[Op.and].push({companyId:Number(req.query.companyId)})
 
-      console.log("where",where)
 
   const response = await Vehicle.findAndCountAll({
     include: [

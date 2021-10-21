@@ -19,5 +19,5 @@ module.exports = {
   OrderGroup: require("./OrderGroup"),
   OutwardGroup: require("./OutwardGroup"),
   Vehicle: require("./Vehicle"),
-  Ride: require("./Ride")
+  Ride: require("./Ride"),
 };

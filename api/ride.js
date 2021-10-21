@@ -7,8 +7,6 @@ const {
   Vehicle,
   Driver,
   Company,
-  Area,
-  Zone,
   City,
   Category,
   Car,
@@ -28,7 +26,6 @@ const moment = require("moment-timezone");
 const { previewFile } = require("../services/s3.service");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
-const { CloudWatchLogs } = require("aws-sdk");
 
 /* GET rides listing. */
 router.get("/", async (req, res, next) => {
@@ -37,18 +34,35 @@ router.get("/", async (req, res, next) => {
   let where = {};
   if (req.query.search)
     where[Op.or] = [
-      "$PickupArea.name$",
-      "$DropoffArea.name$",
-      "pickupAddress",
-      "dropoffAddress",
-      "$Vehicle.Car.CarModel.name$",
-      "$Vehicle.registrationNumber$",
+      // "pickupAddress",
+      // "dropoffAddress",
+      // "$Vehicle.Car.CarModel.name$",
+      // "$Vehicle.registrationNumber$",
       "id",
       "$Customer.name$",
       "$Driver.Vendor.name$",
       "$Driver.name$",
     ].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  }
+  if (req.query.start && req.query.end) {
+    const startingDate = moment(req.query.start);
+    const endingDate = moment(req.query.end).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startingDate, endingDate] };
+  }
+
   if (req.query.status) where["status"] = req.query.status;
+  // if (req.query.searchstatus) where["status"] = req.query.searchstatus;
+
   const response = await Ride.findAndCountAll({
     distinct: true,
     // subQuery: false,
@@ -56,6 +70,7 @@ router.get("/", async (req, res, next) => {
       {
         model: Company,
         as: "Customer",
+        required: true,
       },
       {
         model: File,
@@ -65,32 +80,46 @@ router.get("/", async (req, res, next) => {
         model: RideProduct,
         include: [Category],
       },
-      {
-        model: Area,
-        include: [{ model: Zone, include: [City] }],
-        as: "PickupArea",
-      },
-      {
-        model: Area,
-        include: [{ model: Zone, include: [City] }],
-        as: "DropoffArea",
-      },
+      // {
+      //   model: Area,
+      //   include: [{ model: Zone, include: [City] }],
+      //   as: "PickupArea",
+      //   required: true,
+      // },
+      // {
+      //   model: Area,
+      //   include: [{ model: Zone, include: [City] }],
+      //   as: "DropoffArea",
+      //   required: true,
+      // },
       {
         model: Vehicle,
         include: [
           {
             model: Company,
             as: "Vendor",
+            required: true,
           },
           {
             model: Car,
-            include: [CarModel, CarMake, VehicleType],
+            include: [{ model: CarModel, required: true }, CarMake, VehicleType],
+            required: true,
           },
         ],
+        required: true,
       },
       {
         model: Driver,
-        include: [{ model: Company, as: "Vendor" }],
+        include: [{ model: Company, as: "Vendor", required: true }],
+        required: true,
+      },
+      {
+        model: City,
+        as: "pickupCity",
+      },
+      {
+        model: City,
+        as: "dropoffCity",
       },
     ],
     order: [["updatedAt", "DESC"]],
@@ -103,6 +132,7 @@ router.get("/", async (req, res, next) => {
     message: "respond with a resource",
     data: response.rows,
     pages: Math.ceil(response.count / limit),
+    count: response.count,
   });
 });
 
@@ -124,16 +154,6 @@ router.get("/single/:id", async (req, res, next) => {
         include: [Category],
       },
       {
-        model: Area,
-        include: [{ model: Zone, include: [City] }],
-        as: "PickupArea",
-      },
-      {
-        model: Area,
-        include: [{ model: Zone, include: [City] }],
-        as: "DropoffArea",
-      },
-      {
         model: Vehicle,
         include: [
           {
@@ -150,8 +170,17 @@ router.get("/single/:id", async (req, res, next) => {
         model: Driver,
         include: [{ model: Company, as: "Vendor" }],
       },
+      {
+        model: City,
+        as: "pickupCity",
+      },
+      {
+        model: City,
+        as: "dropoffCity",
+      },
     ],
   });
+  console.log("ride", ride);
   if (!ride)
     return res.status(400).json({
       success: false,
@@ -219,15 +248,14 @@ router.put("/:id", activityLog, async (req, res, next) => {
       success: false,
       message: "No ride found!",
     });
+  console.log("req.body", req.body);
   ride.vehicleId = req.body.vehicleId;
   ride.driverId = req.body.driverId;
   ride.pickupDate = req.body.pickupDate;
   ride.dropoffDate = req.body.dropoffDate;
-  ride.pickupAreaId = req.body.pickupAreaId;
   ride.pickupAddress = req.body.pickupAddress;
   ride.manifestId = req.body.manifestId;
   // ride.internalIdForBusiness = req.body.internalIdForBusiness;
-  ride.dropoffAreaId = req.body.dropoffAreaId;
   ride.dropoffAddress = req.body.dropoffAddress;
   ride.cancellationReason = req.body.cancellationReason;
   ride.cancellationComment = req.body.cancellationComment;
@@ -237,6 +265,8 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.customerDiscount = req.body.customerDiscount;
   ride.driverIncentive = req.body.driverIncentive;
   ride.memo = req.body.memo;
+  if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
+  if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
   // ride.carId = req.body.carId;
   // ride.vendorId = req.body.vendorId;
 
@@ -289,34 +319,29 @@ router.delete("/:id", activityLog, async (req, res, next) => {
 
 router.get("/relations", async (req, res, next) => {
   let where = { isActive: true };
-  const vehicles = await Vehicle.findAll({ where, include: [Driver]
- });
+  const vehicles = await Vehicle.findAll({ where, include: [Driver] });
   const drivers = await Driver.findAll({ where });
-  const areas = await Area.findAll({ where, include: [{ model: Zone, include: [City] }] });
-  const zones = await Zone.findAll({ where });
-  const cities = await City.findAll({ where, include: [{ model: Zone, include: [Area] }] });
+  const cities = await City.findAll({ where });
   const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
   const productCategories = await Category.findAll({ where });
   const vendors = await Dao.Company.findAll({
     where: { ...where, relationType: RELATION_TYPES.VENDOR },
     include: [
-      { model: Vehicle
-      ,include:[
-        { model:Car,
-          include:[{model:CarMake},{model:CarModel}],
-        }
-      ]
-      
-        , as: "Vehicles" }
-      ,{model:Driver,as:"Drivers"},
+      {
+        model: Vehicle,
+        include: [{ model: Car, include: [{ model: CarMake }, { model: CarModel }] }],
+        as: "Vehicles",
+      },
+      { model: Driver, as: "Drivers" },
     ],
   });
-  const cars = await Vehicle.findAll({where, include:[{ model:Car,include:[{model:CarMake},{model:CarModel}]},
-    {model:Company,where:{relationType:RELATION_TYPES.VENDOR},as: "Vendor", require:true}
-  ]
+  const cars = await Vehicle.findAll({
+    where,
+    include: [
+      { model: Car, include: [{ model: CarMake }, { model: CarModel }] },
+      { model: Company, where: { relationType: RELATION_TYPES.VENDOR }, as: "Vendor", require: true },
+    ],
   });
-
-  
 
   const statuses = RIDE_STATUS;
   res.json({
@@ -326,27 +351,12 @@ router.get("/relations", async (req, res, next) => {
     drivers,
     statuses,
     cities,
-    zones,
-    areas,
     companies,
     vendors,
     cars,
     productCategories,
   });
 });
-
-// router.get("/vehicle", async (req, res, next) => {
-//   const carId = req.params.carId;
-//   const vendorId = req.params.vendorId;
-//   const vehicle = await Dao.Vehicle.findAll({
-//     where:{
-//       companyId:vendorId &&
-//       carId:carId
-//     }
-
-//   })
-// });
-
 
 router.get("/stats", async (req, res) => {
   const stats = [
@@ -383,6 +393,25 @@ router.get("/export", async (req, res, next) => {
   const getColumnsConfig = (columns) =>
     columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
 
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  }
+
+  if (req.query.start || req.query.end) {
+    const startingDate = moment(req.query.start);
+    const endingDate = moment(req.query.end).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startingDate, endingDate] };
+  }
+
+  if (req.query.status) where["status"] = req.query.status;
+
   let response = await Dao.Ride.findAll({
     include: [
       {
@@ -396,16 +425,6 @@ router.get("/export", async (req, res, next) => {
       {
         model: RideProduct,
         include: [Category],
-      },
-      {
-        model: Area,
-        include: [{ model: Zone, include: [City] }],
-        as: "PickupArea",
-      },
-      {
-        model: Area,
-        include: [{ model: Zone, include: [City] }],
-        as: "DropoffArea",
       },
       {
         model: Vehicle,
@@ -425,8 +444,17 @@ router.get("/export", async (req, res, next) => {
         model: Driver,
         include: [{ model: Company, as: "Vendor" }],
       },
+      {
+        model: City,
+        as: "pickupCity",
+      },
+      {
+        model: City,
+        as: "dropoffCity",
+      },
     ],
     order: [["updatedAt", "DESC"]],
+    where,
   });
 
   worksheet.columns = getColumnsConfig([
@@ -436,24 +464,18 @@ router.get("/export", async (req, res, next) => {
     "VENDOR",
     "VEHICLE TYPE",
     "DRIVER",
-    // "DRIVER PHONE",
     "VEHICLE",
-    // "MEMO",
     "CUSTOMER PRICE",
     "VENDOR COST",
     "CUSTOMER DISCOUNT",
     "DRIVER INCENTIVE",
     "PICKUP CITY",
-    "PICKUP ZONE",
-    "PICKUP AREA",
     "PICKUP ADDRESS",
     "PICKUP DATE",
     "DROPOFF CITY",
-    "DROPOFF ZONE",
-    "DROPOFF AREA",
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
-    "MEMO"
+    "MEMO",
     // "CATEGORY",
     // "PRODUCTS",
     // "QUANTITIES"
@@ -465,32 +487,20 @@ router.get("/export", async (req, res, next) => {
       row.status,
       row.Customer.name,
       row.Driver.Vendor.name,
-      row.Vehicle.Car.CarMake.name+" "+row.Vehicle.Car.CarModel.name,
+      row.Vehicle.Car.CarMake.name + " " + row.Vehicle.Car.CarModel.name,
       row.Driver.name,
-      // // row.Driver.phone,
       row.Vehicle.registrationNumber,
-      // row.memo,
       row.price,
       row.cost,
       row.customerDiscount,
       row.driverIncentive,
-      row.PickupArea.Zone.City.name,
-      row.PickupArea.Zone.name,
-      row.PickupArea.name,
+      row.pickupCity.name,
       row.pickupAddress,
       moment(row.pickupDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
-      row.DropoffArea.Zone.City.name,
-      row.DropoffArea.Zone.name,
-      row.DropoffArea.name,
+      row.dropoffCity.name,
       row.dropoffAddress,
       moment(row.dropoffDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
-      row.memo
-      // row.RideProducts.map((product) => `Name = ${product.name}, Qty = ${product.quantity}`),
-      // row.RideProducts.map((product, idx) => `Name${idx + 1} = ${product.name}`),
-      // row.RideProducts.map((product, idx) => `Qty${idx + 1} = ${product.quantity}`),
-      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.Category.name}`),
-      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.name}`),
-      // row.RideProducts.map((product, idx) => `${idx + 1}: ${product.quantity}`)
+      row.memo,
     ])
   );
 
