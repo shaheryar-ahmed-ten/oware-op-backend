@@ -319,6 +319,7 @@ router.get("/export", async (req, res, next) => {
     "REFERENCE ID",
     "CREATOR",
     "CREATED DATE",
+    "STATUS",
   ]);
 
   if (req.query.days) {
@@ -370,6 +371,16 @@ router.get("/export", async (req, res, next) => {
         order.referenceId || '',
         `${order.User.firstName || ''} ${order.User.lastName || ''}`,
         moment(order.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+        order.status == "0" ?
+          "PENDING" :
+          order.status == "1" ?
+            "PARTIALLY FULFILLED" :
+            order.status == "2" ?
+              "FULFILLED" :
+              order.status == "3" ?
+                "CANCELLED" :
+                ""
+
       ]);
     }
   }
