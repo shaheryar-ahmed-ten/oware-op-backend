@@ -322,37 +322,55 @@ router.get("/bulk-template", async (req, res, next) => {
     columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
 
   worksheet.columns = getColumnsConfig([
+    "Order Number",
     "Company",
     "Warehouse",
     "Receiver Name",
     "Receiver Phone",
     "Shipment Date",
+    "Reference ID",
     "Product Name",
     "Quantity"
   ]);
 
   worksheet.addRows([{
+    orderNo: 1,
     company: "Bisconi Pvt",
     warehouse: "Karachi - east",
     receiverName: "Ahmed Ali",
     receiverPhone: "03xx-xxxxxx0",
     shipmentDate: "12/25/2021",
+    referenceId: "ref-2031",
     productName: "COKE ZERO",
     quantity: 35
   }, {
+    orderNo: 1,
     company: "Nestle",
     warehouse: "Lahore - west",
     receiverName: "Ahmed Shah",
     receiverPhone: "03xx-xxxxxx0",
     shipmentDate: "09/15/2021",
+    referenceId: "ref-2140",
     productName: "COKE",
     quantity: 150
-  }].map((el, idx) => [
+  }, {
+    orderNo: 2,
+    company: "Nescafe Pvt",
+    warehouse: "Karachi - east",
+    receiverName: "Zafar",
+    receiverPhone: "03xx-xxxxxx0",
+    shipmentDate: "12/25/2021",
+    referenceId: "ref-0031",
+    productName: "7up",
+    quantity: 90
+  },].map((el, idx) => [
+    el.orderNo,
     el.company,
     el.warehouse,
     el.receiverName,
     el.receiverPhone,
     el.shipmentDate,
+    el.referenceId,
     el.productName,
     el.quantity
   ]))
