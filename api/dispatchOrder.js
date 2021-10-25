@@ -33,8 +33,7 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
-  if (req.query.status)
-    where = { status: req.query.status }
+  if (req.query.status) where = { status: req.query.status };
   const response = await DispatchOrder.findAndCountAll({
     include: [
       {
@@ -211,25 +210,6 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventoryId: product.inventoryId,
         quantity: product.quantity,
       });
-      console.log(
-        "(1)--->\n",
-        "product.quantity",
-        product.quantity,
-        "inventory.availableQuantity",
-        inventory.availableQuantity,
-        "OG.quantity",
-        OG.quantity,
-        "outwardQuantity",
-        outwardQuantity,
-        "inventory.committedQuantity",
-        inventory.committedQuantity,
-        "inventory.id",
-        inventory.id
-      );
-      console.log(
-        `product.quantity > inventory.availableQuantity + OG.quantity`,
-        product.quantity > inventory.availableQuantity + OG.quantity
-      );
       if (parseInt(product.quantity) > parseInt(inventory.availableQuantity)) {
         await OG.destroy();
         throw new Error("Cannot add quantity above available quantity");
@@ -241,20 +221,6 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
     } else {
-      console.log(
-        "product.quantity",
-        product.quantity,
-        "inventory.availableQuantity",
-        inventory.availableQuantity,
-        "OG.quantity",
-        OG.quantity,
-        "outwardQuantity",
-        outwardQuantity,
-        "inventory.committedQuantity",
-        inventory.committedQuantity,
-        "inventory.id",
-        inventory.id
-      ); //7 > 59 + 8
       if (product.quantity > inventory.availableQuantity + OG.quantity)
         throw new Error("Cannot add quantity above available quantity");
       else if (outwardQuantity > 0 && product.quantity < outwardQuantity)
