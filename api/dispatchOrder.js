@@ -21,6 +21,7 @@ const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const moment = require("moment-timezone");
 const httpStatus = require("http-status");
+const ExcelJS = require("exceljs");
 
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {
@@ -311,6 +312,56 @@ router.patch("/cancel/:id", activityLog, async (req, res, next) => {
   }
   return res.sendJson(httpStatus.OK, "Dispatch Order Cancelled");
 });
+
+router.get("/bulk-template", async (req, res, next) => {
+  let workbook = new ExcelJS.Workbook();
+
+  let worksheet = workbook.addWorksheet("Dispatch Orders");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig([
+    "Company",
+    "Warehouse",
+    "Receiver Name",
+    "Receiver Phone",
+    "Shipment Date",
+    "Product Name",
+    "Quantity"
+  ]);
+
+  worksheet.addRows([{
+    company: "Bisconi Pvt",
+    warehouse: "Karachi - east",
+    receiverName: "Ahmed Ali",
+    receiverPhone: "03xx-xxxxxx0",
+    shipmentDate: "12/25/2021",
+    productName: "COKE ZERO",
+    quantity: 35
+  }, {
+    company: "Nestle",
+    warehouse: "Lahore - west",
+    receiverName: "Ahmed Shah",
+    receiverPhone: "03xx-xxxxxx0",
+    shipmentDate: "09/15/2021",
+    productName: "COKE",
+    quantity: 150
+  }].map((el, idx) => [
+    el.company,
+    el.warehouse,
+    el.receiverName,
+    el.receiverPhone,
+    el.shipmentDate,
+    el.productName,
+    el.quantity
+  ]))
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
+})
 
 router.delete("/:id", activityLog, async (req, res, next) => {
   let response = await DispatchOrder.destroy({ where: { id: req.params.id } });
