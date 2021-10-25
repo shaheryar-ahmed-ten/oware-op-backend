@@ -30,6 +30,11 @@ module.exports = {
         allowNull: true,
       },
     );
+    await queryInterface.addColumn('Rides', 'currentLocation', {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+  );
     await queryInterface.addColumn('Rides', 'eirId', {
       type: Sequelize.INTEGER,
       allowNull: true,
@@ -56,6 +61,7 @@ module.exports = {
     await queryInterface.removeColumn("Rides", "pocNumber");
     await queryInterface.removeColumn("Rides", "eta");
     await queryInterface.removeColumn("Rides", "completionTime");
+    await queryInterface.removeColumn("Rides", "currentLocation");
     await queryInterface.removeColumn("Rides", "eirId");
     await queryInterface.removeColumn("Rides", "builtyId");
    

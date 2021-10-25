@@ -135,6 +135,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      currentLocation:{
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       eirId:{
         type: DataTypes.INTEGER,
         allowNull: true,

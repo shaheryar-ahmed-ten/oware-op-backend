@@ -274,6 +274,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   // req.completionTime = req.body.completionTime;
   // req.eirId = req.body.eirId;
   // req.builtyId = req.body.builtyId;
+  // req.currentLocation = req.body.currentLocation;
 
   // ride.carId = req.body.carId;
   // ride.vendorId = req.body.vendorId;
