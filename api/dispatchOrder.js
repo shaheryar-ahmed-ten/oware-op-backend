@@ -157,6 +157,25 @@ router.post("/", activityLog, async (req, res, next) => {
   }
 });
 
+router.post("/bulk", async (req, res, next) => {
+  try {
+    await sequelize.transaction(async (transaction) => {
+      for (const order of req.body) {
+        order["shipmentDate"] = new Date(moment(order["shipmentDate"]).tz("Africa/Abidjan"));
+        order.inventories = order.inventories || [{ id: order.inventoryId, quantity: order.quantity }];
+        order.inventories = order.inventories.filter((inv) => {
+          if (inv.quantity > 0) return inv;
+        });
+      }
+    });
+  } catch (err) {
+    res.json({
+      success: false,
+      message: err.toString().replace("Error: ", ""),
+    });
+  }
+});
+
 /* PUT update existing dispatchOrder. */
 router.put("/:id", activityLog, async (req, res, next) => {
   let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
