@@ -38,6 +38,12 @@ router.get("/", async (req, res, next) => {
 router.post("/", activityLog, async (req, res, next) => {
   let message = "New product registered";
   let product;
+  if (SPECIAL_CHARACTERS.test(req.body.name))
+    return res.json({
+      success: false,
+      message: "Product name can not contain special characters.",
+    });
+
   try {
     product = await Product.create({
       userId: req.userId,
@@ -172,6 +178,35 @@ router.get("/bulk-template", async (req, res, next) => {
     "Uom",
     "IsActive",
   ]);
+
+  worksheet.addRows([{
+    name: 'COKE ZERO',
+    description: 'product of Coco Cola(sample product)',
+    volume: '1.4',
+    weight: '2',
+    category: 'Drinks',
+    brand: 'CocoCola',
+    uom: 'Bottles',
+    isActive: 'TRUE',
+  }, {
+    name: 'COKE',
+    description: 'product of Coco Cola(sample product)',
+    volume: '4',
+    weight: '10',
+    category: 'liquids',
+    brand: 'CocoCola',
+    uom: 'PCs',
+    isActive: 'FALSE',
+  }].map((el, idx) => [
+    el.name,
+    el.description,
+    el.volume,
+    el.weight,
+    el.category,
+    el.brand,
+    el.uom,
+    el.isActive
+  ]))
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");

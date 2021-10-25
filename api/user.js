@@ -23,11 +23,10 @@ async function updateUser(req, res, next) {
   if (req.body.hasOwnProperty("roleId")) user.roleId = Number(req.body.roleId);
   if (req.body.hasOwnProperty("phone")) user.phone = req.body.phone;
   if (req.body.hasOwnProperty("companyId") && req.body.companyId.length) user.companyId = Number(req.body.companyId);
-  if (req.body.hasOwnProperty("password")) user.password = req.body.password;
+  if (req.body.hasOwnProperty("password") && req.body.password.length > 0) user.password = req.body.password;
   if (req.body.hasOwnProperty("isActive")) user.isActive = req.body.isActive;
   try {
     const response = await user.save();
-    console.log("response", response);
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
@@ -77,7 +76,6 @@ router.get("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (r
 
 /* GET current logged in user. */
 router.get("/me", isLoggedIn, async (req, res, next) => {
-  console.log("user/me->", "req.user", req.user);
   return res.json({
     success: true,
     data: req.user,
@@ -132,12 +130,9 @@ router.post("/", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), activit
   try {
     const tempUser = await User.findOne({
       where: {
-        [Op.or]: [
-          { username: req.body.username },
-          { email: req.body.email },
-        ]
-      }
-    })
+        [Op.or]: [{ username: req.body.username }, { email: req.body.email }],
+      },
+    });
     if (tempUser)
       return res.json({
         success: false,
@@ -193,15 +188,13 @@ router.delete("/:id", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), ac
 });
 
 router.get("/relations", isLoggedIn, checkPermission(PERMISSIONS.OPS_USER_FULL), async (req, res, next) => {
-  console.log("user/relations ->");
   const roles = await Role.findAll();
   const portals = Object.keys(PORTALS_LABELS).map((portal) => ({ id: portal, label: PORTALS_LABELS[portal] }));
-  console.log("roles", roles);
-  console.log("portals", portals);
+
   let where = {};
   if (!isSuperAdmin(req)) where.contactId = req.userId;
   const customers = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
-  console.log("customers", customers);
+
   res.json({
     success: true,
     message: "respond with a resource",

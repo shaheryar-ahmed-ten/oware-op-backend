@@ -33,6 +33,8 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+  if (req.query.status)
+    where = { status: req.query.status }
   const response = await DispatchOrder.findAndCountAll({
     include: [
       {
@@ -274,7 +276,7 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       dispatchOrderId: DO.id,
     },
   });
-  console.log("outwardExist", outwardExist);
+
   if (outwardExist.length === 0) DO.status = DISPATCH_ORDER.STATUS.PENDING;
 
   //Update DO total quantity
