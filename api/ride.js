@@ -267,6 +267,15 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.memo = req.body.memo;
   if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
   if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
+  ride.weightCargo = req.body.weightCargo;
+  ride.pocName = req.body.pocName;
+  ride.pocNumber = req.body.pocNumber;
+  ride.eta = req.body.eta;
+  ride.completionTime = req.body.completionTime;
+  ride.eirId = req.body.eirId;
+  ride.builtyId = req.body.builtyId;
+  ride.currentLocation = req.body.currentLocation;
+
   // ride.carId = req.body.carId;
   // ride.vendorId = req.body.vendorId;
 
