@@ -164,31 +164,109 @@ router.post("/bulk", async (req, res, next) => {
     let row = 0;
     let previousOrderNumber = 1;
     await sequelize.transaction(async (transaction) => {
-      for (const order of req.body) {
+      const DOs = [];
+      for (const order of req.body.orders) {
         ++row;
-        const customer = await Dao.Company.findOne({ where: { id: order.customer } });
+        const customer = await Dao.Company.findOne({ where: { name: order.customer }, attributes: ["id"] });
         if (!customer) validationErrors.push(`Row ${row} : Invalid Customer Name`);
-        const warehouse = await Dao.Warehouse.findOne({ where: { id: order.warehouse } });
+        const warehouse = await Dao.Warehouse.findOne({
+          where: { name: order.warehouse },
+          attributes: ["id", "businessWarehouseCode"],
+        });
         if (!warehouse) validationErrors.push(`Row ${row} : Invalid Warehouse Name`);
-        const product = await Dao.Product.findOne({ where: { id: order.prooduct } });
+        const product = await Dao.Product.findOne({ where: { name: order.product }, attributes: ["id"] });
         if (!product) validationErrors.push(`Row ${row} : Invalid Product Name`);
+
+        const inventory = await Dao.Inventory.findOne({ where: {} });
 
         orderNumber = parseInt(order.orderNumber);
         if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
           validationErrors.push(`Row ${row} : Invalid Order Number`);
+
+        if (customer) order.customerId = customer.id;
+        if (product) order.productId = product.id;
+        if (warehouse) order.warehouseId = warehouse.id;
+
+        previousOrderNumber = orderNumber;
       }
+
+      orders = req.body.orders.filter((item) => item.orderNumber == count);
+      await createOrder(orders);
+
+      // let sumOfComitted = [];
+      // let comittedAcc;
+      // req.body.inventories.forEach((Inventory) => {
+      //   let quantity = parseInt(Inventory.quantity);
+      //   sumOfComitted.push(quantity);
+      // });
+      // comittedAcc = sumOfComitted.reduce((acc, po) => {
+      //   return acc + po;
+      // });
+      // dispatchOrder.quantity = comittedAcc;
+      // await dispatchOrder.save({ transaction });
+      // let inventoryIds = [];
+      // inventoryIds = req.body.inventories.map((inventory) => {
+      //   return inventory.id;
+      // });
+      // const toFindDuplicates = (arry) => arry.filter((item, index) => arry.indexOf(item) != index);
+      // const duplicateElements = toFindDuplicates(inventoryIds);
+      // if (duplicateElements.length != 0) {
+      //   throw new Error("Can not add same inventory twice");
+      // }
+
+      // await OrderGroup.bulkCreate(
+      //   req.body.inventories.map((inventory) => ({
+      //     userId: req.userId,
+      //     orderId: dispatchOrder.id,
+      //     inventoryId: inventory.id,
+      //     quantity: inventory.quantity,
+      //   })),
+      //   { transaction }
+      // );
+
+      // return Promise.all(
+      //   req.body.inventories.map((_inventory) => {
+      //     return Inventory.findByPk(_inventory.id, { transaction }).then((inventory) => {
+      //       if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
+      //       if (_inventory.quantity > inventory.availableQuantity)
+      //         throw new Error("Cannot create orders above available quantity");
+      //       try {
+      //         inventory.committedQuantity += +_inventory.quantity;
+      //         inventory.availableQuantity -= +_inventory.quantity;
+      //         return inventory.save({ transaction });
+      //       } catch (err) {
+      //         throw new Error(err.errors.pop().message);
+      //       }
+      //     });
+      //   })
+      // );
 
       if (validationErrors.length)
         return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
-      res.sendJson(httpStatus.OK, "Bulk Dispatch Order Created");
+      res.sendJson(httpStatus.OK, "Bulk Dispatch Order Created", {});
     });
   } catch (err) {
-    res.json({
-      success: false,
-      message: err.toString().replace("Error: ", ""),
-    });
+    console.log("err", err);
+    res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
   }
 });
+
+//1.create DO
+//2.make and create OG
+//3.Update Inventories
+const createOrder = async (orders) => {
+  const inventories = [];
+
+  for (const order of orders) {
+    const inventory = await Dao.Inventories.findOne({
+      where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
+    });
+
+    if (!inventory) {
+    }
+  }
+  // await Dao.order.create({});
+};
 
 /* PUT update existing dispatchOrder. */
 router.put("/:id", activityLog, async (req, res, next) => {
