@@ -485,6 +485,12 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
     "MEMO",
+    "WEIGHT OF CARGO",
+    "POC NAME",
+    "POC NUMBER",
+    "ETA",
+    "TRIP COMPLETION TIME",
+    "CURRENT LOCATION"
     // "CATEGORY",
     // "PRODUCTS",
     // "QUANTITIES"
@@ -505,11 +511,17 @@ router.get("/export", async (req, res, next) => {
       row.driverIncentive,
       row.pickupCity.name,
       row.pickupAddress,
-      moment(row.pickupDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
+      moment(row.pickupDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
       row.dropoffCity.name,
       row.dropoffAddress,
-      moment(row.dropoffDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
+      moment(row.dropoffDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
       row.memo,
+      row.weightCargo,
+      row.pocName,
+      row.pocNumber,
+      row.eta,
+      row.completionTime,
+      row.currentLocation
     ])
   );
 
