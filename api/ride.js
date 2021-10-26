@@ -267,6 +267,15 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.memo = req.body.memo;
   if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
   if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
+  ride.weightCargo = req.body.weightCargo;
+  ride.pocName = req.body.pocName;
+  ride.pocNumber = req.body.pocNumber;
+  ride.eta = req.body.eta;
+  ride.completionTime = req.body.completionTime;
+  ride.eirId = req.body.eirId;
+  ride.builtyId = req.body.builtyId;
+  ride.currentLocation = req.body.currentLocation;
+
   // ride.carId = req.body.carId;
   // ride.vendorId = req.body.vendorId;
 
@@ -476,6 +485,12 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
     "MEMO",
+    "WEIGHT OF CARGO",
+    "POC NAME",
+    "POC NUMBER",
+    "ETA",
+    "TRIP COMPLETION TIME",
+    "CURRENT LOCATION"
     // "CATEGORY",
     // "PRODUCTS",
     // "QUANTITIES"
@@ -496,11 +511,17 @@ router.get("/export", async (req, res, next) => {
       row.driverIncentive,
       row.pickupCity.name,
       row.pickupAddress,
-      moment(row.pickupDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
+      moment(row.pickupDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
       row.dropoffCity.name,
       row.dropoffAddress,
-      moment(row.dropoffDate).tz("Asia/Karachi").format("DD/MM/yy h:mm A"),
+      moment(row.dropoffDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
       row.memo,
+      row.weightCargo,
+      row.pocName,
+      row.pocNumber,
+      row.eta,
+      row.completionTime,
+      row.currentLocation
     ])
   );
 

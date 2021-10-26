@@ -115,6 +115,38 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: RIDE_STATUS.UNASSIGNED,
       },
+      weightCargo:{
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      pocName:{
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      pocNumber:{
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      eta:{
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      completionTime:{
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      currentLocation:{
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      eirId:{
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      builtyId:{
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       price: {
         type: DataTypes.INTEGER,
         allowNull: true,
