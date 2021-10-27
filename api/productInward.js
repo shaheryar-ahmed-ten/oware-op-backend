@@ -26,7 +26,7 @@ router.get("/", async (req, res, next) => {
     // userId: req.userId
   };
   if (req.query.search)
-    where[Op.or] = ["$Products.name$", "$Company.name$", "$Warehouse.name$"].map((key) => ({
+    where[Op.or] = ["internalIdForBusiness", "$Company.name$", "$Warehouse.name$"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
   const response = await ProductInward.findAndCountAll({
