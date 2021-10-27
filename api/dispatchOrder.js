@@ -187,11 +187,16 @@ router.post("/bulk", async (req, res, next) => {
         if (product) order.productId = product.id;
         if (warehouse) order.warehouseId = warehouse.id;
 
-        const inventory = await Dao.Inventory.findOne({
-          attributes: ["id"],
-          where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
-        });
-        if (inventory) order.inventoryId = inventory.id;
+        if (product && customer && warehouse) {
+          order.customerId = customer.id;
+          order.productId = product.id;
+          order.warehouseId = warehouse.id;
+          const inventory = await Dao.Inventory.findOne({
+            attributes: ["id"],
+            where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
+          });
+          if (inventory) order.inventoryId = inventory.id;
+        }
 
         if (!inventory) validationErrors.push(`Row ${row} : Inventory doesn't exist`);
         orderNumber = parseInt(order.orderNumber);
