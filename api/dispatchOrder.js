@@ -196,9 +196,9 @@ router.post("/bulk", async (req, res, next) => {
             where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
           });
           if (inventory) order.inventoryId = inventory.id;
+          else if (!inventory) validationErrors.push(`Row ${row} : Inventory doesn't exist`);
         }
 
-        if (!inventory) validationErrors.push(`Row ${row} : Inventory doesn't exist`);
         orderNumber = parseInt(order.orderNumber);
         if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
           validationErrors.push(`Row ${row} : Invalid Order Number`);
