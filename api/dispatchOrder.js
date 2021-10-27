@@ -15,7 +15,7 @@ const {
 const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
-const { digitize, addActivityLog } = require("../services/common.services");
+const { digitize, addActivityLog, getMaxValueFromJson } = require("../services/common.services");
 const { RELATION_TYPES, DISPATCH_ORDER } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
@@ -160,38 +160,58 @@ router.post("/", activityLog, async (req, res, next) => {
 
 router.post("/bulk", async (req, res, next) => {
   try {
-    const validationErrors = [];
-    let row = 0;
-    let previousOrderNumber = 1;
     await sequelize.transaction(async (transaction) => {
+      const validationErrors = [];
+      let row = 0;
+      let previousOrderNumber = 1;
       const DOs = [];
+      let count = 1;
       for (const order of req.body.orders) {
+        console.log(`order.product`, order.product);
         ++row;
-        const customer = await Dao.Company.findOne({ where: { name: order.customer }, attributes: ["id"] });
+        const customer = await Dao.Company.findOne({ where: { name: order.company }, attributes: ["id"] });
         if (!customer) validationErrors.push(`Row ${row} : Invalid Customer Name`);
         const warehouse = await Dao.Warehouse.findOne({
           where: { name: order.warehouse },
-          attributes: ["id", "businessWarehouseCode"],
+          attributes: ["id"],
         });
         if (!warehouse) validationErrors.push(`Row ${row} : Invalid Warehouse Name`);
-        const product = await Dao.Product.findOne({ where: { name: order.product }, attributes: ["id"] });
+        const product = await Dao.Product.findOne({
+          where: { name: order.product },
+          attributes: ["id"],
+          logging: true,
+        });
         if (!product) validationErrors.push(`Row ${row} : Invalid Product Name`);
-
-        const inventory = await Dao.Inventory.findOne({ where: {} });
-
-        orderNumber = parseInt(order.orderNumber);
-        if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
-          validationErrors.push(`Row ${row} : Invalid Order Number`);
 
         if (customer) order.customerId = customer.id;
         if (product) order.productId = product.id;
         if (warehouse) order.warehouseId = warehouse.id;
 
+        const inventory = await Dao.Inventory.findOne({
+          attributes: ["id"],
+          where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
+        });
+        if (inventory) order.inventoryId = inventory.id;
+
+        if (!inventory) validationErrors.push(`Row ${row} : Inventory doesn't exist`);
+        orderNumber = parseInt(order.orderNumber);
+        if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
+          validationErrors.push(`Row ${row} : Invalid Order Number`);
+
         previousOrderNumber = orderNumber;
       }
 
-      orders = req.body.orders.filter((item) => item.orderNumber == count);
-      await createOrder(orders);
+      if (validationErrors.length)
+        return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk dispatch orders");
+
+      let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
+      console.log("maxOrderNumber", maxOrderNumber);
+      while (count <= maxOrderNumber) {
+        console.log("count", count, "maxOrderNumber", maxOrderNumber);
+        orders = req.body.orders.filter((item) => item.orderNumber == count);
+        await createOrder(orders, req.userId, transaction);
+        count++;
+      }
 
       // let sumOfComitted = [];
       // let comittedAcc;
@@ -254,18 +274,61 @@ router.post("/bulk", async (req, res, next) => {
 //1.create DO
 //2.make and create OG
 //3.Update Inventories
-const createOrder = async (orders) => {
+const createOrder = async (orders, userId, transaction) => {
   const inventories = [];
+  dispatchOrder = await DispatchOrder.create(
+    {
+      userId,
+      ...orders[0],
+    },
+    { transaction }
+  );
+  const businessWarehouseCode = (
+    await Dao.Warehouse.findOne({
+      where: { id: orders[0].warehouseId },
+      attributes: ["businessWarehouseCode"],
+    })
+  ).businessWarehouseCode;
+  const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
+  dispatchOrder.internalIdForBusiness = `DO-${businessWarehouseCode}-${numberOfInternalIdForBusiness}`;
+  let sumOfComitted = [];
+  orders.forEach((order) => {
+    let quantity = parseInt(order.quantity);
+    sumOfComitted.push(quantity);
+  });
+  comittedAcc = sumOfComitted.reduce((acc, po) => {
+    return acc + po;
+  });
+  dispatchOrder.quantity = comittedAcc;
+  await dispatchOrder.save({ transaction });
+  console.log("orders", orders);
+  await OrderGroup.bulkCreate(
+    orders.map((order) => ({
+      userId,
+      orderId: dispatchOrder.id,
+      inventoryId: order.inventoryId,
+      quantity: order.quantity,
+    })),
+    { transaction }
+  );
 
-  for (const order of orders) {
-    const inventory = await Dao.Inventories.findOne({
-      where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
-    });
-
-    if (!inventory) {
-    }
-  }
-  // await Dao.order.create({});
+  return Promise.all(
+    orders.map((_inventory) => {
+      console.log("_inventory", _inventory);
+      return Inventory.findByPk(_inventory.inventoryId, { transaction }).then((inventory) => {
+        if (!inventory && !_inventory.inventoryId) throw new Error("Inventory is not available");
+        if (_inventory.quantity > inventory.availableQuantity)
+          throw new Error("Cannot create orders above available quantity");
+        try {
+          inventory.committedQuantity += +_inventory.quantity;
+          inventory.availableQuantity -= +_inventory.quantity;
+          return inventory.save({ transaction });
+        } catch (err) {
+          throw new Error(err.errors.pop().message);
+        }
+      });
+    })
+  );
 };
 
 /* PUT update existing dispatchOrder. */

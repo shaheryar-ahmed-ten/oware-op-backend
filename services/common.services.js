@@ -34,6 +34,14 @@ const sanitizeFilters = (whereClause, transform = {}) => {
   return whereClause;
 };
 
+const getMaxValueFromJson = (arr, prop) => {
+  var max;
+  for (var i = 0; i < arr.length; i++) {
+    if (max == null || parseInt(arr[i][prop]) > parseInt(max[prop])) max = arr[i];
+  }
+  return max;
+};
+
 const modelWiseFilters = (filters, modelname) => {
   const filterObj = {};
 
@@ -237,4 +245,4 @@ const addActivityLog = async (id, current, ActivityLog) => {
   );
 };
 
-module.exports = { addActivityLog, getModel, digitize, checkOrderStatusAndUpdate };
+module.exports = { addActivityLog, getModel, digitize, checkOrderStatusAndUpdate, getMaxValueFromJson };
