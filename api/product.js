@@ -179,34 +179,30 @@ router.get("/bulk-template", async (req, res, next) => {
     "IsActive",
   ]);
 
-  worksheet.addRows([{
-    name: 'COKE ZERO',
-    description: 'product of Coco Cola(sample product)',
-    volume: '1.4',
-    weight: '2',
-    category: 'Drinks',
-    brand: 'CocoCola',
-    uom: 'Bottles',
-    isActive: 'TRUE',
-  }, {
-    name: 'COKE',
-    description: 'product of Coco Cola(sample product)',
-    volume: '4',
-    weight: '10',
-    category: 'liquids',
-    brand: 'CocoCola',
-    uom: 'PCs',
-    isActive: 'FALSE',
-  }].map((el, idx) => [
-    el.name,
-    el.description,
-    el.volume,
-    el.weight,
-    el.category,
-    el.brand,
-    el.uom,
-    el.isActive
-  ]))
+  worksheet.addRows(
+    [
+      {
+        name: "COKE ZERO",
+        description: "product of Coco Cola(sample product)",
+        volume: "1.4",
+        weight: "2",
+        category: "Drinks",
+        brand: "CocoCola",
+        uom: "Bottles",
+        isActive: "TRUE",
+      },
+      {
+        name: "COKE",
+        description: "product of Coco Cola(sample product)",
+        volume: "4",
+        weight: "10",
+        category: "liquids",
+        brand: "CocoCola",
+        uom: "PCs",
+        isActive: "FALSE",
+      },
+    ].map((el, idx) => [el.name, el.description, el.volume, el.weight, el.category, el.brand, el.uom, el.isActive])
+  );
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
