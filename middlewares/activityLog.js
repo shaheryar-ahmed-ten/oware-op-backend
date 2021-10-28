@@ -31,15 +31,18 @@ async function addActivityLog(req, res, next) {
     if (MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward") {
       const numberOfInternalIdForBusiness = digitize(source, 6);
       if (!current.internalIdForBusiness) {
+        console.log(
+          `\n-----------------------------${current.orders[0].warehouse}----------------------------------\n`
+        );
         current.internalIdForBusiness = (
           await Warehouse.findOne({
             where: { name: current.orders[0].warehouse },
             attributes: ["businessWarehouseCode"],
           })
         ).businessWarehouseCode;
-        console.log("current", current);
       }
       current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
+      if (current.orders.length) current.internalIdForBusiness = "";
     } else if (MODEL == "StockAdjustment") {
       const numberOfInternalIdForBusiness = digitize(source, 6);
       current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
