@@ -54,6 +54,7 @@ router.get("/", async (req, res, next) => {
         include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
       },
     ],
+    kadjlkadlkjaklsd
     order: [["createdAt", "DESC"]],
     distinct: true,
     where,
