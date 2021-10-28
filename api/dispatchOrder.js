@@ -158,13 +158,12 @@ router.post("/", activityLog, async (req, res, next) => {
   }
 });
 
-router.post("/bulk", async (req, res, next) => {
+router.post("/bulk", activityLog, async (req, res, next) => {
   try {
     await sequelize.transaction(async (transaction) => {
       const validationErrors = [];
       let row = 1;
       let previousOrderNumber = 1;
-      const DOs = [];
       let count = 1;
       for (const order of req.body.orders) {
         ++row;
@@ -176,8 +175,6 @@ router.post("/bulk", async (req, res, next) => {
           attributes: ["id"],
           logging: true,
         });
-        console.log("\n----------------------------------------------------------------------------------------\n");
-        console.log("order.company", order.company, "customer", customer);
         if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid Customer Name` });
         const warehouse = await Dao.Warehouse.findOne({
           where: {
@@ -186,7 +183,6 @@ router.post("/bulk", async (req, res, next) => {
           },
           attributes: ["id"],
         });
-        console.log("order.warehouse", order.warehouse, "warehouse", warehouse);
         if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid Warehouse Name` });
         const product = await Dao.Product.findOne({
           where: {
@@ -195,7 +191,6 @@ router.post("/bulk", async (req, res, next) => {
           },
           attributes: ["id"],
         });
-        console.log("order.product", order.product, "product", product);
         if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid Product Name` });
 
         if (customer) order.customerId = customer.id;
@@ -207,11 +202,15 @@ router.post("/bulk", async (req, res, next) => {
           order.productId = product.id;
           order.warehouseId = warehouse.id;
           const inventory = await Dao.Inventory.findOne({
-            attributes: ["id"],
+            attributes: ["id", "availableQuantity"],
             where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
           });
-          if (inventory) order.inventoryId = inventory.id;
-          else if (!inventory) validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
+          if (inventory) {
+            order.inventoryId = inventory.id;
+            if (inventory.availableQuantity < order.quantity)
+              validationErrors.push({ row, message: `Cannot create orders above available quantity` });
+          }
+          if (!inventory) validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
         }
 
         orderNumber = parseInt(order.orderNumber);
@@ -244,7 +243,6 @@ router.post("/bulk", async (req, res, next) => {
 //2.make and create OG
 //3.Update Inventories
 const createOrder = async (orders, userId, transaction) => {
-  const inventories = [];
   dispatchOrder = await DispatchOrder.create(
     {
       userId,
