@@ -42,8 +42,6 @@ const BulkAddValidation = Joi.object({
   ),
 });
 
-dadad;
-
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
