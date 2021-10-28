@@ -254,7 +254,7 @@ router.post("/bulk", async (req, res, next) => {
           count++;
         }
         await addActivityLog2(req, models);
-        res.sendJson(httpStatus.OK, "Bulk Dispatch Order Created", {});
+        res.sendJson(httpStatus.OK, `Total:${maxOrderNumber} bulk dispatch order created!`, {});
       });
     }
   } catch (err) {
