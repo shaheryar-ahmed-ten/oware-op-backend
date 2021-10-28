@@ -162,26 +162,41 @@ router.post("/bulk", async (req, res, next) => {
   try {
     await sequelize.transaction(async (transaction) => {
       const validationErrors = [];
-      let row = 0;
+      let row = 1;
       let previousOrderNumber = 1;
       const DOs = [];
       let count = 1;
       for (const order of req.body.orders) {
-        console.log(`order.product`, order.product);
         ++row;
-        const customer = await Dao.Company.findOne({ where: { name: order.company }, attributes: ["id"] });
-        if (!customer) validationErrors.push(`Row ${row} : Invalid Customer Name`);
-        const warehouse = await Dao.Warehouse.findOne({
-          where: { name: order.warehouse },
-          attributes: ["id"],
-        });
-        if (!warehouse) validationErrors.push(`Row ${row} : Invalid Warehouse Name`);
-        const product = await Dao.Product.findOne({
-          where: { name: order.product },
+        const customer = await Dao.Company.findOne({
+          where: {
+            where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
+            isActive: 1,
+          },
           attributes: ["id"],
           logging: true,
         });
-        if (!product) validationErrors.push(`Row ${row} : Invalid Product Name`);
+        console.log("\n----------------------------------------------------------------------------------------\n");
+        console.log("order.company", order.company, "customer", customer);
+        if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid Customer Name` });
+        const warehouse = await Dao.Warehouse.findOne({
+          where: {
+            where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
+            isActive: 1,
+          },
+          attributes: ["id"],
+        });
+        console.log("order.warehouse", order.warehouse, "warehouse", warehouse);
+        if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid Warehouse Name` });
+        const product = await Dao.Product.findOne({
+          where: {
+            where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
+            isActive: 1,
+          },
+          attributes: ["id"],
+        });
+        console.log("order.product", order.product, "product", product);
+        if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid Product Name` });
 
         if (customer) order.customerId = customer.id;
         if (product) order.productId = product.id;
@@ -196,12 +211,12 @@ router.post("/bulk", async (req, res, next) => {
             where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
           });
           if (inventory) order.inventoryId = inventory.id;
-          else if (!inventory) validationErrors.push(`Row ${row} : Inventory doesn't exist`);
+          else if (!inventory) validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
         }
 
         orderNumber = parseInt(order.orderNumber);
         if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
-          validationErrors.push(`Row ${row} : Invalid Order Number`);
+          validationErrors.push({ row, message: `Row ${row} : Invalid Order Number` });
 
         previousOrderNumber = orderNumber;
       }
@@ -210,62 +225,11 @@ router.post("/bulk", async (req, res, next) => {
         return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk dispatch orders");
 
       let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
-      console.log("maxOrderNumber", maxOrderNumber);
       while (count <= maxOrderNumber) {
-        console.log("count", count, "maxOrderNumber", maxOrderNumber);
         orders = req.body.orders.filter((item) => item.orderNumber == count);
         await createOrder(orders, req.userId, transaction);
         count++;
       }
-
-      // let sumOfComitted = [];
-      // let comittedAcc;
-      // req.body.inventories.forEach((Inventory) => {
-      //   let quantity = parseInt(Inventory.quantity);
-      //   sumOfComitted.push(quantity);
-      // });
-      // comittedAcc = sumOfComitted.reduce((acc, po) => {
-      //   return acc + po;
-      // });
-      // dispatchOrder.quantity = comittedAcc;
-      // await dispatchOrder.save({ transaction });
-      // let inventoryIds = [];
-      // inventoryIds = req.body.inventories.map((inventory) => {
-      //   return inventory.id;
-      // });
-      // const toFindDuplicates = (arry) => arry.filter((item, index) => arry.indexOf(item) != index);
-      // const duplicateElements = toFindDuplicates(inventoryIds);
-      // if (duplicateElements.length != 0) {
-      //   throw new Error("Can not add same inventory twice");
-      // }
-
-      // await OrderGroup.bulkCreate(
-      //   req.body.inventories.map((inventory) => ({
-      //     userId: req.userId,
-      //     orderId: dispatchOrder.id,
-      //     inventoryId: inventory.id,
-      //     quantity: inventory.quantity,
-      //   })),
-      //   { transaction }
-      // );
-
-      // return Promise.all(
-      //   req.body.inventories.map((_inventory) => {
-      //     return Inventory.findByPk(_inventory.id, { transaction }).then((inventory) => {
-      //       if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
-      //       if (_inventory.quantity > inventory.availableQuantity)
-      //         throw new Error("Cannot create orders above available quantity");
-      //       try {
-      //         inventory.committedQuantity += +_inventory.quantity;
-      //         inventory.availableQuantity -= +_inventory.quantity;
-      //         return inventory.save({ transaction });
-      //       } catch (err) {
-      //         throw new Error(err.errors.pop().message);
-      //       }
-      //     });
-      //   })
-      // );
-
       if (validationErrors.length)
         return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
       res.sendJson(httpStatus.OK, "Bulk Dispatch Order Created", {});
@@ -306,7 +270,6 @@ const createOrder = async (orders, userId, transaction) => {
   });
   dispatchOrder.quantity = comittedAcc;
   await dispatchOrder.save({ transaction });
-  console.log("orders", orders);
   await OrderGroup.bulkCreate(
     orders.map((order) => ({
       userId,
@@ -638,6 +601,21 @@ router.get("/products", async (req, res, next) => {
       success: false,
       message: "No inventory found",
     });
+});
+
+router.get("/whatsapp", async (req, res, next) => {
+  const accountSid = "ACa8f41f9830e890f8260be0c610577d03";
+  const authToken = "f6e6ad4a90f8224a58f7e265926f10dc";
+  const client = require("twilio")(accountSid, authToken);
+
+  client.messages
+    .create({
+      body: "Your Yummy Cupcakes Company order of 1 dozen frosted cupcakes has shipped and should be delivered on July 10, 2019. Details: http://www.yummycupcakes.com/",
+      from: "whatsapp:+14155238886",
+      to: "whatsapp:+923343696707",
+    })
+    .then((message) => console.log(message.sid))
+    .done();
 });
 
 // Get single dispatch order
