@@ -27,15 +27,15 @@ const Joi = require("joi");
 const AddValidation = Joi.object({
   orders: Joi.array().items(
     Joi.object({
-      orderNumber: Joi.number().integer().required(),
-      product: Joi.string().required(),
-      warehouse: Joi.string().required(),
-      company: Joi.string().required(),
-      receiverName: Joi.string().required(),
-      receiverPhone: Joi.string().required(),
-      shipmentDate: Joi.date().required(),
-      referenceId: Joi.number().integer().required(),
-      quantity: Joi.number().integer().required(),
+      orderNumber: Joi.required(),
+      product: Joi.required(),
+      warehouse: Joi.required(),
+      company: Joi.required(),
+      receiverName: Joi.required(),
+      receiverPhone: Joi.required(),
+      shipmentDate: Joi.required(),
+      referenceId: Joi.required(),
+      quantity: Joi.required(),
     })
   ),
 });
@@ -177,7 +177,7 @@ router.post("/", activityLog, async (req, res, next) => {
 
 router.post("/bulk", activityLog, async (req, res, next) => {
   try {
-    const isValid = await AddValidation.validateAsync(params);
+    const isValid = await AddValidation.validateAsync(req.body);
     if (isValid) {
       await sequelize.transaction(async (transaction) => {
         const validationErrors = [];
