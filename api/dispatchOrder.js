@@ -24,6 +24,23 @@ const Dao = require("../dao");
 const moment = require("moment-timezone");
 const httpStatus = require("http-status");
 const ExcelJS = require("exceljs");
+const Joi = require("joi");
+
+const BulkAddValidation = Joi.object({
+  orders: Joi.array().items(
+    Joi.object({
+      orderNumber: Joi.required(),
+      product: Joi.required(),
+      warehouse: Joi.required(),
+      company: Joi.required(),
+      receiverName: Joi.required(),
+      receiverPhone: Joi.required(),
+      shipmentDate: Joi.required(),
+      referenceId: Joi.required(),
+      quantity: Joi.required(),
+    })
+  ),
+});
 
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {
@@ -162,78 +179,84 @@ router.post("/", activityLog, async (req, res, next) => {
 
 router.post("/bulk", async (req, res, next) => {
   try {
-    await sequelize.transaction(async (transaction) => {
-      const validationErrors = [];
-      let row = 1;
-      let previousOrderNumber = 1;
-      let count = 1;
-      for (const order of req.body.orders) {
-        ++row;
-        const customer = await Dao.Company.findOne({
-          where: {
-            where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
-            isActive: 1,
-          },
-          attributes: ["id"],
-          logging: true,
-        });
-        if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid Customer Name` });
-        const warehouse = await Dao.Warehouse.findOne({
-          where: {
-            where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
-            isActive: 1,
-          },
-          attributes: ["id"],
-        });
-        if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid Warehouse Name` });
-        const product = await Dao.Product.findOne({
-          where: {
-            where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
-            isActive: 1,
-          },
-          attributes: ["id"],
-        });
-        if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid Product Name` });
+    const isValid = await BulkAddValidation.validateAsync(req.body);
+    if (isValid) {
+      await sequelize.transaction(async (transaction) => {
+        const validationErrors = [];
+        let row = 1;
+        let previousOrderNumber = 1;
+        let count = 1;
 
-        if (customer) order.customerId = customer.id;
-        if (product) order.productId = product.id;
-        if (warehouse) order.warehouseId = warehouse.id;
+        console.log("req.body", req.body);
 
-        if (product && customer && warehouse) {
-          order.customerId = customer.id;
-          order.productId = product.id;
-          order.warehouseId = warehouse.id;
-          const inventory = await Dao.Inventory.findOne({
-            attributes: ["id", "availableQuantity"],
-            where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
+        for (const order of req.body.orders) {
+          ++row;
+          const customer = await Dao.Company.findOne({
+            where: {
+              where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
+              isActive: 1,
+            },
+            attributes: ["id"],
+            logging: true,
           });
-          if (inventory) {
-            order.inventoryId = inventory.id;
-            if (inventory.availableQuantity < order.quantity)
-              validationErrors.push({ row, message: `Cannot create orders above available quantity` });
+          if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid Customer Name` });
+          const warehouse = await Dao.Warehouse.findOne({
+            where: {
+              where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
+              isActive: 1,
+            },
+            attributes: ["id"],
+          });
+          if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid Warehouse Name` });
+          const product = await Dao.Product.findOne({
+            where: {
+              where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
+              isActive: 1,
+            },
+            attributes: ["id"],
+          });
+          if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid Product Name` });
+
+          if (customer) order.customerId = customer.id;
+          if (product) order.productId = product.id;
+          if (warehouse) order.warehouseId = warehouse.id;
+
+          if (product && customer && warehouse) {
+            order.customerId = customer.id;
+            order.productId = product.id;
+            order.warehouseId = warehouse.id;
+            const inventory = await Dao.Inventory.findOne({
+              attributes: ["id", "availableQuantity"],
+              where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
+            });
+            if (inventory) {
+              order.inventoryId = inventory.id;
+              if (inventory.availableQuantity < order.quantity)
+                validationErrors.push({ row, message: `Cannot create orders above available quantity` });
+            }
+            if (!inventory) validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
           }
-          if (!inventory) validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
+
+          orderNumber = parseInt(order.orderNumber);
+          if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
+            validationErrors.push({ row, message: `Row ${row} : Invalid Order Number` });
+
+          previousOrderNumber = orderNumber;
         }
 
-        orderNumber = parseInt(order.orderNumber);
-        if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
-          validationErrors.push({ row, message: `Row ${row} : Invalid Order Number` });
+        if (validationErrors.length)
+          return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk dispatch orders");
 
-        previousOrderNumber = orderNumber;
-      }
-
-      if (validationErrors.length)
-        return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk dispatch orders");
-
-      let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
-      while (count <= maxOrderNumber) {
-        orders = req.body.orders.filter((item) => item.orderNumber == count);
-        await createOrder(orders, req.userId, transaction);
-        count++;
-      }
-      await addActivityLog2(req, models);
-      res.sendJson(httpStatus.OK, "Bulk Dispatch Order Created", {});
-    });
+        let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
+        while (count <= maxOrderNumber) {
+          orders = req.body.orders.filter((item) => item.orderNumber == count);
+          await createOrder(orders, req.userId, transaction);
+          count++;
+        }
+        await addActivityLog2(req, models);
+        res.sendJson(httpStatus.OK, "Bulk Dispatch Order Created", {});
+      });
+    }
   } catch (err) {
     console.log("err", err);
     res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
