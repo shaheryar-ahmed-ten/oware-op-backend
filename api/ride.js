@@ -26,6 +26,7 @@ const moment = require("moment-timezone");
 const { previewFile } = require("../services/s3.service");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
+const { sendWhatsappAlert } = require("../services/common.services");
 
 /* GET rides listing. */
 router.get("/", async (req, res, next) => {
@@ -243,12 +244,12 @@ router.put("/:id", activityLog, async (req, res, next) => {
     where: { id: req.params.id },
     include: [RideProduct],
   });
+  const initialRideStatus = ride.status;
   if (!ride)
     return res.status(400).json({
       success: false,
       message: "No ride found!",
     });
-  console.log("req.body", req.body);
   ride.vehicleId = req.body.vehicleId;
   ride.driverId = req.body.driverId;
   ride.pickupDate = req.body.pickupDate;
@@ -262,8 +263,8 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.status = req.body.status;
   ride.price = req.body.price;
   ride.cost = req.body.cost;
-  ride.customerDiscount = typeof req.body.customerDiscount === 'number'?req.body.customerDiscount: null;
-  ride.driverIncentive = typeof req.body.driverIncentive === 'number'? req.body.driverIncentive:null;
+  ride.customerDiscount = typeof req.body.customerDiscount === "number" ? req.body.customerDiscount : null;
+  ride.driverIncentive = typeof req.body.driverIncentive === "number" ? req.body.driverIncentive : null;
   ride.memo = req.body.memo;
   if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
   if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
@@ -275,7 +276,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.eirId = req.body.eirId;
   ride.builtyId = req.body.builtyId;
   ride.currentLocation = req.body.currentLocation;
-
 
   let newProducts = req.body.products.filter((product) => !product.id);
   const oldProductIds = req.body.products.filter((product) => product.id).map((product) => product.id);
@@ -296,6 +296,14 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await ride.save();
+    console.log("ride.pocNumber", ride.pocNumber, "ride.status", ride.status, "initialRideStatus", initialRideStatus);
+    if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
+      console.log("sending whatsapp alert on ride complete");
+      sendWhatsappAlert("+923343696707");
+    } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
+      console.log("sending whatsapp alert on ride Assigned");
+      sendWhatsappAlert("+923343696707");
+    }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
@@ -488,7 +496,7 @@ router.get("/export", async (req, res, next) => {
     "POC NUMBER",
     "ETA",
     "TRIP COMPLETION TIME",
-    "CURRENT LOCATION"
+    "CURRENT LOCATION",
     // "CATEGORY",
     // "PRODUCTS",
     // "QUANTITIES"
@@ -519,7 +527,7 @@ router.get("/export", async (req, res, next) => {
       row.pocNumber,
       row.eta,
       row.completionTime,
-      row.currentLocation
+      row.currentLocation,
     ])
   );
 

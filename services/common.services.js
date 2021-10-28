@@ -349,6 +349,21 @@ const addActivityLog2 = async (req, models) => {
   }
 };
 
+const sendWhatsappAlert = async (receivingNum) => {
+  const accountSid = "ACa8f41f9830e890f8260be0c610577d03";
+  const authToken = "f6e6ad4a90f8224a58f7e265926f10dc";
+  const client = require("twilio")(accountSid, authToken);
+
+  client.messages
+    .create({
+      body: "Your Yummy Cupcakes Company order of 1 dozen frosted cupcakes has shipped and should be delivered on July 10, 2019. Details: http://www.yummycupcakes.com/",
+      from: "whatsapp:+14155238886",
+      to: `whatsapp:${receivingNum}`,
+    })
+    .then((message) => console.log(message.sid))
+    .done();
+};
+
 module.exports = {
   addActivityLog,
   getModel,
@@ -356,4 +371,5 @@ module.exports = {
   checkOrderStatusAndUpdate,
   getMaxValueFromJson,
   addActivityLog2,
+  sendWhatsappAlert,
 };

@@ -2,6 +2,7 @@
 const { Model } = require("sequelize");
 const config = require("../config");
 const { RIDE_STATUS } = require("../enums");
+const { sendWhatsappAlert } = require("../services/common.services");
 module.exports = (sequelize, DataTypes) => {
   class Ride extends Model {
     /**
@@ -115,35 +116,35 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: RIDE_STATUS.UNASSIGNED,
       },
-      weightCargo:{
+      weightCargo: {
         type: DataTypes.FLOAT,
         allowNull: true,
       },
-      pocName:{
+      pocName: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      pocNumber:{
+      pocNumber: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      eta:{
+      eta: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      completionTime:{
+      completionTime: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      currentLocation:{
+      currentLocation: {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      eirId:{
+      eirId: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
-      builtyId:{
+      builtyId: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
