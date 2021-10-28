@@ -232,7 +232,7 @@ router.post("/bulk", async (req, res, next) => {
             if (inventory) {
               order.inventoryId = inventory.id;
               if (inventory.availableQuantity < order.quantity)
-                validationErrors.push({ row, message: `Cannot create orders above available quantity` });
+                validationErrors.push({ row, message: `Row ${row} : Cannot create orders above available quantity` });
             }
             if (!inventory) validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
           }
