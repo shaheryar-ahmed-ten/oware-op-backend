@@ -262,8 +262,8 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.status = req.body.status;
   ride.price = req.body.price;
   ride.cost = req.body.cost;
-  ride.customerDiscount = req.body.customerDiscount;
-  ride.driverIncentive = req.body.driverIncentive;
+  ride.customerDiscount = typeof req.body.customerDiscount === 'number'?req.body.customerDiscount: null;
+  ride.driverIncentive = typeof req.body.driverIncentive === 'number'? req.body.driverIncentive:null;
   ride.memo = req.body.memo;
   if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
   if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
@@ -276,8 +276,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.builtyId = req.body.builtyId;
   ride.currentLocation = req.body.currentLocation;
 
-  // ride.carId = req.body.carId;
-  // ride.vendorId = req.body.vendorId;
 
   let newProducts = req.body.products.filter((product) => !product.id);
   const oldProductIds = req.body.products.filter((product) => product.id).map((product) => product.id);
