@@ -238,7 +238,7 @@ const addActivityLog = async (id, current, ActivityLog) => {
   // const modelUrl = req.originalUrl.split("/");
   // let MODEL = getModel(modelUrl[3]);
   // const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
-  // const source = await sourceModel[MODEL].findOne({ where: { id: req.params.id } });
+  // const source = await models[MODEL].findOne({ where: { id: req.params.id } });
   const log = await ActivityLog.update(
     {
       currentPayload: current,
@@ -247,25 +247,25 @@ const addActivityLog = async (id, current, ActivityLog) => {
   );
 };
 
-const addActivityLog2 = async (req, ActivitySourceType) => {
-  console.log("ActivityLog", ActivityLog);
+const addActivityLog2 = async (req, models) => {
   const modelUrl = req.originalUrl.split("/");
+  console.log("modelUrl", modelUrl);
   let myModel = getModel(modelUrl[3]);
   if (modelUrl[4] == "VENDOR") myModel = "Vendor";
-  const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: myModel } })).id;
+  const sourceTypeId = (await models.ActivitySourceType.findOne({ where: { name: myModel } })).id;
   if (req.method == "POST") {
-    if (myModel == "Vendor") sourceModel[myModel] = "Company";
+    if (myModel == "Vendor") models[myModel] = "Company";
     const current = { ...req.body };
     let source;
     if (myModel == "Vendor") {
-      source = await sourceModel["Company"].findOne({
+      source = await models["Company"].findOne({
         order: [["createdAt", "DESC"]],
         limit: 1,
         attributes: ["id"],
         paranoid: false,
       });
     } else {
-      source = await sourceModel[myModel].findOne({
+      source = await models[myModel].findOne({
         order: [["createdAt", "DESC"]],
         limit: 1,
         attributes: ["id"],
@@ -277,7 +277,7 @@ const addActivityLog2 = async (req, ActivitySourceType) => {
       const numberOfInternalIdForBusiness = digitize(source, 6);
       if (!current.internalIdForBusiness) {
         current.internalIdForBusiness = (
-          await Warehouse.findOne({
+          await models.Warehouse.findOne({
             where: { name: current.orders[0].warehouse },
             attributes: ["businessWarehouseCode"],
           })
@@ -285,6 +285,9 @@ const addActivityLog2 = async (req, ActivitySourceType) => {
         console.log("current", current);
       }
       current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
+      if (modelUrl[3] === "dispatch-order" && modelUrl[4] === "bulk") {
+        current.internalIdForBusiness = "";
+      }
     } else if (myModel == "StockAdjustment") {
       const numberOfInternalIdForBusiness = digitize(source, 6);
       current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
@@ -293,7 +296,7 @@ const addActivityLog2 = async (req, ActivitySourceType) => {
     } else if (myModel == "User") {
       current["name"] = current["username"];
     }
-    const log = await ActivityLog.create({
+    const log = await models.ActivityLog.create({
       userId: req.userId,
       currentPayload: current,
       previousPayload: {},
@@ -302,14 +305,14 @@ const addActivityLog2 = async (req, ActivitySourceType) => {
       activityType: "ADD",
     });
   } else if (req.method == "PUT") {
-    if (myModel == "Vendor") sourceModel[myModel] = "Company";
+    if (myModel == "Vendor") models[myModel] = "Company";
     let source;
     if (myModel == "Vendor") {
-      source = await sourceModel["Company"].findOne({ where: { id: req.params.id } });
+      source = await models["Company"].findOne({ where: { id: req.params.id } });
     } else {
-      source = await sourceModel[myModel].findOne({ where: { id: req.params.id } });
+      source = await models[myModel].findOne({ where: { id: req.params.id } });
     }
-    const log = await ActivityLog.create({
+    const log = await models.ActivityLog.create({
       userId: req.userId,
       currentPayload: {},
       previousPayload: source,
@@ -321,11 +324,11 @@ const addActivityLog2 = async (req, ActivitySourceType) => {
   } else if (req.method == "DELETE") {
     let source;
     if (myModel == "Vendor") {
-      source = await sourceModel["Company"].findOne({ where: { id: req.params.id } });
+      source = await models["Company"].findOne({ where: { id: req.params.id } });
     } else {
-      source = await sourceModel[myModel].findOne({ where: { id: req.params.id } });
+      source = await models[myModel].findOne({ where: { id: req.params.id } });
     }
-    const log = await ActivityLog.create({
+    const log = await models.ActivityLog.create({
       userId: req.userId,
       currentPayload: {},
       previousPayload: source,
@@ -334,8 +337,8 @@ const addActivityLog2 = async (req, ActivitySourceType) => {
       activityType: "DELETE",
     });
   } else if (req.method == "PATCH") {
-    const source = await sourceModel[myModel].findOne({ where: { id: req.params.id } });
-    const log = await ActivityLog.create({
+    const source = await models[myModel].findOne({ where: { id: req.params.id } });
+    const log = await models.ActivityLog.create({
       userId: req.userId,
       currentPayload: {},
       previousPayload: source,
@@ -344,7 +347,6 @@ const addActivityLog2 = async (req, ActivitySourceType) => {
       activityType: "CANCEL",
     });
   }
-  next();
 };
 
 module.exports = {

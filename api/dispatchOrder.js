@@ -13,6 +13,7 @@ const {
   OutwardGroup,
   ActivitySourceType,
 } = require("../models");
+const models = require("../models");
 const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
@@ -230,7 +231,7 @@ router.post("/bulk", async (req, res, next) => {
         await createOrder(orders, req.userId, transaction);
         count++;
       }
-      await addActivityLog2(req, ActivitySourceType);
+      await addActivityLog2(req, models);
       res.sendJson(httpStatus.OK, "Bulk Dispatch Order Created", {});
     });
   } catch (err) {
