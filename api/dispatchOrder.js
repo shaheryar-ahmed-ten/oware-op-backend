@@ -11,11 +11,13 @@ const {
   sequelize,
   ProductOutward,
   OutwardGroup,
+  ActivitySourceType,
 } = require("../models");
+const models = require("../models");
 const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
-const { digitize, addActivityLog, getMaxValueFromJson } = require("../services/common.services");
+const { digitize, addActivityLog, getMaxValueFromJson, addActivityLog2 } = require("../services/common.services");
 const { RELATION_TYPES, DISPATCH_ORDER } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
@@ -39,6 +41,8 @@ const BulkAddValidation = Joi.object({
     })
   ),
 });
+
+dadad;
 
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {
@@ -175,7 +179,7 @@ router.post("/", activityLog, async (req, res, next) => {
   }
 });
 
-router.post("/bulk", activityLog, async (req, res, next) => {
+router.post("/bulk", async (req, res, next) => {
   try {
     const isValid = await BulkAddValidation.validateAsync(req.body);
     if (isValid) {
@@ -251,12 +255,9 @@ router.post("/bulk", activityLog, async (req, res, next) => {
           await createOrder(orders, req.userId, transaction);
           count++;
         }
-        if (validationErrors.length)
-          return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
+        await addActivityLog2(req, models);
         res.sendJson(httpStatus.OK, "Bulk Dispatch Order Created", {});
       });
-    } else {
-      res.sendError(httpStatus.CONFLICT, "Validation Error", null);
     }
   } catch (err) {
     console.log("err", err);
