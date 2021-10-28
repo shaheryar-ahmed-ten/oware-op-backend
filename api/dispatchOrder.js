@@ -24,7 +24,7 @@ const httpStatus = require("http-status");
 const ExcelJS = require("exceljs");
 const Joi = require("joi");
 
-const AddValidation = Joi.object({
+const BulkAddValidation = Joi.object({
   orders: Joi.array().items(
     Joi.object({
       orderNumber: Joi.required(),
@@ -177,7 +177,7 @@ router.post("/", activityLog, async (req, res, next) => {
 
 router.post("/bulk", activityLog, async (req, res, next) => {
   try {
-    const isValid = await AddValidation.validateAsync(req.body);
+    const isValid = await BulkAddValidation.validateAsync(req.body);
     if (isValid) {
       await sequelize.transaction(async (transaction) => {
         const validationErrors = [];
