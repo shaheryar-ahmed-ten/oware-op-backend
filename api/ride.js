@@ -299,10 +299,10 @@ router.put("/:id", activityLog, async (req, res, next) => {
     console.log("ride.pocNumber", ride.pocNumber, "ride.status", ride.status, "initialRideStatus", initialRideStatus);
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
       console.log("sending whatsapp alert on ride complete");
-      sendWhatsappAlert("+923343696707");
+      sendWhatsappAlert("+923466998813");
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
-      sendWhatsappAlert("+923343696707");
+      sendWhatsappAlert("+923466998813");
     }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
