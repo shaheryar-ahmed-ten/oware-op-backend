@@ -42,7 +42,7 @@ async function addActivityLog(req, res, next) {
         ).businessWarehouseCode;
       }
       current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
-      if (current.orders.length) current.internalIdForBusiness = "";
+      if (current && current.orders && current.orders.length) current.internalIdForBusiness = "";
     } else if (MODEL == "StockAdjustment") {
       const numberOfInternalIdForBusiness = digitize(source, 6);
       current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
