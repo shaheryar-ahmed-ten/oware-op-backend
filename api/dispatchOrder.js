@@ -200,7 +200,7 @@ router.post("/bulk", async (req, res, next) => {
             attributes: ["id"],
             logging: true,
           });
-          if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid Customer Name` });
+          if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid company name` });
           const warehouse = await Dao.Warehouse.findOne({
             where: {
               where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
@@ -208,7 +208,7 @@ router.post("/bulk", async (req, res, next) => {
             },
             attributes: ["id"],
           });
-          if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid Warehouse Name` });
+          if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid warehouse name` });
           const product = await Dao.Product.findOne({
             where: {
               where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
@@ -216,7 +216,7 @@ router.post("/bulk", async (req, res, next) => {
             },
             attributes: ["id"],
           });
-          if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid Product Name` });
+          if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid product name` });
 
           if (customer) order.customerId = customer.id;
           if (product) order.productId = product.id;
