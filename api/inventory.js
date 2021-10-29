@@ -22,6 +22,7 @@ const moment = require("moment-timezone");
 const activityLog = require("../middlewares/activityLog");
 const dao = require("../dao");
 const OrderGroup = require("../dao/OrderGroup");
+const { digitize } = require("../services/common.services");
 
 /* GET inventory listing. */
 router.get("/", async (req, res, next) => {
@@ -123,6 +124,7 @@ router.get("/export", async (req, res, next) => {
   worksheet = workbook.addWorksheet("Products");
 
   worksheet.columns = getColumnsConfig([
+    "PRODUCT ID",
     "NAME",
     "DESCRIPTION",
     "DIMENSIONS CBM",
@@ -158,6 +160,7 @@ router.get("/export", async (req, res, next) => {
 
   worksheet.addRows(
     response.map((row) => [
+      digitize(row.id || 0, 6),
       row.name,
       row.description,
       row.dimensionsCBM,
@@ -171,6 +174,7 @@ router.get("/export", async (req, res, next) => {
   worksheet = workbook.addWorksheet("Companies");
 
   worksheet.columns = getColumnsConfig([
+    "ID",
     "COMPANY NAME",
     "CUSTOMER TYPE",
     "CONTACT NAME",
@@ -189,6 +193,7 @@ router.get("/export", async (req, res, next) => {
 
   worksheet.addRows(
     response.map((row) => [
+      row.internalIdForBusiness || '',
       row.name,
       row.type,
       row.Contact.firstName + " " + row.Contact.lastName,
@@ -241,7 +246,7 @@ router.get("/export", async (req, res, next) => {
 
   worksheet = workbook.addWorksheet("Product Inwards");
 
-  worksheet.columns = getColumnsConfig(["CUSTOMER", "PRODUCT", "WAREHOUSE", "UOM", "QUANTITY", "REFERENCE ID", "CREATOR", "INWARD DATE"]);
+  worksheet.columns = getColumnsConfig(["INWARD ID", "CUSTOMER", "PRODUCT", "WAREHOUSE", "UOM", "QUANTITY", "REFERENCE ID", "CREATOR", "INWARD DATE"]);
 
   if (req.query.days) {
     const currentDate = moment();
@@ -274,6 +279,7 @@ router.get("/export", async (req, res, next) => {
   for (const inward of response) {
     for (const Product of inward.Products) {
       inwardArray.push([
+        inward.internalIdForBusiness || '',
         inward.Company.name,
         Product.name,
         inward.Warehouse.name,
@@ -302,6 +308,7 @@ router.get("/export", async (req, res, next) => {
   worksheet = workbook.addWorksheet("Dispatch Orders");
 
   worksheet.columns = getColumnsConfig([
+    "DISPATCH ORDER ID",
     "CUSTOMER",
     "PRODUCT",
     "WAREHOUSE",
@@ -312,6 +319,7 @@ router.get("/export", async (req, res, next) => {
     "REFERENCE ID",
     "CREATOR",
     "CREATED DATE",
+    "STATUS",
   ]);
 
   if (req.query.days) {
@@ -352,6 +360,7 @@ router.get("/export", async (req, res, next) => {
   for (const order of response) {
     for (const inv of order.Inventories) {
       orderArray.push([
+        order.internalIdForBusiness || '',
         order.Inventory.Company.name,
         inv.Product.name,
         order.Inventory.Warehouse.name,
@@ -362,6 +371,16 @@ router.get("/export", async (req, res, next) => {
         order.referenceId || '',
         `${order.User.firstName || ''} ${order.User.lastName || ''}`,
         moment(order.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+        order.status == "0" ?
+          "PENDING" :
+          order.status == "1" ?
+            "PARTIALLY FULFILLED" :
+            order.status == "2" ?
+              "FULFILLED" :
+              order.status == "3" ?
+                "CANCELLED" :
+                ""
+
       ]);
     }
   }
@@ -373,6 +392,7 @@ router.get("/export", async (req, res, next) => {
   worksheet = workbook.addWorksheet("Product Outwards");
 
   worksheet.columns = getColumnsConfig([
+    "OUTWARD ID",
     "CUSTOMER",
     "PRODUCT",
     "WAREHOUSE",
@@ -425,6 +445,7 @@ router.get("/export", async (req, res, next) => {
       //   console.log('inventoryId', inv.id, 'outwardId', outward.id)
       // }
       outwardArray.push([
+        outward.internalIdForBusiness || '',
         inv.Company.name,
         inv.Product.name,
         inv.Warehouse.name,

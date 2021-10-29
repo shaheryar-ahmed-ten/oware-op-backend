@@ -8,6 +8,8 @@ const {
   OrderGroup,
   sequelize,
 } = require("../models");
+const models = require("../models");
+// const Dao = require("../dao");
 const {
   DISPATCH_ORDER: { STATUS },
 } = require("../enums");
@@ -32,6 +34,14 @@ const sanitizeFilters = (whereClause, transform = {}) => {
     }
   }
   return whereClause;
+};
+
+const getMaxValueFromJson = (arr, prop) => {
+  var max;
+  for (var i = 0; i < arr.length; i++) {
+    if (max == null || parseInt(arr[i][prop]) > parseInt(max[prop])) max = arr[i];
+  }
+  return max;
 };
 
 const modelWiseFilters = (filters, modelname) => {
@@ -152,83 +162,83 @@ const checkOrderStatusAndUpdate = async (model, dispatchOrderId, currentOutwardQ
 };
 
 const getModel = (modelUrl) => {
-  let MODEL;
+  let myModel;
   switch (modelUrl) {
     case "inventory-wastages":
-      MODEL = "StockAdjustment";
+      myModel = "StockAdjustment";
       break;
     case "brand":
-      MODEL = "Brand";
+      myModel = "Brand";
       break;
     case "company":
-      MODEL = "Company";
+      myModel = "Company";
       break;
 
     case "category":
-      MODEL = "Category";
+      myModel = "Category";
       break;
 
     case "uom":
-      MODEL = "UOM";
+      myModel = "UOM";
       break;
 
     case "warehouse":
-      MODEL = "Warehouse";
+      myModel = "Warehouse";
       break;
 
     case "product":
-      MODEL = "Product";
+      myModel = "Product";
       break;
 
     case "product-inward":
-      MODEL = "ProductInward";
+      myModel = "ProductInward";
       break;
 
     case "dispatch-order":
-      MODEL = "DispatchOrder";
+      myModel = "DispatchOrder";
       break;
 
     case "product-outward":
-      MODEL = "ProductOutward";
+      myModel = "ProductOutward";
       break;
 
     case "inventory":
-      MODEL = "Inventory";
+      myModel = "Inventory";
       break;
 
     case "driver":
-      MODEL = "Driver";
+      myModel = "Driver";
       break;
 
     case "vehicle":
-      MODEL = "Vehicle";
+      myModel = "Vehicle";
       break;
     case "user":
-      MODEL = "User";
+      myModel = "User";
       break;
     case "company":
-      MODEL = "Company";
+      myModel = "Company";
       break;
 
     case "upload":
-      MODEL = "Upload";
+      myModel = "Upload";
       break;
 
     case "ride":
-      MODEL = "Ride";
+      myModel = "Ride";
       break;
 
     case "vehicle-types":
-      MODEL = "Car";
+      myModel = "Car";
   }
-  return MODEL;
+  return myModel;
 };
 
 const addActivityLog = async (id, current, ActivityLog) => {
   // const modelUrl = req.originalUrl.split("/");
   // let MODEL = getModel(modelUrl[3]);
   // const sourceTypeId = (await ActivitySourceType.findOne({ where: { name: MODEL } })).id;
-  // const source = await sourceModel[MODEL].findOne({ where: { id: req.params.id } });
+  // const source = await models[MODEL].findOne({ where: { id: req.params.id } });
   const log = await ActivityLog.update(
     {
       currentPayload: current,
@@ -237,4 +247,129 @@ const addActivityLog = async (id, current, ActivityLog) => {
   );
 };
 
-module.exports = { addActivityLog, getModel, digitize, checkOrderStatusAndUpdate };
+const addActivityLog2 = async (req, models) => {
+  const modelUrl = req.originalUrl.split("/");
+  console.log("modelUrl", modelUrl);
+  let myModel = getModel(modelUrl[3]);
+  if (modelUrl[4] == "VENDOR") myModel = "Vendor";
+  const sourceTypeId = (await models.ActivitySourceType.findOne({ where: { name: myModel } })).id;
+  if (req.method == "POST") {
+    if (myModel == "Vendor") models[myModel] = "Company";
+    const current = { ...req.body };
+    let source;
+    if (myModel == "Vendor") {
+      source = await models["Company"].findOne({
+        order: [["createdAt", "DESC"]],
+        limit: 1,
+        attributes: ["id"],
+        paranoid: false,
+      });
+    } else {
+      source = await models[myModel].findOne({
+        order: [["createdAt", "DESC"]],
+        limit: 1,
+        attributes: ["id"],
+        paranoid: false,
+      });
+    }
+    source = source ? source.id + 1 : 1;
+    if (myModel == "DispatchOrder" || myModel == "ProductOutward" || myModel == "ProductInward") {
+      const numberOfInternalIdForBusiness = digitize(source, 6);
+      if (!current.internalIdForBusiness) {
+        current.internalIdForBusiness = (
+          await models.Warehouse.findOne({
+            where: { name: current.orders[0].warehouse },
+            attributes: ["businessWarehouseCode"],
+          })
+        ).businessWarehouseCode;
+        console.log("current", current);
+      }
+      current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
+      if (modelUrl[3] === "dispatch-order" && modelUrl[4] === "bulk") {
+        current.internalIdForBusiness = "";
+      }
+    } else if (myModel == "StockAdjustment") {
+      const numberOfInternalIdForBusiness = digitize(source, 6);
+      current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
+    } else if (myModel == "Ride") {
+      current.internalIdForBusiness = digitize(source, 6);
+    } else if (myModel == "User") {
+      current["name"] = current["username"];
+    }
+    const log = await models.ActivityLog.create({
+      userId: req.userId,
+      currentPayload: current,
+      previousPayload: {},
+      sourceId: source,
+      sourceType: sourceTypeId,
+      activityType: "ADD",
+    });
+  } else if (req.method == "PUT") {
+    if (myModel == "Vendor") models[myModel] = "Company";
+    let source;
+    if (myModel == "Vendor") {
+      source = await models["Company"].findOne({ where: { id: req.params.id } });
+    } else {
+      source = await models[myModel].findOne({ where: { id: req.params.id } });
+    }
+    const log = await models.ActivityLog.create({
+      userId: req.userId,
+      currentPayload: {},
+      previousPayload: source,
+      sourceId: req.params.id,
+      sourceType: sourceTypeId,
+      activityType: "EDIT",
+    });
+    req["activityLogId"] = log.id;
+  } else if (req.method == "DELETE") {
+    let source;
+    if (myModel == "Vendor") {
+      source = await models["Company"].findOne({ where: { id: req.params.id } });
+    } else {
+      source = await models[myModel].findOne({ where: { id: req.params.id } });
+    }
+    const log = await models.ActivityLog.create({
+      userId: req.userId,
+      currentPayload: {},
+      previousPayload: source,
+      sourceId: req.params.id,
+      sourceType: sourceTypeId,
+      activityType: "DELETE",
+    });
+  } else if (req.method == "PATCH") {
+    const source = await models[myModel].findOne({ where: { id: req.params.id } });
+    const log = await models.ActivityLog.create({
+      userId: req.userId,
+      currentPayload: {},
+      previousPayload: source,
+      sourceId: req.params.id,
+      sourceType: sourceTypeId,
+      activityType: "CANCEL",
+    });
+  }
+};
+
+const sendWhatsappAlert = async (receivingNum) => {
+  const accountSid = "ACa8f41f9830e890f8260be0c610577d03";
+  const authToken = "f6e6ad4a90f8224a58f7e265926f10dc";
+  const client = require("twilio")(accountSid, authToken);
+  console.log("receivingNum", receivingNum);
+  client.messages
+    .create({
+      body: "Your Yummy Cupcakes Company order of 1 dozen frosted cupcakes has shipped and should be delivered on July 10, 2019. Details: http://www.yummycupcakes.com/",
+      from: "whatsapp:+14155238886",
+      to: `whatsapp:${receivingNum}`,
+    })
+    .then((message) => console.log(message.sid))
+    .done();
+};
+
+module.exports = {
+  addActivityLog,
+  getModel,
+  digitize,
+  checkOrderStatusAndUpdate,
+  getMaxValueFromJson,
+  addActivityLog2,
+  sendWhatsappAlert,
+};
