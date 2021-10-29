@@ -18,7 +18,7 @@ const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
 const { digitize, addActivityLog, getMaxValueFromJson, addActivityLog2 } = require("../services/common.services");
-const { RELATION_TYPES, DISPATCH_ORDER } = require("../enums");
+const { RELATION_TYPES, DISPATCH_ORDER, INTEGER_REGEX } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const moment = require("moment-timezone");
@@ -187,10 +187,11 @@ router.post("/bulk", async (req, res, next) => {
         let previousOrderNumber = 1;
         let count = 1;
 
-        console.log("req.body", req.body);
-
         for (const order of req.body.orders) {
           ++row;
+
+          if (!INTEGER_REGEX.test(order.quantity)) validationErrors.push(`Row ${row} : invalid quantity entered`);
+
           const customer = await Dao.Company.findOne({
             where: {
               where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
