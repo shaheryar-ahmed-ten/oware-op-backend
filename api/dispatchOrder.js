@@ -18,7 +18,7 @@ const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
 const { digitize, addActivityLog, getMaxValueFromJson, addActivityLog2 } = require("../services/common.services");
-const { RELATION_TYPES, DISPATCH_ORDER } = require("../enums");
+const { RELATION_TYPES, DISPATCH_ORDER, INTEGER_REGEX } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const moment = require("moment-timezone");
@@ -187,10 +187,11 @@ router.post("/bulk", async (req, res, next) => {
         let previousOrderNumber = 1;
         let count = 1;
 
-        console.log("req.body", req.body);
-
         for (const order of req.body.orders) {
           ++row;
+
+          if (!INTEGER_REGEX.test(order.quantity)) validationErrors.push(`Row ${row} : invalid quantity entered`);
+
           const customer = await Dao.Company.findOne({
             where: {
               where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
@@ -199,7 +200,7 @@ router.post("/bulk", async (req, res, next) => {
             attributes: ["id"],
             logging: true,
           });
-          if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid Customer Name` });
+          if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid company name` });
           const warehouse = await Dao.Warehouse.findOne({
             where: {
               where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
@@ -207,7 +208,7 @@ router.post("/bulk", async (req, res, next) => {
             },
             attributes: ["id"],
           });
-          if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid Warehouse Name` });
+          if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid warehouse name` });
           const product = await Dao.Product.findOne({
             where: {
               where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
@@ -215,7 +216,7 @@ router.post("/bulk", async (req, res, next) => {
             },
             attributes: ["id"],
           });
-          if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid Product Name` });
+          if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid product name` });
 
           if (customer) order.customerId = customer.id;
           if (product) order.productId = product.id;
