@@ -187,18 +187,17 @@ router.post("/bulk", async (req, res, next) => {
         let previousOrderNumber = 1;
         let count = 1;
 
+        console.log("req.body.orders", req.body.orders);
+
         for (const order of req.body.orders) {
           ++row;
-
-          if (!INTEGER_REGEX.test(order.quantity)) validationErrors.push(`Row ${row} : invalid quantity entered`);
-
+          if (!INTEGER_REGEX.test(order.quantity)) validationErrors.push(`Row ${row} : Invalid quantity entered`);
           const customer = await Dao.Company.findOne({
             where: {
               where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
               isActive: 1,
             },
             attributes: ["id"],
-            logging: true,
           });
           if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid company name` });
           const warehouse = await Dao.Warehouse.findOne({
@@ -217,11 +216,9 @@ router.post("/bulk", async (req, res, next) => {
             attributes: ["id"],
           });
           if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid product name` });
-
           if (customer) order.customerId = customer.id;
           if (product) order.productId = product.id;
           if (warehouse) order.warehouseId = warehouse.id;
-
           if (product && customer && warehouse) {
             order.customerId = customer.id;
             order.productId = product.id;
@@ -237,28 +234,26 @@ router.post("/bulk", async (req, res, next) => {
             }
             if (!inventory) validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
           }
-
           orderNumber = parseInt(order.orderNumber);
           if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
             validationErrors.push({ row, message: `Row ${row} : Invalid Order Number` });
-
           previousOrderNumber = orderNumber;
         }
-
         if (validationErrors.length)
           return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk dispatch orders");
-
         let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
         while (count <= maxOrderNumber) {
-          orders = req.body.orders.filter((item) => item.orderNumber == count);
-          await createOrder(orders, req.userId, transaction);
+          records = req.body.orders.filter((item) => item.orderNumber == count);
+          console.log("records", records);
+          await createOrder(records, req.userId, transaction);
           count++;
         }
         await addActivityLog2(req, models);
-        res.sendJson(httpStatus.OK, `Total:${maxOrderNumber} bulk dispatch order created!`, {});
+        res.sendJson(httpStatus.OK, `${maxOrderNumber} orders uploaded successfully.`, {});
       });
     }
   } catch (err) {
+    res.sendJson(httpStatus.OK, ` bulk dispatch order created!`, {});
     console.log("err", err);
     res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
   }
@@ -467,7 +462,7 @@ router.get("/bulk-template", async (req, res, next) => {
     [
       {
         orderNo: 1,
-        company: "Bisconi Pvt",
+        company: "Bisconi Pvt (Sample Company)",
         warehouse: "Karachi - east",
         receiverName: "Ahmed Ali",
         receiverPhone: "03xxxxxxxx0",
@@ -478,7 +473,7 @@ router.get("/bulk-template", async (req, res, next) => {
       },
       {
         orderNo: 1,
-        company: "Bisconi Pvt",
+        company: "Bisconi Pvt (Sample Company)",
         warehouse: "Karachi - east",
         receiverName: "Ahmed Ali",
         receiverPhone: "03xxxxxxxx0",
@@ -489,7 +484,7 @@ router.get("/bulk-template", async (req, res, next) => {
       },
       {
         orderNo: 2,
-        company: "Nescafe Pvt",
+        company: "Nescafe Pvt (Sample Company)",
         warehouse: "Karachi - south",
         receiverName: "Zafar",
         receiverPhone: "03xxxxxxxx0",
