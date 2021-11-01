@@ -462,11 +462,7 @@ router.get("/bulk-template", async (req, res, next) => {
     [
       {
         orderNo: 1,
-<<<<<<< HEAD
-        company: "Sample Bisconi Pvt",
-=======
         company: "Bisconi Pvt (Sample Company)",
->>>>>>> ee50ea4604a05964bb0a46f18c4d7dd15efcf1c0
         warehouse: "Karachi - east",
         receiverName: "Ahmed Ali",
         receiverPhone: "03xxxxxxxx0",
@@ -477,11 +473,7 @@ router.get("/bulk-template", async (req, res, next) => {
       },
       {
         orderNo: 1,
-<<<<<<< HEAD
-        company: "Sample Bisconi Pvt",
-=======
         company: "Bisconi Pvt (Sample Company)",
->>>>>>> ee50ea4604a05964bb0a46f18c4d7dd15efcf1c0
         warehouse: "Karachi - east",
         receiverName: "Ahmed Ali",
         receiverPhone: "03xxxxxxxx0",
@@ -492,11 +484,7 @@ router.get("/bulk-template", async (req, res, next) => {
       },
       {
         orderNo: 2,
-<<<<<<< HEAD
-        company: "Sample Nescafe Pvt",
-=======
         company: "Nescafe Pvt (Sample Company)",
->>>>>>> ee50ea4604a05964bb0a46f18c4d7dd15efcf1c0
         warehouse: "Karachi - south",
         receiverName: "Zafar",
         receiverPhone: "03xxxxxxxx0",
