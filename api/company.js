@@ -27,6 +27,7 @@ router.get("/:relationType", async (req, res, next) => {
     limit,
     offset,
     where,
+    distinct:true
   });
 
   res.json({
