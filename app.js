@@ -7,6 +7,7 @@ const cors = require("cors");
 const fs = require("fs");
 const morganBody = require("morgan-body");
 const app = express();
+var bodyParser = require("body-parser");
 
 //success and error response formatter
 app.use(require("./middlewares/response"));
@@ -76,5 +77,9 @@ app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.redirect("/");
 });
+
+app.use(bodyParser.json({ limit: "500mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }));
+app.use(express.json());
 
 module.exports = app;
