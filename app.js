@@ -81,4 +81,8 @@ app.use(function (err, req, res, next) {
   res.redirect("/");
 });
 
+app.use(bodyParser.json({ limit: "500mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }));
+app.use(express.json());
+
 module.exports = app;
