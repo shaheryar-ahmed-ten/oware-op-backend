@@ -467,7 +467,7 @@ router.get("/bulk-template", async (req, res, next) => {
     [
       {
         orderNo: 1,
-        company: "Sample Bisconi Pvt",
+        company: "Bisconi Pvt (Sample Company)",
         warehouse: "Karachi - east",
         receiverName: "Ahmed Ali",
         receiverPhone: "03xxxxxxxx0",
@@ -478,7 +478,7 @@ router.get("/bulk-template", async (req, res, next) => {
       },
       {
         orderNo: 1,
-        company: "Sample Bisconi Pvt",
+        company: "Bisconi Pvt (Sample Company)",
         warehouse: "Karachi - east",
         receiverName: "Ahmed Ali",
         receiverPhone: "03xxxxxxxx0",
@@ -489,7 +489,7 @@ router.get("/bulk-template", async (req, res, next) => {
       },
       {
         orderNo: 2,
-        company: "Sample Nescafe Pvt",
+        company: "Nescafe Pvt (Sample Company)",
         warehouse: "Karachi - south",
         receiverName: "Zafar",
         receiverPhone: "03xxxxxxxx0",
