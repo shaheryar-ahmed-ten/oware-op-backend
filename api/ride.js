@@ -263,8 +263,8 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.status = req.body.status;
   ride.price = req.body.price;
   ride.cost = req.body.cost;
-  ride.customerDiscount = typeof req.body.customerDiscount === "number" ? req.body.customerDiscount : null;
-  ride.driverIncentive = typeof req.body.driverIncentive === "number" ? req.body.driverIncentive : null;
+  if (req.body.hasOwnProperty("customerDiscount")) ride.customerDiscount = req.body.customerDiscount ;
+  if (req.body.hasOwnProperty("driverIncentive")) ride.driverIncentive = req.body.driverIncentive ;
   ride.memo = req.body.memo;
   if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
   if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
