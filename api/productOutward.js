@@ -17,7 +17,7 @@ const {
   Product,
   UOM,
   sequelize,
-  User
+  User,
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
@@ -99,7 +99,7 @@ router.get("/", async (req, res, next) => {
           { model: Warehouse },
         ],
       },
-      { model: User }
+      { model: User },
     ],
     order: [["updatedAt", "DESC"]],
     where,
@@ -158,7 +158,7 @@ router.post("/", activityLog, async (req, res, next) => {
       success: false,
       message: "No dispatch order found",
     });
-  if ((dispatchOrder.status = DISPATCH_ORDER.STATUS.FULFILLED))
+  if (dispatchOrder.status === DISPATCH_ORDER.STATUS.FULFILLED)
     return res.json({
       success: false,
       message: "Dispatch Order already fulfilled",
@@ -182,7 +182,6 @@ router.post("/", activityLog, async (req, res, next) => {
         let outwardAcc;
         // await req.body.inventories.forEach(async (Inventory) => {
         for (const Inventory of req.body.inventories) {
-          console.log("Inventory", Inventory);
           const OG = await OrderGroup.findOne({
             where: {
               orderId: req.body.dispatchOrderId,
@@ -199,12 +198,8 @@ router.post("/", activityLog, async (req, res, next) => {
             return res.sendError(httpStatus.CONFLICT, "Outward quantity cant be greater than dispatch order quantity");
           }
           let quantity = parseInt(Inventory.quantity);
-          console.log("quantity", quantity);
           sumOfOutwards.push(quantity);
-          console.log("sumOfOutwards:-", sumOfOutwards);
         }
-        // });
-        console.log("sumOfOutwards_", sumOfOutwards);
         outwardAcc = sumOfOutwards.reduce((acc, po) => {
           return acc + po;
         });
@@ -405,7 +400,7 @@ router.get("/:id", async (req, res, next) => {
           { model: Warehouse },
         ],
       },
-      { model: User }
+      { model: User },
     ],
   });
   // Check if PO exists
