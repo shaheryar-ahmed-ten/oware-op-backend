@@ -12,7 +12,7 @@ const {
   ProductOutward,
   OutwardGroup,
   ActivitySourceType,
-  User
+  User,
 } = require("../models");
 const models = require("../models");
 const config = require("../config");
@@ -73,7 +73,7 @@ router.get("/", async (req, res, next) => {
         required: false,
         include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
       },
-      { model: User }
+      { model: User },
     ],
     order: [["createdAt", "DESC"]],
     distinct: true,
@@ -189,8 +189,6 @@ router.post("/bulk", async (req, res, next) => {
         let previousOrderNumber = 1;
         let count = 1;
 
-        console.log("req.body.orders", req.body.orders);
-
         for (const order of req.body.orders) {
           ++row;
           if (!INTEGER_REGEX.test(order.quantity)) validationErrors.push(`Row ${row} : Invalid quantity entered`);
@@ -253,9 +251,10 @@ router.post("/bulk", async (req, res, next) => {
         await addActivityLog2(req, models);
         res.sendJson(httpStatus.OK, `${maxOrderNumber} orders uploaded successfully.`, {});
       });
+    } else {
+      return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to add outward");
     }
   } catch (err) {
-    res.sendJson(httpStatus.OK, ` Failed to upload bulk orders`, {});
     console.log("err", err);
     res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
   }
@@ -302,7 +301,6 @@ const createOrder = async (orders, userId, transaction) => {
 
   return Promise.all(
     orders.map((_inventory) => {
-      console.log("_inventory", _inventory);
       return Inventory.findByPk(_inventory.inventoryId, { transaction }).then((inventory) => {
         if (!inventory && !_inventory.inventoryId) throw new Error("Inventory is not available");
         if (_inventory.quantity > inventory.availableQuantity)
@@ -659,7 +657,7 @@ router.get("/:id", async (req, res, next) => {
           required: true,
           include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
         },
-        { model: User }
+        { model: User },
       ],
       where: { id: req.params.id },
     };
