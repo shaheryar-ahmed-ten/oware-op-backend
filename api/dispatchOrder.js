@@ -251,9 +251,10 @@ router.post("/bulk", async (req, res, next) => {
         await addActivityLog2(req, models);
         res.sendJson(httpStatus.OK, `${maxOrderNumber} orders uploaded successfully.`, {});
       });
+    } else {
+      return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to add outward");
     }
   } catch (err) {
-    res.sendJson(httpStatus.OK, ` Failed to upload bulk orders`, {});
     console.log("err", err);
     res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
   }
