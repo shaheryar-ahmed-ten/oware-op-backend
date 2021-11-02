@@ -12,6 +12,7 @@ const {
   ProductOutward,
   OutwardGroup,
   ActivitySourceType,
+  User
 } = require("../models");
 const models = require("../models");
 const config = require("../config");
@@ -72,6 +73,7 @@ router.get("/", async (req, res, next) => {
         required: false,
         include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
       },
+      { model: User }
     ],
     order: [["createdAt", "DESC"]],
     distinct: true,
@@ -658,6 +660,7 @@ router.get("/:id", async (req, res, next) => {
           required: true,
           include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
         },
+        { model: User }
       ],
       where: { id: req.params.id },
     };

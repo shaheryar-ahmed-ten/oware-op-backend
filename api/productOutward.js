@@ -17,6 +17,7 @@ const {
   Product,
   UOM,
   sequelize,
+  User
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
@@ -98,6 +99,7 @@ router.get("/", async (req, res, next) => {
           { model: Warehouse },
         ],
       },
+      { model: User }
     ],
     order: [["updatedAt", "DESC"]],
     where,
@@ -403,6 +405,7 @@ router.get("/:id", async (req, res, next) => {
           { model: Warehouse },
         ],
       },
+      { model: User }
     ],
   });
   // Check if PO exists
