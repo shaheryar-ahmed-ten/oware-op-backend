@@ -181,7 +181,6 @@ router.get("/single/:id", async (req, res, next) => {
       },
     ],
   });
-  console.log("ride", ride);
   if (!ride)
     return res.status(400).json({
       success: false,
@@ -242,7 +241,7 @@ router.post("/", activityLog, async (req, res, next) => {
 router.put("/:id", activityLog, async (req, res, next) => {
   let ride = await Ride.findOne({
     where: { id: req.params.id },
-    include: [RideProduct],
+    include: [RideProduct, Driver],
   });
   const initialRideStatus = ride.status;
   if (!ride)
@@ -263,8 +262,8 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.status = req.body.status;
   ride.price = req.body.price;
   ride.cost = req.body.cost;
-  if (req.body.hasOwnProperty("customerDiscount")) ride.customerDiscount = req.body.customerDiscount ;
-  if (req.body.hasOwnProperty("driverIncentive")) ride.driverIncentive = req.body.driverIncentive ;
+  if (req.body.hasOwnProperty("customerDiscount")) ride.customerDiscount = req.body.customerDiscount;
+  if (req.body.hasOwnProperty("driverIncentive")) ride.driverIncentive = req.body.driverIncentive;
   ride.memo = req.body.memo;
   if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
   if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
@@ -296,13 +295,17 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await ride.save();
-    console.log("ride.pocNumber", ride.pocNumber, "ride.status", ride.status, "initialRideStatus", initialRideStatus);
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
-      console.log("sending whatsapp alert on ride complete");
-      sendWhatsappAlert("+923466998813");
+      sendWhatsappAlert(
+        "+923457645400",
+        `Dear Oware Team,your ride is successfully completed to ${ride.Driver.name} thank you`
+      );
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
-      sendWhatsappAlert("+923466998813");
+      sendWhatsappAlert(
+        "+923457645400",
+        `Dear Oware Team,your ride is successfully assigned to ${ride.Driver.name} thank you`
+      );
     }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({

@@ -54,8 +54,7 @@ router.get("/", async (req, res) => {
     sort: [["createdAt", "DESC"]],
   };
   const response = await controller.getWastages(params);
-  if (response.success === httpStatus.OK)
-    res.sendJson(response.data, response.message, response.success, response.pages);
+  if (response.success === httpStatus.OK) res.sendJson(response.data, response.message, response.pages);
   else res.sendError(response.status, response.message, response.error);
 });
 
