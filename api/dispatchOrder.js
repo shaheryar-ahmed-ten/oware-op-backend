@@ -72,7 +72,8 @@ router.get("/", async (req, res, next) => {
         as: "Inventories",
         required: false,
         include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
-      }
+      },
+      { model: User }
     ],
     order: [["createdAt", "DESC"]],
     distinct: true,

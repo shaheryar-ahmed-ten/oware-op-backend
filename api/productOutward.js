@@ -82,6 +82,7 @@ router.get("/", async (req, res, next) => {
           { model: Warehouse },
         ],
       },
+      { model: User }
     ],
     order: [["updatedAt", "DESC"]],
     where,
