@@ -356,9 +356,9 @@ const sendWhatsappAlert = async (receivingNum) => {
   console.log("receivingNum", receivingNum);
   client.messages
     .create({
-      body: "Ride created",
+      body: "Ride assigned",
       from: "whatsapp:+14155238886",
-      to: `whatsapp:${receivingNum}`,
+      to: `whatsapp:+923457645400`,
     })
     .then((message) => console.log(message.sid))
     .done();
