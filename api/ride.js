@@ -302,7 +302,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
       console.log("sending whatsapp alert on ride complete");
       sendWhatsappAlert(
         "+923457645400",
-        `Dear Oware Team,your ride is successfully assigned to ${ride.Driver.name} thank you`
+        `Dear Oware Team,your ride is successfully completed to ${ride.Driver.name} thank you`
       );
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
