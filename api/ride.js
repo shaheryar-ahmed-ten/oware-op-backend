@@ -242,8 +242,9 @@ router.post("/", activityLog, async (req, res, next) => {
 router.put("/:id", activityLog, async (req, res, next) => {
   let ride = await Ride.findOne({
     where: { id: req.params.id },
-    include: [RideProduct],
+    include: [RideProduct, Driver],
   });
+  console.log("ride update", ride);
   const initialRideStatus = ride.status;
   if (!ride)
     return res.status(400).json({
@@ -299,10 +300,16 @@ router.put("/:id", activityLog, async (req, res, next) => {
     console.log("ride.pocNumber", ride.pocNumber, "ride.status", ride.status, "initialRideStatus", initialRideStatus);
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
       console.log("sending whatsapp alert on ride complete");
-      sendWhatsappAlert("+923457645400");
+      sendWhatsappAlert(
+        "+923343696707",
+        `Dear Oware Team,your ride is successfully assigned to ${ride.Driver.name} thank you`
+      );
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
-      sendWhatsappAlert("+923457645400");
+      sendWhatsappAlert(
+        "+923343696707",
+        `Dear Oware Team,your ride is successfully assigned to ${ride.Driver.name} thank you`
+      );
     }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({

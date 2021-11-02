@@ -253,7 +253,7 @@ router.post("/bulk", async (req, res, next) => {
       });
     }
   } catch (err) {
-    res.sendJson(httpStatus.OK, ` bulk dispatch order created!`, {});
+    res.sendJson(httpStatus.OK, ` Failed to upload bulk orders`, {});
     console.log("err", err);
     res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
   }

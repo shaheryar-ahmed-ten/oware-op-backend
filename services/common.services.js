@@ -349,16 +349,16 @@ const addActivityLog2 = async (req, models) => {
   }
 };
 
-const sendWhatsappAlert = async (receivingNum) => {
+const sendWhatsappAlert = async (receivingNum, text) => {
   const accountSid = "AC4e055d646e1d4616326df955d5048a01";
   const authToken = "bb2e0273a4ee3bc1caa3d4918c02f361";
   const client = require("twilio")(accountSid, authToken);
   console.log("receivingNum", receivingNum);
   client.messages
     .create({
-      body: "Ride assigned",
+      body: text,
       from: "whatsapp:+14155238886",
-      to: `whatsapp:+923457645400`,
+      to: `whatsapp:${receivingNum}`,
     })
     .then((message) => console.log(message.sid))
     .done();
