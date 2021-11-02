@@ -490,16 +490,13 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF CITY",
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
-    "MEMO",
-    "WEIGHT OF CARGO",
     "POC NAME",
     "POC NUMBER",
     "ETA",
     "TRIP COMPLETION TIME",
     "CURRENT LOCATION",
-    // "CATEGORY",
-    // "PRODUCTS",
-    // "QUANTITIES"
+    "WEIGHT OF CARGO",
+    "MEMO"
   ]);
 
   worksheet.addRows(
@@ -521,13 +518,13 @@ router.get("/export", async (req, res, next) => {
       row.dropoffCity.name,
       row.dropoffAddress,
       moment(row.dropoffDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
-      row.memo,
-      row.weightCargo,
       row.pocName,
       row.pocNumber,
       row.eta,
       row.completionTime,
       row.currentLocation,
+      row.weightCargo,
+      row.memo,
     ])
   );
 
