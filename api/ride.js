@@ -301,13 +301,13 @@ router.put("/:id", activityLog, async (req, res, next) => {
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
       console.log("sending whatsapp alert on ride complete");
       sendWhatsappAlert(
-        "+923343696707",
+        "+923457645400",
         `Dear Oware Team,your ride is successfully assigned to ${ride.Driver.name} thank you`
       );
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
       sendWhatsappAlert(
-        "+923343696707",
+        "+923457645400",
         `Dear Oware Team,your ride is successfully assigned to ${ride.Driver.name} thank you`
       );
     }
