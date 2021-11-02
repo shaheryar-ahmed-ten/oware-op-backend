@@ -622,8 +622,8 @@ router.get("/products", async (req, res, next) => {
 });
 
 router.get("/whatsapp", async (req, res, next) => {
-  const accountSid = "ACa8f41f9830e890f8260be0c610577d03";
-  const authToken = "f6e6ad4a90f8224a58f7e265926f10dc";
+  const accountSid = "ACd1d16b0aabdf099f8f147e9fa2f64f0e";
+  const authToken = "964b94f4f4a53846c0c17248002ac86d";
   const client = require("twilio")(accountSid, authToken);
 
   client.messages

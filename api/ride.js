@@ -263,8 +263,8 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.status = req.body.status;
   ride.price = req.body.price;
   ride.cost = req.body.cost;
-  if (req.body.hasOwnProperty("customerDiscount")) ride.customerDiscount = req.body.customerDiscount ;
-  if (req.body.hasOwnProperty("driverIncentive")) ride.driverIncentive = req.body.driverIncentive ;
+  if (req.body.hasOwnProperty("customerDiscount")) ride.customerDiscount = req.body.customerDiscount;
+  if (req.body.hasOwnProperty("driverIncentive")) ride.driverIncentive = req.body.driverIncentive;
   ride.memo = req.body.memo;
   if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
   if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
@@ -299,10 +299,10 @@ router.put("/:id", activityLog, async (req, res, next) => {
     console.log("ride.pocNumber", ride.pocNumber, "ride.status", ride.status, "initialRideStatus", initialRideStatus);
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
       console.log("sending whatsapp alert on ride complete");
-      sendWhatsappAlert("+923466998813");
+      sendWhatsappAlert("+923343696707");
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
-      sendWhatsappAlert("+923466998813");
+      sendWhatsappAlert("+923343696707");
     }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
