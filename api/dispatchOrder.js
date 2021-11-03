@@ -304,7 +304,9 @@ const createOrder = async (orders, userId, transaction) => {
         if (!inventory && !_inventory.inventoryId) throw new Error("Inventory is not available");
         if (_inventory.quantity > inventory.availableQuantity) {
           const product = await Dao.Product.findOne({ where: { id: inventory.productId }, attributes: ["name"] });
-          throw new Error(`Cannot create orders above available quantity for product:${product.name}`);
+          throw new Error(
+            `Order Number ${_inventory.orderNumber}: Cannot create orders above available quantity for product:${product.name}`
+          );
         }
         try {
           inventory.committedQuantity += +_inventory.quantity;
