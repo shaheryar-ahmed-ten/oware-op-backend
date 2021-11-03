@@ -244,7 +244,6 @@ router.post("/bulk", async (req, res, next) => {
         let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
         while (count <= maxOrderNumber) {
           records = req.body.orders.filter((item) => item.orderNumber == count);
-          console.log("records", records);
           await createOrder(records, req.userId, transaction);
           count++;
         }
