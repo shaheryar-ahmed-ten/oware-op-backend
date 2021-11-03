@@ -495,10 +495,10 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF DATE",
     "POC NAME",
     "POC NUMBER",
-    "ETA",
-    "TRIP COMPLETION TIME",
+    "ETA(MINUTES)",
+    "TRIP COMPLETION TIME(MINUTES)",
     "CURRENT LOCATION",
-    "WEIGHT OF CARGO",
+    "WEIGHT OF CARGO(KG)",
     "MEMO"
   ]);
 
