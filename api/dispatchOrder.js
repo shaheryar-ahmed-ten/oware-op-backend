@@ -188,7 +188,7 @@ router.post("/bulk", async (req, res, next) => {
         let row = 1;
         let previousOrderNumber = 1;
         let count = 1;
-
+        console.log("req.body", req.body);
         for (const order of req.body.orders) {
           ++row;
           if (!INTEGER_REGEX.test(order.quantity)) validationErrors.push(`Row ${row} : Invalid quantity entered`);
@@ -300,10 +300,12 @@ const createOrder = async (orders, userId, transaction) => {
 
   return Promise.all(
     orders.map((_inventory) => {
-      return Inventory.findByPk(_inventory.inventoryId, { transaction }).then((inventory) => {
+      return Inventory.findByPk(_inventory.inventoryId, { transaction }).then(async (inventory) => {
         if (!inventory && !_inventory.inventoryId) throw new Error("Inventory is not available");
-        if (_inventory.quantity > inventory.availableQuantity)
-          throw new Error("Cannot create orders above available quantity");
+        if (_inventory.quantity > inventory.availableQuantity) {
+          const product = await Dao.Product.findOne({ where: { id: inventory.productId }, attributes: ["name"] });
+          throw new Error(`Cannot create orders above available quantity for product:${product.name}`);
+        }
         try {
           inventory.committedQuantity += +_inventory.quantity;
           inventory.availableQuantity -= +_inventory.quantity;
