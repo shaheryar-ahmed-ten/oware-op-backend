@@ -76,8 +76,10 @@ router.get("/", async (req, res, next) => {
       },
       { model: User },
     ],
-    order: [["createdAt", "DESC"]],
-    distinct: true,
+    order: [
+      ["createdAt", "DESC"],
+      ["id", "DESC"],
+    ],
     where,
     limit,
     offset,
