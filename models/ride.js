@@ -86,15 +86,15 @@ module.exports = (sequelize, DataTypes) => {
         validate: { notEmpty: { msg: "Please select dropoff date" } },
       },
       pickupAddress: DataTypes.STRING,
-      pickupAreaId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
+      // pickupAreaId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: true,
+      // },
       dropoffAddress: DataTypes.STRING,
-      dropoffAreaId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
+      // dropoffAreaId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: true,
+      // },
       pickupCityId: {
         type: DataTypes.INTEGER,
         allowNull: false,
