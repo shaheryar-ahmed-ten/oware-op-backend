@@ -186,7 +186,6 @@ router.post("/bulk", async (req, res, next) => {
 
     if (isValid) {
       await sequelize.transaction(async (transaction) => {
-
         const validationErrors = [];
         let row = 1;
         let previousOrderNumber = 1;
@@ -194,7 +193,8 @@ router.post("/bulk", async (req, res, next) => {
         console.log("req.body", req.body);
         for (const order of req.body.orders) {
           ++row;
-          if (!INTEGER_REGEX.test(order.quantity)) {  // failed rows
+          if (!INTEGER_REGEX.test(order.quantity)) {
+            // failed rows
             validationErrors.push(`Row ${row} : Invalid quantity entered`);
           }
 
@@ -221,10 +221,11 @@ router.post("/bulk", async (req, res, next) => {
                 isActive: 1,
               },
               attributes: ["id"],
-            })
+            }),
           ]);
 
-          if (!customer) { // Invalid company
+          if (!customer) {
+            // Invalid company
             validationErrors.push({ row, message: `Row ${row} : Invalid company name` });
           }
 
@@ -246,7 +247,7 @@ router.post("/bulk", async (req, res, next) => {
               where: {
                 productId: product.id,
                 customerId: customer.id,
-                warehouseId: warehouse.id
+                warehouseId: warehouse.id,
               },
             });
 
@@ -281,7 +282,7 @@ router.post("/bulk", async (req, res, next) => {
           count++;
         }
 
-        await promise.map(orders, order => {
+        await promise.each(orders, (order) => {
           createOrder(order, req.userId, transaction);
         });
 
