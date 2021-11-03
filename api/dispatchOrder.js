@@ -1,4 +1,5 @@
 const express = require("express");
+const promise = require("bluebird");
 const router = express.Router();
 const {
   Inventory,
@@ -182,8 +183,10 @@ router.post("/", activityLog, async (req, res, next) => {
 router.post("/bulk", async (req, res, next) => {
   try {
     const isValid = await BulkAddValidation.validateAsync(req.body);
+
     if (isValid) {
       await sequelize.transaction(async (transaction) => {
+
         const validationErrors = [];
         let row = 1;
         let previousOrderNumber = 1;
@@ -191,62 +194,97 @@ router.post("/bulk", async (req, res, next) => {
 
         for (const order of req.body.orders) {
           ++row;
-          if (!INTEGER_REGEX.test(order.quantity)) validationErrors.push(`Row ${row} : Invalid quantity entered`);
-          const customer = await Dao.Company.findOne({
-            where: {
-              where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
-              isActive: 1,
-            },
-            attributes: ["id"],
-          });
-          if (!customer) validationErrors.push({ row, message: `Row ${row} : Invalid company name` });
-          const warehouse = await Dao.Warehouse.findOne({
-            where: {
-              where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
-              isActive: 1,
-            },
-            attributes: ["id"],
-          });
-          if (!warehouse) validationErrors.push({ row, message: `Row ${row} : Invalid warehouse name` });
-          const product = await Dao.Product.findOne({
-            where: {
-              where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
-              isActive: 1,
-            },
-            attributes: ["id"],
-          });
-          if (!product) validationErrors.push({ row, message: `Row ${row} : Invalid product name` });
-          if (customer) order.customerId = customer.id;
-          if (product) order.productId = product.id;
-          if (warehouse) order.warehouseId = warehouse.id;
+          if (!INTEGER_REGEX.test(order.quantity)) {  // failed rows
+            validationErrors.push(`Row ${row} : Invalid quantity entered`);
+          }
+
+          const [customer, warehouse, product] = await Promise.all([
+            Dao.Company.findOne({
+              where: {
+                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
+                isActive: 1,
+              },
+              attributes: ["id"],
+            }),
+
+            Dao.Warehouse.findOne({
+              where: {
+                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
+                isActive: 1,
+              },
+              attributes: ["id"],
+            }),
+
+            Dao.Product.findOne({
+              where: {
+                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
+                isActive: 1,
+              },
+              attributes: ["id"],
+            })
+          ]);
+
+          if (!customer) { // Invalid company
+            validationErrors.push({ row, message: `Row ${row} : Invalid company name` });
+          }
+
+          if (!warehouse) {
+            validationErrors.push({ row, message: `Row ${row} : Invalid warehouse name` });
+          }
+
+          if (!product) {
+            validationErrors.push({ row, message: `Row ${row} : Invalid product name` });
+          }
+
           if (product && customer && warehouse) {
             order.customerId = customer.id;
             order.productId = product.id;
             order.warehouseId = warehouse.id;
+
             const inventory = await Dao.Inventory.findOne({
               attributes: ["id", "availableQuantity"],
-              where: { productId: order.productId, customerId: order.customerId, warehouseId: order.warehouseId },
+              where: {
+                productId: product.id,
+                customerId: customer.id,
+                warehouseId: warehouse.id
+              },
             });
-            if (inventory) {
+
+            if (!inventory) {
+              validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
+            } else {
               order.inventoryId = inventory.id;
-              if (inventory.availableQuantity < order.quantity)
+
+              if (inventory.availableQuantity < order.quantity) {
                 validationErrors.push({ row, message: `Row ${row} : Cannot create orders above available quantity` });
+              }
             }
-            if (!inventory) validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
           }
+
           orderNumber = parseInt(order.orderNumber);
-          if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1)
+
+          if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1) {
             validationErrors.push({ row, message: `Row ${row} : Invalid Order Number` });
+          }
+
           previousOrderNumber = orderNumber;
         }
-        if (validationErrors.length)
+
+        if (validationErrors.length) {
           return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk dispatch orders");
+        }
+
         let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
+        const orders = [];
         while (count <= maxOrderNumber) {
-          records = req.body.orders.filter((item) => item.orderNumber == count);
-          await createOrder(records, req.userId, transaction);
+          orders.push(req.body.orders.filter((item) => item.orderNumber == count));
           count++;
         }
+
+        await promise.map(orders, order => {
+          createOrder(order, req.userId, transaction);
+        });
+
         await addActivityLog2(req, models);
         res.sendJson(httpStatus.OK, `${maxOrderNumber} orders uploaded successfully.`, {});
       });
@@ -270,23 +308,29 @@ const createOrder = async (orders, userId, transaction) => {
     },
     { transaction }
   );
+
   const businessWarehouseCode = (
     await Dao.Warehouse.findOne({
       where: { id: orders[0].warehouseId },
       attributes: ["businessWarehouseCode"],
     })
   ).businessWarehouseCode;
+
   const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
   dispatchOrder.internalIdForBusiness = `DO-${businessWarehouseCode}-${numberOfInternalIdForBusiness}`;
+
   let sumOfComitted = [];
   orders.forEach((order) => {
     let quantity = parseInt(order.quantity);
     sumOfComitted.push(quantity);
   });
+
   comittedAcc = sumOfComitted.reduce((acc, po) => {
     return acc + po;
   });
+
   dispatchOrder.quantity = comittedAcc;
+
   await dispatchOrder.save({ transaction });
   await OrderGroup.bulkCreate(
     orders.map((order) => ({
