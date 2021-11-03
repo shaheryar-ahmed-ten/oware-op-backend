@@ -283,7 +283,7 @@ router.post("/bulk", async (req, res, next) => {
         }
 
         await promise.each(orders, (order) => {
-          createOrder(order, req.userId, transaction);
+          return createOrder(order, req.userId, transaction);
         });
 
         await addActivityLog2(req, models);
