@@ -16,12 +16,12 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.changeColumn('Rides', 'eta', {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       allowNull: true,
     },
   );
   await queryInterface.changeColumn('Rides', 'completionTime', {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       allowNull: true,
     },
   );
