@@ -1,7 +1,7 @@
 module.exports = Object.freeze({
-  UNASSIGNED: "NOT ASSIGNED",
-  ASSIGNED: "ASSIGNED",
-  INPROGRESS: "IN-PROGRESS",
-  COMPLETED: "COMPLETED",
-  CANCELLED: "CANCELLED",
+  UNASSIGNED: "Not Assigned",
+  ASSIGNED: "Assigned",
+  INPROGRESS: "In-Progress",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 });
