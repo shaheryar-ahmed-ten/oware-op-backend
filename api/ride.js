@@ -243,7 +243,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
     where: { id: req.params.id },
     include: [RideProduct, "Customer", Driver, { model: Vehicle, include: [{ model: Car, include: [VehicleType] }] }],
   });
-  console.log("ride", ride);
   const initialRideStatus = ride.status;
   if (!ride)
     return res.status(400).json({
@@ -295,11 +294,12 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await ride.save();
-    if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
+    console.log("ride.status", ride.status);
+    if (ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
       if (ride.Customer.phone) {
         sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).ASSIGNED);
       }
-    } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
+    } else if (ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
       sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).COMPLETED);
     }
