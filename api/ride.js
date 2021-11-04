@@ -256,7 +256,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.dropoffDate = req.body.dropoffDate;
   ride.pickupAddress = req.body.pickupAddress;
   ride.manifestId = req.body.manifestId;
-  // ride.internalIdForBusiness = req.body.internalIdForBusiness;
   ride.dropoffAddress = req.body.dropoffAddress;
   ride.cancellationReason = req.body.cancellationReason;
   ride.cancellationComment = req.body.cancellationComment;
