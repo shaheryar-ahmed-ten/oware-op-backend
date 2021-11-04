@@ -1,23 +1,23 @@
-'use strict';
+"use strict";
 
-const { RIDE_STATUS } = require("../enums");
+const RIDE_STATUS = require("../enums/rideStatus");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Rides', {
+    await queryInterface.createTable("Rides", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       pickupDate: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       dropoffDate: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       cancellationReason: Sequelize.STRING,
       cancellationComment: Sequelize.STRING,
@@ -25,89 +25,89 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Companies', // name of Target model
-          key: 'id', // key in Target model that we're referencing
+          model: "Companies", // name of Target model
+          key: "id", // key in Target model that we're referencing
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       pickupAreaId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Areas', // name of Target model
-          key: 'id', // key in Target model that we're referencing
+          model: "Areas", // name of Target model
+          key: "id", // key in Target model that we're referencing
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       dropoffAreaId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Areas', // name of Target model
-          key: 'id', // key in Target model that we're referencing
+          model: "Areas", // name of Target model
+          key: "id", // key in Target model that we're referencing
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       status: {
         allowNull: false,
         type: Sequelize.STRING,
-        defaultValue: RIDE_STATUS.UNASSIGNED
+        defaultValue: RIDE_STATUS.UNASSIGNED,
       },
       vehicleId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Vehicles', // name of Target model
-          key: 'id', // key in Target model that we're referencing
+          model: "Vehicles", // name of Target model
+          key: "id", // key in Target model that we're referencing
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       driverId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Drivers', // name of Target model
-          key: 'id', // key in Target model that we're referencing
+          model: "Drivers", // name of Target model
+          key: "id", // key in Target model that we're referencing
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       pickupAddress: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       dropoffAddress: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'Users', // name of Target model
-          key: 'id', // key in Target model that we're referencing
+          model: "Users", // name of Target model
+          key: "id", // key in Target model that we're referencing
         },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       deletedAt: {
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Rides');
-  }
+    await queryInterface.dropTable("Rides");
+  },
 };
