@@ -102,7 +102,6 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/export", async (req, res, next) => {
-  console.log("RECEIVING REQUEST")
   let where = {};
   if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
 
