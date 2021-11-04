@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const model = require("../models");
 const {
+  OrderGroup,
   Inventory,
   ProductOutward,
   OutwardGroup,
@@ -16,6 +17,7 @@ const {
   Product,
   UOM,
   sequelize,
+  User,
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
@@ -23,6 +25,22 @@ const { digitize, checkOrderStatusAndUpdate } = require("../services/common.serv
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const { DISPATCH_ORDER } = require("../enums");
+const Joi = require("joi");
+const httpStatus = require("http-status");
+
+const BulkAddValidation = Joi.object({
+  dispatchOrderId: Joi.required(),
+  referenceId: Joi.required(),
+  vehicleId: Joi.required(),
+  inventories: Joi.array().items(
+    Joi.object({
+      quantity: Joi.number().integer().min(1).required(),
+      id: Joi.number().integer().min(1).required(),
+      availableQuantity: Joi.number().integer().min(1).required(),
+    })
+  ),
+  internalIdForBusiness: Joi.required(),
+});
 
 /* GET productOutwards listing. */
 router.get("/", async (req, res, next) => {
@@ -81,6 +99,7 @@ router.get("/", async (req, res, next) => {
           { model: Warehouse },
         ],
       },
+      { model: User },
     ],
     order: [["updatedAt", "DESC"]],
     where,
@@ -139,66 +158,92 @@ router.post("/", activityLog, async (req, res, next) => {
       success: false,
       message: "No dispatch order found",
     });
+  if (dispatchOrder.status === DISPATCH_ORDER.STATUS.FULFILLED)
+    return res.json({
+      success: false,
+      message: "Dispatch Order already fulfilled",
+    });
   req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
 
   try {
-    await sequelize.transaction(async (transaction) => {
-      productOutward = await ProductOutward.create(
-        {
-          userId: req.userId,
-          ...req.body,
-        },
-        { transaction }
-      );
-      const numberOfInternalIdForBusiness = digitize(productOutward.id, 6);
-      productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
-      let sumOfOutwards = [];
-      let outwardAcc;
-      req.body.inventories.forEach((Inventory) => {
-        let quantity = parseInt(Inventory.quantity);
-        sumOfOutwards.push(quantity);
-      });
-      outwardAcc = sumOfOutwards.reduce((acc, po) => {
-        return acc + po;
-      });
-      productOutward.quantity = outwardAcc;
-      await productOutward.save({ transaction });
-
-      await OutwardGroup.bulkCreate(
-        req.body.inventories.map((inventory) => ({
-          userId: req.userId,
-          outwardId: productOutward.id,
-          inventoryId: inventory.id,
-          quantity: inventory.quantity,
-          availableQuantity: inventory.availableQuantity,
-        })),
-        { transaction }
-      );
-
-      await checkOrderStatusAndUpdate(model, req.body.dispatchOrderId, productOutward.quantity, transaction);
-
-      return Promise.all(
-        req.body.inventories.map((_inventory) => {
-          return Inventory.findByPk(_inventory.id, { transaction }).then((inventory) => {
-            if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
-            if (_inventory.quantity > inventory.committedQuantity)
-              throw new Error("Cannot create orders above available quantity");
-            try {
-              inventory.dispatchedQuantity += +_inventory.quantity;
-              inventory.committedQuantity -= +_inventory.quantity;
-              return inventory.save({ transaction });
-            } catch (err) {
-              throw new Error(err.errors.pop().message);
-            }
+    const isValid = await BulkAddValidation.validateAsync(req.body);
+    if (isValid) {
+      await sequelize.transaction(async (transaction) => {
+        productOutward = await ProductOutward.create(
+          {
+            userId: req.userId,
+            ...req.body,
+          },
+          { transaction }
+        );
+        const numberOfInternalIdForBusiness = digitize(productOutward.id, 6);
+        productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+        let sumOfOutwards = [];
+        let outwardAcc;
+        // await req.body.inventories.forEach(async (Inventory) => {
+        for (const Inventory of req.body.inventories) {
+          const OG = await OrderGroup.findOne({
+            where: {
+              orderId: req.body.dispatchOrderId,
+              inventoryId: Inventory.id,
+            },
           });
-        })
-      );
-    });
-    return res.json({
-      success: true,
-      message,
-      data: productOutward,
-    });
+          if (!OG) {
+            return res.sendError(
+              httpStatus.CONFLICT,
+              "Cannot create outward having products other than ordered products"
+            );
+          }
+          if (Inventory.quantity > OG.quantity) {
+            return res.sendError(httpStatus.CONFLICT, "Outward quantity cant be greater than dispatch order quantity");
+          }
+          let quantity = parseInt(Inventory.quantity);
+          sumOfOutwards.push(quantity);
+        }
+        outwardAcc = sumOfOutwards.reduce((acc, po) => {
+          return acc + po;
+        });
+        productOutward.quantity = outwardAcc;
+        await productOutward.save({ transaction });
+
+        await OutwardGroup.bulkCreate(
+          req.body.inventories.map((inventory) => ({
+            userId: req.userId,
+            outwardId: productOutward.id,
+            inventoryId: inventory.id,
+            quantity: inventory.quantity,
+            availableQuantity: inventory.availableQuantity,
+          })),
+          { transaction }
+        );
+
+        await checkOrderStatusAndUpdate(model, req.body.dispatchOrderId, productOutward.quantity, transaction);
+
+        return Promise.all(
+          req.body.inventories.map((_inventory) => {
+            return Inventory.findByPk(_inventory.id, { transaction }).then((inventory) => {
+              if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
+              if (_inventory.quantity > inventory.committedQuantity)
+                throw new Error("Cannot create orders above available quantity");
+              try {
+                inventory.dispatchedQuantity += +_inventory.quantity;
+                inventory.committedQuantity -= +_inventory.quantity;
+                return inventory.save({ transaction });
+              } catch (err) {
+                throw new Error(err.errors.pop().message);
+              }
+            });
+          })
+        );
+      });
+      return res.json({
+        success: true,
+        message,
+        data: productOutward,
+      });
+    } else {
+    }
+
     // TODO: // The following validations needs to be implemented for multi inventory outward
     // let availableOrderQuantity = dispatchOrder.quantity - dispatchOrder.ProductOutwards.reduce((acc, outward) => acc += outward.quantity, 0);
     // if (req.body.quantity > availableOrderQuantity) return res.json({
@@ -267,7 +312,6 @@ router.delete("/:id", async (req, res, next) => {
     });
 });
 
-
 router.get("/relations", async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
     include: [
@@ -315,7 +359,6 @@ router.get("/relations", async (req, res, next) => {
 });
 
 router.get("/:id", async (req, res, next) => {
-
   // find PO
   let productOutward = await Dao.ProductOutward.findOne({
     where: { id: req.params.id },
@@ -357,6 +400,7 @@ router.get("/:id", async (req, res, next) => {
           { model: Warehouse },
         ],
       },
+      { model: User },
     ],
   });
   // Check if PO exists
@@ -371,8 +415,6 @@ router.get("/:id", async (req, res, next) => {
     message: "Product Outward found",
     data: productOutward,
   });
-
-})
-
+});
 
 module.exports = router;
