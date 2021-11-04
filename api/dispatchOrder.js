@@ -198,7 +198,6 @@ router.get("/export", async (req, res, next) => {
   await workbook.xlsx.write(res).then(() => res.end());
 })
 
-
 /* POST create new dispatchOrder. */
 router.post("/", activityLog, async (req, res, next) => {
   let message = "New dispatchOrder registered";
