@@ -392,7 +392,6 @@ router.get("/export", async (req, res, next) => {
 
   worksheet.addRows(orderArray);
 
-  // Commenting outwards
 
   worksheet = workbook.addWorksheet("Product Outwards");
 
