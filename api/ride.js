@@ -18,7 +18,7 @@ const {
 const config = require("../config");
 const { Op } = require("sequelize");
 const RIDE_STATUS = require("../enums/rideStatus");
-const { RELATION_TYPES } = require("../enums");
+const { RELATION_TYPES, RIDE_WHATSAPP_ALERT } = require("../enums");
 const { digitize, addActivityLog } = require("../services/common.services");
 const ExcelJS = require("exceljs");
 const authService = require("../services/auth.service");
@@ -297,17 +297,11 @@ router.put("/:id", activityLog, async (req, res, next) => {
     const response = await ride.save();
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
       if (ride.Customer.phone) {
-        sendWhatsappAlert(
-          ride.Customer.phone.replace(/0/, "+92"),
-          `Dear Oware customer, your ride # ${ride.internalIdForBusiness} has been assigned a ${ride.Vehicle.Car.VehicleType.name} having vehicle registration # ${ride.Vehicle.registrationNumber} - Assigned vehicle`
-        );
+        sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).ASSIGNED);
       }
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
-      sendWhatsappAlert(
-        ride.Customer.phone.replace(/0/, "+92"),
-        `Dear Oware customer,  your ride # ${ride.internalIdForBusiness} using ${ride.Vehicle.Car.VehicleType.name} having vehicle registration # ${ride.Vehicle.registrationNumber} has been completed successfully. Thank you for using Oware, your trusted fulfilment partner.`
-      );
+      sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).COMPLETED);
     }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
