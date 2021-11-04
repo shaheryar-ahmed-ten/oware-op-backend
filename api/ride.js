@@ -241,8 +241,9 @@ router.post("/", activityLog, async (req, res, next) => {
 router.put("/:id", activityLog, async (req, res, next) => {
   let ride = await Ride.findOne({
     where: { id: req.params.id },
-    include: [RideProduct, Driver],
+    include: [RideProduct, "Customer", Driver, { model: Vehicle, include: [{ model: Car, include: [VehicleType] }] }],
   });
+  console.log("ride", ride);
   const initialRideStatus = ride.status;
   if (!ride)
     return res.status(400).json({
@@ -295,15 +296,17 @@ router.put("/:id", activityLog, async (req, res, next) => {
   try {
     const response = await ride.save();
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
-      sendWhatsappAlert(
-        "+923457645400",
-        `Dear Oware customer, your ride # [RIDE_ID_HERE] has been assigned a [VEHICLE_TYPE_HERE] having vehicle registration # [VEHICLE_NUMBER_HERE] - Assigned vehicle``Dear Oware Team,your ride is successfully completed to ${ride.Driver.name} thank you`
-      );
+      if (ride.Customer.phone) {
+        sendWhatsappAlert(
+          ride.Customer.phone.replace(/0/, "+92"),
+          `Dear Oware customer, your ride # ${ride.internalIdForBusiness} has been assigned a ${ride.Vehicle.Car.VehicleType.name} having vehicle registration # ${ride.Vehicle.registrationNumber} - Assigned vehicle`
+        );
+      }
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
       sendWhatsappAlert(
-        "+923457645400",
-        `Dear Oware Team,your ride is successfully assigned to ${ride.Driver.name} thank you`
+        ride.Customer.phone.replace(/0/, "+92"),
+        `Dear Oware customer,  your ride # ${ride.internalIdForBusiness} using ${ride.Vehicle.Car.VehicleType.name} having vehicle registration # ${ride.Vehicle.registrationNumber} has been completed successfully. Thank you for using Oware, your trusted fulfilment partner.`
       );
     }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
