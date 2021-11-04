@@ -350,8 +350,8 @@ const addActivityLog2 = async (req, models) => {
 };
 
 const sendWhatsappAlert = async (receivingNum, text) => {
-  const accountSid = "AC4e055d646e1d4616326df955d5048a01";
-  const authToken = "bb2e0273a4ee3bc1caa3d4918c02f361";
+  const accountSid = process.env.WHATSAPP_SID;
+  const authToken = process.env.WHATSAPP_AUTHID;
   const client = require("twilio")(accountSid, authToken);
   console.log("receivingNum", receivingNum);
   client.messages

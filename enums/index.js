@@ -60,4 +60,8 @@ module.exports = Object.freeze({
   BULK_PRODUCT_LIMIT: 1000,
   SPECIAL_CHARACTERS: /[!@#$%^\=\[\]{};:\\|>\/?]/,
   INTEGER_REGEX: /^[0-9]*$/,
+  RIDE_WHATSAPP_ALERT: (ride) => ({
+    ASSIGNED: `Dear Oware customer, your ride # ${ride.internalIdForBusiness} has been assigned a ${ride.Vehicle.Car.VehicleType.name} having vehicle registration # ${ride.Vehicle.registrationNumber} - Assigned vehicle`,
+    COMPLETED: `Dear Oware customer,  your ride # ${ride.internalIdForBusiness} using ${ride.Vehicle.Car.VehicleType.name} having vehicle registration # ${ride.Vehicle.registrationNumber} has been completed successfully. Thank you for using Oware, your trusted fulfilment partner`,
+  }),
 });
