@@ -297,7 +297,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
       sendWhatsappAlert(
         "+923457645400",
-        `Dear Oware Team,your ride is successfully completed to ${ride.Driver.name} thank you`
+        `Dear Oware customer, your ride # [RIDE_ID_HERE] has been assigned a [VEHICLE_TYPE_HERE] having vehicle registration # [VEHICLE_NUMBER_HERE] - Assigned vehicle``Dear Oware Team,your ride is successfully completed to ${ride.Driver.name} thank you`
       );
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
@@ -498,7 +498,7 @@ router.get("/export", async (req, res, next) => {
     "TRIP COMPLETION TIME(MINUTES)",
     "CURRENT LOCATION",
     "WEIGHT OF CARGO(KG)",
-    "MEMO"
+    "MEMO",
   ]);
 
   worksheet.addRows(
@@ -522,8 +522,8 @@ router.get("/export", async (req, res, next) => {
       moment(row.dropoffDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
       row.pocName,
       row.pocNumber,
-      row.eta !==null && row.eta !== 0 ? row.eta / 60 : 0,
-      row.completionTime !==null && row.completionTime !== 0 ? row.completionTime / 60 : 0,
+      row.eta !== null && row.eta !== 0 ? row.eta / 60 : 0,
+      row.completionTime !== null && row.completionTime !== 0 ? row.completionTime / 60 : 0,
       row.currentLocation,
       row.weightCargo,
       row.memo,
