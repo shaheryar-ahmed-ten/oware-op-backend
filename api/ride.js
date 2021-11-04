@@ -18,7 +18,7 @@ const {
 const config = require("../config");
 const { Op } = require("sequelize");
 const RIDE_STATUS = require("../enums/rideStatus");
-const { RELATION_TYPES } = require("../enums");
+const { RELATION_TYPES, RIDE_WHATSAPP_ALERT } = require("../enums");
 const { digitize, addActivityLog } = require("../services/common.services");
 const ExcelJS = require("exceljs");
 const authService = require("../services/auth.service");
@@ -181,7 +181,6 @@ router.get("/single/:id", async (req, res, next) => {
       },
     ],
   });
-  console.log("ride", ride);
   if (!ride)
     return res.status(400).json({
       success: false,
@@ -242,8 +241,9 @@ router.post("/", activityLog, async (req, res, next) => {
 router.put("/:id", activityLog, async (req, res, next) => {
   let ride = await Ride.findOne({
     where: { id: req.params.id },
-    include: [RideProduct],
+    include: [RideProduct, "Customer", Driver, { model: Vehicle, include: [{ model: Car, include: [VehicleType] }] }],
   });
+  console.log("ride", ride);
   const initialRideStatus = ride.status;
   if (!ride)
     return res.status(400).json({
@@ -256,15 +256,14 @@ router.put("/:id", activityLog, async (req, res, next) => {
   ride.dropoffDate = req.body.dropoffDate;
   ride.pickupAddress = req.body.pickupAddress;
   ride.manifestId = req.body.manifestId;
-  // ride.internalIdForBusiness = req.body.internalIdForBusiness;
   ride.dropoffAddress = req.body.dropoffAddress;
   ride.cancellationReason = req.body.cancellationReason;
   ride.cancellationComment = req.body.cancellationComment;
   ride.status = req.body.status;
   ride.price = req.body.price;
   ride.cost = req.body.cost;
-  ride.customerDiscount = typeof req.body.customerDiscount === "number" ? req.body.customerDiscount : null;
-  ride.driverIncentive = typeof req.body.driverIncentive === "number" ? req.body.driverIncentive : null;
+  if (req.body.hasOwnProperty("customerDiscount")) ride.customerDiscount = req.body.customerDiscount;
+  if (req.body.hasOwnProperty("driverIncentive")) ride.driverIncentive = req.body.driverIncentive;
   ride.memo = req.body.memo;
   if (req.body.hasOwnProperty("pickupLocation")) ride.pickupLocation = req.body.pickupLocation;
   if (req.body.hasOwnProperty("dropoffLocation")) ride.dropoffLocation = req.body.dropoffLocation;
@@ -296,13 +295,13 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await ride.save();
-    console.log("ride.pocNumber", ride.pocNumber, "ride.status", ride.status, "initialRideStatus", initialRideStatus);
     if (ride.pocNumber && ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
-      console.log("sending whatsapp alert on ride complete");
-      sendWhatsappAlert("+923466998813");
+      if (ride.Customer.phone) {
+        sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).ASSIGNED);
+      }
     } else if (ride.pocNumber && ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
-      sendWhatsappAlert("+923466998813");
+      sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).COMPLETED);
     }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
@@ -490,16 +489,13 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF CITY",
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
-    "MEMO",
-    "WEIGHT OF CARGO",
     "POC NAME",
     "POC NUMBER",
-    "ETA",
-    "TRIP COMPLETION TIME",
+    "ETA(MINUTES)",
+    "TRIP COMPLETION TIME(MINUTES)",
     "CURRENT LOCATION",
-    // "CATEGORY",
-    // "PRODUCTS",
-    // "QUANTITIES"
+    "WEIGHT OF CARGO(KG)",
+    "MEMO",
   ]);
 
   worksheet.addRows(
@@ -521,13 +517,13 @@ router.get("/export", async (req, res, next) => {
       row.dropoffCity.name,
       row.dropoffAddress,
       moment(row.dropoffDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
-      row.memo,
-      row.weightCargo,
       row.pocName,
       row.pocNumber,
-      row.eta,
-      row.completionTime,
+      row.eta !== null && row.eta !== 0 ? row.eta / 60 : 0,
+      row.completionTime !== null && row.completionTime !== 0 ? row.completionTime / 60 : 0,
       row.currentLocation,
+      row.weightCargo,
+      row.memo,
     ])
   );
 

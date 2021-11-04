@@ -40,8 +40,7 @@ router.get("/", async (req, res) => {
     sort: [["updatedAt", "DESC"]],
   };
   const response = await controller.getVehicleTypes(params);
-  if (response.status === httpStatus.OK)
-    res.sendJson(response.data, response.message, response.success, response.pages);
+  if (response.status === httpStatus.OK) res.sendJson(response.data, response.message, response.pages);
   else res.sendError(response.status, response.message, response.error);
 });
 
