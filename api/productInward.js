@@ -17,6 +17,8 @@ const authService = require("../services/auth.service");
 const { digitize } = require("../services/common.services");
 const { RELATION_TYPES } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
+const ExcelJS = require("exceljs");
+const moment = require("moment-timezone");
 
 /* GET productInwards listing. */
 router.get("/", async (req, res, next) => {
@@ -66,6 +68,81 @@ router.get("/", async (req, res, next) => {
     pages: Math.ceil(response.count / limit),
   });
 });
+
+router.get("/export", async (req, res, next) => {
+  console.log("RECEIVING REQUEST")
+  let where = {};
+  if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
+
+  let workbook = new ExcelJS.Workbook();
+
+  worksheet = workbook.addWorksheet("Product Inwards");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig([
+    "INWARD ID",
+    "CUSTOMER",
+    "PRODUCT",
+    "WAREHOUSE",
+    "UOM",
+    "QUANTITY",
+    "REFERENCE ID",
+    "CREATOR",
+    "INWARD DATE",
+  ]);
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
+  response = await ProductInward.findAll({
+    include: [
+      { model: User },
+      { model: Product, as: "Products", include: [{ model: UOM }] },
+      { model: Company },
+      { model: Warehouse },
+    ],
+    order: [["updatedAt", "DESC"]],
+    where,
+  });
+
+  const inwardArray = [];
+  for (const inward of response) {
+    for (const Product of inward.Products) {
+      inwardArray.push([
+        inward.internalIdForBusiness || "",
+        inward.Company.name,
+        Product.name,
+        inward.Warehouse.name,
+        Product.UOM.name,
+        Product.InwardGroup.quantity,
+        inward.referenceId || "",
+        `${inward.User.firstName || ""} ${inward.User.lastName || ""}`,
+        moment(inward.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+      ]);
+    }
+  }
+
+  worksheet.addRows(inwardArray);
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
+})
 
 /* POST create new productInward. */
 router.post("/", activityLog, async (req, res, next) => {
