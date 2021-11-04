@@ -243,7 +243,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
     where: { id: req.params.id },
     include: [RideProduct, "Customer", Driver, { model: Vehicle, include: [{ model: Car, include: [VehicleType] }] }],
   });
-  console.log("ride", ride);
   const initialRideStatus = ride.status;
   if (!ride)
     return res.status(400).json({
