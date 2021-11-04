@@ -241,7 +241,12 @@ router.post("/", activityLog, async (req, res, next) => {
 router.put("/:id", activityLog, async (req, res, next) => {
   let ride = await Ride.findOne({
     where: { id: req.params.id },
-    include: [RideProduct, "Customer", Driver, { model: Vehicle, include: [{ model: Car, include: [VehicleType] }] }],
+    include: [
+      RideProduct,
+      "Customer",
+      Driver,
+      { model: Vehicle, include: [{ model: Car, include: [CarMake, CarModel] }] },
+    ],
   });
   const initialRideStatus = ride.status;
   if (!ride)
@@ -297,11 +302,11 @@ router.put("/:id", activityLog, async (req, res, next) => {
     console.log("ride.status", ride.status);
     if (ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
       if (ride.Customer.phone) {
-        sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).ASSIGNED);
+        sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).COMPLETED);
       }
     } else if (ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
       console.log("sending whatsapp alert on ride Assigned");
-      sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).COMPLETED);
+      sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).ASSIGNED);
     }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
@@ -310,6 +315,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
       data: response,
     });
   } catch (err) {
+    console.log("err", err);
     return res.json({
       success: false,
       message: err.message,

@@ -353,7 +353,6 @@ const sendWhatsappAlert = async (receivingNum, text) => {
   const accountSid = process.env.WHATSAPP_SID;
   const authToken = process.env.WHATSAPP_AUTHID;
   const client = require("twilio")(accountSid, authToken);
-  console.log("receivingNum", receivingNum);
   client.messages
     .create({
       body: text,
