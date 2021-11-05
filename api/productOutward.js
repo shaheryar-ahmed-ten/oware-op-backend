@@ -179,6 +179,21 @@ router.get("/export", async (req, res, next) => {
     "ACTUAL DISPATCH DATE",
   ]);
 
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
   response = await ProductOutward.findAll({
     include: [
       {
