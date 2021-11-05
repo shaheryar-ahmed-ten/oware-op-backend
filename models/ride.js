@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const config = require("../config");
-const { RIDE_STATUS } = require("../enums");
+const RIDE_STATUS = require("../enums/rideStatus");
 const { sendWhatsappAlert } = require("../services/common.services");
 module.exports = (sequelize, DataTypes) => {
   class Ride extends Model {

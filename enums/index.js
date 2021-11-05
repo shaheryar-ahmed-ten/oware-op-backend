@@ -15,13 +15,6 @@ module.exports = Object.freeze({
     VENDOR: "VENDOR",
     CUSTOMER: "CUSTOMER",
   },
-  RIDE_STATUS: {
-    UNASSIGNED: "UNASSIGNED",
-    ASSIGNED: "ASSIGNED",
-    INPROGRESS: "INPROGRESS",
-    COMPLETED: "COMPLETED",
-    CANCELLED: "CANCELLED",
-  },
   PERMISSIONS: {
     OPS_USER_FULL: "OPS_USER_FULL",
     OPS_CUSTOMER_FULL: "OPS_CUSTOMER_FULL",
@@ -61,7 +54,7 @@ module.exports = Object.freeze({
   SPECIAL_CHARACTERS: /[!@#$%^\=\[\]{};:\\|>\/?]/,
   INTEGER_REGEX: /^[0-9]*$/,
   RIDE_WHATSAPP_ALERT: (ride) => ({
-    ASSIGNED: `Dear Oware customer, your ride # ${ride.internalIdForBusiness} has been assigned a ${ride.Vehicle.Car.CarMake.name} ${ride.Vehicle.Car.CarModel.name} having vehicle registration # ${ride.Vehicle.registrationNumber} - Assigned vehicle`,
+    ASSIGNED: `Dear Oware customer, your ride # ${ride.internalIdForBusiness} has been assigned a ${ride.Vehicle.Car.CarMake.name} ${ride.Vehicle.Car.CarModel.name} having vehicle registration # ${ride.Vehicle.registrationNumber}.`,
     COMPLETED: `Dear Oware customer,  your ride # ${ride.internalIdForBusiness} using ${ride.Vehicle.Car.CarMake.name} ${ride.Vehicle.Car.CarModel.name} having vehicle registration # ${ride.Vehicle.registrationNumber} has been completed successfully. Thank you for using Oware, your trusted fulfilment partner.`,
   }),
 });
