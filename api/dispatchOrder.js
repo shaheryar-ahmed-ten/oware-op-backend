@@ -101,6 +101,102 @@ router.get("/", async (req, res, next) => {
   });
 });
 
+router.get("/export", async (req, res, next) => {
+  let where = {};
+  if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
+
+  let workbook = new ExcelJS.Workbook();
+
+
+  worksheet = workbook.addWorksheet("Dispatch Orders");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig([
+    "DISPATCH ORDER ID",
+    "CUSTOMER",
+    "PRODUCT",
+    "WAREHOUSE",
+    "UOM",
+    "RECEIVER NAME",
+    "RECEIVER PHONE",
+    "REQUESTED QUANTITY",
+    "REFERENCE ID",
+    "CREATOR",
+    "CREATED DATE",
+    "STATUS",
+  ]);
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
+  response = await DispatchOrder.findAll({
+    include: [
+      {
+        model: Inventory,
+        as: "Inventory",
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+      },
+      {
+        model: Inventory,
+        as: "Inventories",
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+      },
+      { model: User },
+    ],
+    order: [["updatedAt", "DESC"]],
+    where,
+  });
+
+  const orderArray = [];
+  for (const order of response) {
+    for (const inv of order.Inventories) {
+      orderArray.push([
+        order.internalIdForBusiness || "",
+        order.Inventory.Company.name,
+        inv.Product.name,
+        order.Inventory.Warehouse.name,
+        inv.Product.UOM.name,
+        order.receiverName,
+        order.receiverPhone,
+        inv.OrderGroup.quantity,
+        order.referenceId || "",
+        `${order.User.firstName || ""} ${order.User.lastName || ""}`,
+        moment(order.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+        order.status == "0"
+          ? "PENDING"
+          : order.status == "1"
+            ? "PARTIALLY FULFILLED"
+            : order.status == "2"
+              ? "FULFILLED"
+              : order.status == "3"
+                ? "CANCELLED"
+                : "",
+      ]);
+    }
+  }
+
+  worksheet.addRows(orderArray);
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
+})
+
 /* POST create new dispatchOrder. */
 router.post("/", activityLog, async (req, res, next) => {
   let message = "New dispatchOrder registered";
