@@ -50,6 +50,7 @@ module.exports = Object.freeze({
     },
   },
   initialInternalIdForBusinessForAdjustment: "SA-",
+  initialInternalIdForBusinessForCompany: "CO-",
   BULK_PRODUCT_LIMIT: 1000,
   SPECIAL_CHARACTERS: /[!@#$%^\=\[\]{};:\\|>\/?]/,
   INTEGER_REGEX: /^[0-9]*$/,
