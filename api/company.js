@@ -4,11 +4,11 @@ const { Company, User, Role, File } = require("../models");
 const { Op } = require("sequelize");
 const config = require("../config");
 const authService = require("../services/auth.service");
-const { PORTALS } = require("../enums");
+const { PORTALS, initialInternalIdForBusinessForCompany } = require("../enums");
 const RELATION_TYPES = require("../enums/relationTypes");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
-const { addActivityLog } = require("../services/common.services");
+const { addActivityLog, digitize } = require("../services/common.services");
 
 /* GET customers listing. */
 router.get("/:relationType", async (req, res, next) => {
@@ -27,7 +27,7 @@ router.get("/:relationType", async (req, res, next) => {
     limit,
     offset,
     where,
-    distinct:true
+    distinct: true
   });
 
   res.json({
@@ -45,9 +45,15 @@ router.post("/:relationType", activityLog, async (req, res, next) => {
   try {
     customer = await Company.create({
       userId: req.userId,
+      internalIdForBusiness: initialInternalIdForBusinessForCompany,
       ...req.body,
       relationType: req.params.relationType,
     });
+
+    const numberOfInternalIdForBusiness = digitize(customer.id, 6);
+    customer.internalIdForBusiness = customer.internalIdForBusiness + numberOfInternalIdForBusiness;
+    customer.save();
+
   } catch (err) {
     return res.json({
       success: false,

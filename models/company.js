@@ -63,9 +63,9 @@ module.exports = (sequelize, DataTypes) => {
       phone: {
         type: DataTypes.STRING,
         allowNull: true, // TODO: set this to false after handling already added companies.
-        validate: {
-          isNumeric: { msg: "Please enter correct phone number for company." }
-        }
+        // validate: {
+        //   isNumeric: { msg: "Please enter correct phone number for company." }
+        // }
       },
       allowedApps: {
         type: DataTypes.ENUM({
