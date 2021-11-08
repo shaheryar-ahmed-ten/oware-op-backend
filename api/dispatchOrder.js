@@ -671,21 +671,6 @@ router.get("/products", async (req, res, next) => {
     });
 });
 
-router.get("/whatsapp", async (req, res, next) => {
-  const accountSid = "ACd1d16b0aabdf099f8f147e9fa2f64f0e";
-  const authToken = "964b94f4f4a53846c0c17248002ac86d";
-  const client = require("twilio")(accountSid, authToken);
-
-  client.messages
-    .create({
-      body: "Your Yummy Cupcakes Company order of 1 dozen frosted cupcakes has shipped and should be delivered on July 10, 2019. Details: http://www.yummycupcakes.com/",
-      from: "whatsapp:+14155238886",
-      to: "whatsapp:+923343696707",
-    })
-    .then((message) => console.log(message.sid))
-    .done();
-});
-
 // Get single dispatch order
 router.get("/:id", async (req, res, next) => {
   try {
