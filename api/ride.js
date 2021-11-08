@@ -255,6 +255,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
       message: "No ride found!",
     });
   ride.vehicleId = req.body.vehicleId;
+  ride.customerId = req.body.customerId;
   ride.driverId = req.body.driverId;
   ride.pickupDate = req.body.pickupDate;
   ride.dropoffDate = req.body.dropoffDate;
