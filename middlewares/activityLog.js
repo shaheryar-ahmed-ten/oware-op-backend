@@ -1,4 +1,4 @@
-const { ActivityLog, ActivitySourceType } = require("../models");
+const { ActivityLog, ActivitySourceType, Warehouse } = require("../models");
 const sourceModel = require("../models");
 const { getModel, digitize } = require("../services/common.services");
 const { initialInternalIdForBusinessForAdjustment } = require("../enums");
@@ -30,7 +30,19 @@ async function addActivityLog(req, res, next) {
     source = source ? source.id + 1 : 1;
     if (MODEL == "DispatchOrder" || MODEL == "ProductOutward" || MODEL == "ProductInward") {
       const numberOfInternalIdForBusiness = digitize(source, 6);
+      if (!current.internalIdForBusiness) {
+        console.log(
+          `\n-----------------------------${current.orders[0].warehouse}----------------------------------\n`
+        );
+        current.internalIdForBusiness = (
+          await Warehouse.findOne({
+            where: { name: current.orders[0].warehouse },
+            attributes: ["businessWarehouseCode"],
+          })
+        ).businessWarehouseCode;
+      }
       current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
+      if (current && current.orders && current.orders.length) current.internalIdForBusiness = "";
     } else if (MODEL == "StockAdjustment") {
       const numberOfInternalIdForBusiness = digitize(source, 6);
       current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;

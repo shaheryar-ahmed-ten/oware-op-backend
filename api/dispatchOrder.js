@@ -1,4 +1,5 @@
 const express = require("express");
+const promise = require("bluebird");
 const router = express.Router();
 const {
   Inventory,
@@ -11,16 +12,37 @@ const {
   sequelize,
   ProductOutward,
   OutwardGroup,
+  ActivitySourceType,
+  User,
 } = require("../models");
+const models = require("../models");
 const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
-const { digitize, addActivityLog } = require("../services/common.services");
-const { RELATION_TYPES, DISPATCH_ORDER } = require("../enums");
+const { digitize, addActivityLog, getMaxValueFromJson, addActivityLog2 } = require("../services/common.services");
+const { RELATION_TYPES, DISPATCH_ORDER, INTEGER_REGEX } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const moment = require("moment-timezone");
 const httpStatus = require("http-status");
+const ExcelJS = require("exceljs");
+const Joi = require("joi");
+
+const BulkAddValidation = Joi.object({
+  orders: Joi.array().items(
+    Joi.object({
+      orderNumber: Joi.required(),
+      product: Joi.required(),
+      warehouse: Joi.required(),
+      company: Joi.required(),
+      receiverName: Joi.required(),
+      receiverPhone: Joi.required(),
+      shipmentDate: Joi.required(),
+      referenceId: Joi.required(),
+      quantity: Joi.required(),
+    })
+  ),
+});
 
 /* GET dispatchOrders listing. */
 router.get("/", async (req, res, next) => {
@@ -33,8 +55,7 @@ router.get("/", async (req, res, next) => {
     where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
-  if (req.query.status)
-    where = { status: req.query.status }
+  if (req.query.status) where = { status: req.query.status };
   const response = await DispatchOrder.findAndCountAll({
     include: [
       {
@@ -53,9 +74,12 @@ router.get("/", async (req, res, next) => {
         required: false,
         include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
       },
+      { model: User },
     ],
-    order: [["createdAt", "DESC"]],
-    distinct: true,
+    order: [
+      ["createdAt", "DESC"],
+      ["id", "DESC"],
+    ],
     where,
     limit,
     offset,
@@ -158,6 +182,191 @@ router.post("/", activityLog, async (req, res, next) => {
   }
 });
 
+router.post("/bulk", async (req, res, next) => {
+  try {
+    const isValid = await BulkAddValidation.validateAsync(req.body);
+
+    if (isValid) {
+      await sequelize.transaction(async (transaction) => {
+        const validationErrors = [];
+        let row = 1;
+        let previousOrderNumber = 1;
+        let count = 1;
+        console.log("req.body", req.body);
+        for (const order of req.body.orders) {
+          ++row;
+          if (!INTEGER_REGEX.test(order.quantity)) {
+            // failed rows
+            validationErrors.push(`Row ${row} : Invalid quantity entered`);
+          }
+
+          const [customer, warehouse, product] = await Promise.all([
+            Dao.Company.findOne({
+              where: {
+                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
+                isActive: 1,
+              },
+              attributes: ["id"],
+            }),
+
+            Dao.Warehouse.findOne({
+              where: {
+                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
+                isActive: 1,
+              },
+              attributes: ["id"],
+            }),
+
+            Dao.Product.findOne({
+              where: {
+                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
+                isActive: 1,
+              },
+              attributes: ["id"],
+            }),
+          ]);
+
+          if (!customer) {
+            // Invalid company
+            validationErrors.push({ row, message: `Row ${row} : Invalid company name` });
+          }
+
+          if (!warehouse) {
+            validationErrors.push({ row, message: `Row ${row} : Invalid warehouse name` });
+          }
+
+          if (!product) {
+            validationErrors.push({ row, message: `Row ${row} : Invalid product name` });
+          }
+
+          if (product && customer && warehouse) {
+            order.customerId = customer.id;
+            order.productId = product.id;
+            order.warehouseId = warehouse.id;
+
+            const inventory = await Dao.Inventory.findOne({
+              attributes: ["id", "availableQuantity"],
+              where: {
+                productId: product.id,
+                customerId: customer.id,
+                warehouseId: warehouse.id,
+              },
+            });
+
+            if (!inventory) {
+              validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
+            } else {
+              order.inventoryId = inventory.id;
+
+              if (inventory.availableQuantity < order.quantity) {
+                validationErrors.push({ row, message: `Row ${row} : Cannot create orders above available quantity` });
+              }
+            }
+          }
+
+          orderNumber = parseInt(order.orderNumber);
+
+          if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1) {
+            validationErrors.push({ row, message: `Row ${row} : Invalid Order Number` });
+          }
+
+          previousOrderNumber = orderNumber;
+        }
+
+        if (validationErrors.length) {
+          return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk dispatch orders");
+        }
+
+        let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
+        const orders = [];
+        while (count <= maxOrderNumber) {
+          orders.push(req.body.orders.filter((item) => item.orderNumber == count));
+          count++;
+        }
+
+        await promise.each(orders, (order) => {
+          return createOrder(order, req.userId, transaction);
+        });
+
+        await addActivityLog2(req, models);
+        res.sendJson(httpStatus.OK, `${maxOrderNumber} orders uploaded successfully.`, {});
+      });
+    } else {
+      return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to add outward");
+    }
+  } catch (err) {
+    console.log("err", err);
+    res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
+  }
+});
+
+//1.create DO
+//2.make and create OG
+//3.Update Inventories
+const createOrder = async (orders, userId, transaction) => {
+  dispatchOrder = await DispatchOrder.create(
+    {
+      userId,
+      ...orders[0],
+    },
+    { transaction }
+  );
+
+  const businessWarehouseCode = (
+    await Dao.Warehouse.findOne({
+      where: { id: orders[0].warehouseId },
+      attributes: ["businessWarehouseCode"],
+    })
+  ).businessWarehouseCode;
+
+  const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
+  dispatchOrder.internalIdForBusiness = `DO-${businessWarehouseCode}-${numberOfInternalIdForBusiness}`;
+
+  let sumOfComitted = [];
+  orders.forEach((order) => {
+    let quantity = parseInt(order.quantity);
+    sumOfComitted.push(quantity);
+  });
+
+  comittedAcc = sumOfComitted.reduce((acc, po) => {
+    return acc + po;
+  });
+
+  dispatchOrder.quantity = comittedAcc;
+
+  await dispatchOrder.save({ transaction });
+  await OrderGroup.bulkCreate(
+    orders.map((order) => ({
+      userId,
+      orderId: dispatchOrder.id,
+      inventoryId: order.inventoryId,
+      quantity: order.quantity,
+    })),
+    { transaction }
+  );
+
+  return Promise.all(
+    orders.map((_inventory) => {
+      return Inventory.findByPk(_inventory.inventoryId, { transaction }).then(async (inventory) => {
+        if (!inventory && !_inventory.inventoryId) throw new Error("Inventory is not available");
+        if (_inventory.quantity > inventory.availableQuantity) {
+          const product = await Dao.Product.findOne({ where: { id: inventory.productId }, attributes: ["name"] });
+          throw new Error(
+            `Order Number ${_inventory.orderNumber}: Cannot create orders above available quantity for product:${product.name}`
+          );
+        }
+        try {
+          inventory.committedQuantity += +_inventory.quantity;
+          inventory.availableQuantity -= +_inventory.quantity;
+          return inventory.save({ transaction });
+        } catch (err) {
+          throw new Error(err.errors.pop().message);
+        }
+      });
+    })
+  );
+};
+
 /* PUT update existing dispatchOrder. */
 router.put("/:id", activityLog, async (req, res, next) => {
   let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
@@ -211,25 +420,6 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
         inventoryId: product.inventoryId,
         quantity: product.quantity,
       });
-      console.log(
-        "(1)--->\n",
-        "product.quantity",
-        product.quantity,
-        "inventory.availableQuantity",
-        inventory.availableQuantity,
-        "OG.quantity",
-        OG.quantity,
-        "outwardQuantity",
-        outwardQuantity,
-        "inventory.committedQuantity",
-        inventory.committedQuantity,
-        "inventory.id",
-        inventory.id
-      );
-      console.log(
-        `product.quantity > inventory.availableQuantity + OG.quantity`,
-        product.quantity > inventory.availableQuantity + OG.quantity
-      );
       if (parseInt(product.quantity) > parseInt(inventory.availableQuantity)) {
         await OG.destroy();
         throw new Error("Cannot add quantity above available quantity");
@@ -241,20 +431,6 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       inventory.availableQuantity = inventory.availableQuantity - product.quantity;
       inventory.committedQuantity = inventory.committedQuantity + product.quantity;
     } else {
-      console.log(
-        "product.quantity",
-        product.quantity,
-        "inventory.availableQuantity",
-        inventory.availableQuantity,
-        "OG.quantity",
-        OG.quantity,
-        "outwardQuantity",
-        outwardQuantity,
-        "inventory.committedQuantity",
-        inventory.committedQuantity,
-        "inventory.id",
-        inventory.id
-      ); //7 > 59 + 8
       if (product.quantity > inventory.availableQuantity + OG.quantity)
         throw new Error("Cannot add quantity above available quantity");
       else if (outwardQuantity > 0 && product.quantity < outwardQuantity)
@@ -310,6 +486,80 @@ router.patch("/cancel/:id", activityLog, async (req, res, next) => {
     // await Dao.OrderGroup.destroy({ where: { id: OG.id } });
   }
   return res.sendJson(httpStatus.OK, "Dispatch Order Cancelled");
+});
+
+router.get("/bulk-template", async (req, res, next) => {
+  let workbook = new ExcelJS.Workbook();
+
+  let worksheet = workbook.addWorksheet("Dispatch Orders");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig([
+    "Order Number",
+    "Company",
+    "Warehouse",
+    "Receiver Name",
+    "Receiver Phone",
+    "Shipment Date",
+    "Reference ID",
+    "Product Name",
+    "Quantity",
+  ]);
+
+  worksheet.addRows(
+    [
+      {
+        orderNo: 1,
+        company: "Bisconi Pvt (Sample Company)",
+        warehouse: "Karachi - east",
+        receiverName: "Ahmed Ali",
+        receiverPhone: "03xxxxxxxx0",
+        shipmentDate: "12/25/2021 03:40 PM",
+        referenceId: "ref-2031",
+        productName: "COKE ZERO",
+        quantity: 35,
+      },
+      {
+        orderNo: 1,
+        company: "Bisconi Pvt (Sample Company)",
+        warehouse: "Karachi - east",
+        receiverName: "Ahmed Ali",
+        receiverPhone: "03xxxxxxxx0",
+        shipmentDate: "12/25/2021 03:40 PM",
+        referenceId: "ref-2031",
+        productName: "COKE",
+        quantity: 150,
+      },
+      {
+        orderNo: 2,
+        company: "Nescafe Pvt (Sample Company)",
+        warehouse: "Karachi - south",
+        receiverName: "Zafar",
+        receiverPhone: "03xxxxxxxx0",
+        shipmentDate: "11/16/2021 12:59 AM",
+        referenceId: "ref-0031",
+        productName: "7up",
+        quantity: 90,
+      },
+    ].map((el, idx) => [
+      el.orderNo,
+      el.company,
+      el.warehouse,
+      el.receiverName,
+      el.receiverPhone,
+      el.shipmentDate,
+      el.referenceId,
+      el.productName,
+      el.quantity,
+    ])
+  );
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
 });
 
 router.delete("/:id", activityLog, async (req, res, next) => {
@@ -421,6 +671,21 @@ router.get("/products", async (req, res, next) => {
     });
 });
 
+router.get("/whatsapp", async (req, res, next) => {
+  const accountSid = "ACd1d16b0aabdf099f8f147e9fa2f64f0e";
+  const authToken = "964b94f4f4a53846c0c17248002ac86d";
+  const client = require("twilio")(accountSid, authToken);
+
+  client.messages
+    .create({
+      body: "Your Yummy Cupcakes Company order of 1 dozen frosted cupcakes has shipped and should be delivered on July 10, 2019. Details: http://www.yummycupcakes.com/",
+      from: "whatsapp:+14155238886",
+      to: "whatsapp:+923343696707",
+    })
+    .then((message) => console.log(message.sid))
+    .done();
+});
+
 // Get single dispatch order
 router.get("/:id", async (req, res, next) => {
   try {
@@ -442,6 +707,7 @@ router.get("/:id", async (req, res, next) => {
           required: true,
           include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
         },
+        { model: User },
       ],
       where: { id: req.params.id },
     };

@@ -27,6 +27,7 @@ router.get("/:relationType", async (req, res, next) => {
     limit,
     offset,
     where,
+    distinct:true
   });
 
   res.json({
@@ -77,7 +78,7 @@ router.put("/:relationType/:id", activityLog, async (req, res, next) => {
   customer.notes = req.body.notes;
   customer.isActive = req.body.isActive;
   customer.logoId = req.body.logoId;
-
+  customer.phone = req.body.phone;
   try {
     const response = await customer.save();
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);

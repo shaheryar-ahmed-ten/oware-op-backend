@@ -1,7 +1,8 @@
 "use strict";
 const { Model } = require("sequelize");
 const config = require("../config");
-const { RIDE_STATUS } = require("../enums");
+const RIDE_STATUS = require("../enums/rideStatus");
+const { sendWhatsappAlert } = require("../services/common.services");
 module.exports = (sequelize, DataTypes) => {
   class Ride extends Model {
     /**
@@ -85,15 +86,15 @@ module.exports = (sequelize, DataTypes) => {
         validate: { notEmpty: { msg: "Please select dropoff date" } },
       },
       pickupAddress: DataTypes.STRING,
-      pickupAreaId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
+      // pickupAreaId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: true,
+      // },
       dropoffAddress: DataTypes.STRING,
-      dropoffAreaId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
+      // dropoffAreaId: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: true,
+      // },
       pickupCityId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -114,6 +115,38 @@ module.exports = (sequelize, DataTypes) => {
         }),
         allowNull: false,
         defaultValue: RIDE_STATUS.UNASSIGNED,
+      },
+      weightCargo: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      pocName: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      pocNumber: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      eta: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      completionTime: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      currentLocation: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      eirId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      builtyId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
       price: {
         type: DataTypes.INTEGER,
