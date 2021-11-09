@@ -40,6 +40,7 @@ const BulkAddValidation = Joi.object({
       shipmentDate: Joi.required(),
       referenceId: Joi.required(),
       quantity: Joi.required(),
+      orderMemo: Joi.optional(),
     })
   ),
 });
@@ -493,6 +494,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   if (req.body.hasOwnProperty("receiverName")) dispatchOrder.receiverName = req.body.receiverName;
   if (req.body.hasOwnProperty("receiverPhone")) dispatchOrder.receiverPhone = req.body.receiverPhone;
   if (req.body.hasOwnProperty("referenceId")) dispatchOrder.referenceId = req.body.referenceId;
+  dispatchOrder.orderMemo = req.body.orderMemo;
   try {
     if (req.body.hasOwnProperty("products"))
       await updateDispatchOrderInventories(dispatchOrder, req.body.products, req.userId);
@@ -620,6 +622,7 @@ router.get("/bulk-template", async (req, res, next) => {
     "Reference ID",
     "Product Name",
     "Quantity",
+    "Order Memo",
   ]);
 
   worksheet.addRows(
@@ -634,6 +637,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE ZERO",
         quantity: 35,
+        orderMemo: "Lorem ipsum(Optional)"
       },
       {
         orderNo: 1,
@@ -645,6 +649,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE",
         quantity: 150,
+        orderMemo: "Lorem ipsum odor(Optional)"
       },
       {
         orderNo: 2,
@@ -656,6 +661,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-0031",
         productName: "7up",
         quantity: 90,
+        orderMemo: "Lorem ipsum order ipsum(Optional)"
       },
     ].map((el, idx) => [
       el.orderNo,
@@ -667,6 +673,7 @@ router.get("/bulk-template", async (req, res, next) => {
       el.referenceId,
       el.productName,
       el.quantity,
+      el.orderMemo
     ])
   );
 
