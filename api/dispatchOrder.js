@@ -475,6 +475,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   if (req.body.hasOwnProperty("receiverName")) dispatchOrder.receiverName = req.body.receiverName;
   if (req.body.hasOwnProperty("receiverPhone")) dispatchOrder.receiverPhone = req.body.receiverPhone;
   if (req.body.hasOwnProperty("referenceId")) dispatchOrder.referenceId = req.body.referenceId;
+  dispatchOrder.orderMemo = req.body.orderMemo;
   try {
     if (req.body.hasOwnProperty("products"))
       await updateDispatchOrderInventories(dispatchOrder, req.body.products, req.userId);
