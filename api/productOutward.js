@@ -52,6 +52,7 @@ router.get("/", async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
+
   if (req.query.search)
     where[Op.or] = [
       "internalIdForBusiness",
@@ -62,6 +63,22 @@ router.get("/", async (req, res, next) => {
     ].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
   const response = await ProductOutward.findAndCountAll({
     duplicating: false,
     include: [
