@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.changeColumn("DispatchOrders", "orderMemo", {
+    await queryInterface.addColumn("DispatchOrders", "orderMemo", {
       type: Sequelize.TEXT,
       allowNull: true,
     });
