@@ -4,7 +4,7 @@ const { Company, User, Role, File } = require("../models");
 const { Op } = require("sequelize");
 const config = require("../config");
 const authService = require("../services/auth.service");
-const { PORTALS, initialInternalIdForBusinessForCompany } = require("../enums");
+const { PORTALS, initialInternalIdForBusinessForCompany, initialInternalIdForBusinessForVendor } = require("../enums");
 const RELATION_TYPES = require("../enums/relationTypes");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
@@ -45,12 +45,22 @@ router.post("/:relationType", activityLog, async (req, res, next) => {
   try {
     customer = await Company.create({
       userId: req.userId,
-      internalIdForBusiness: initialInternalIdForBusinessForCompany,
+      internalIdForBusiness: req.body.relationType === 'CUSTOMER' ?
+        initialInternalIdForBusinessForCompany
+        :
+        initialInternalIdForBusinessForVendor
+      ,
       ...req.body,
       relationType: req.params.relationType,
     });
 
-    const numberOfInternalIdForBusiness = digitize(customer.id, 6);
+    // find the total no. of comapanies/vendors created
+    let where = { relationType: req.params.relationType }
+    const response = await Company.findAndCountAll({
+      where
+    })
+
+    const numberOfInternalIdForBusiness = digitize(response.count, 6);
     customer.internalIdForBusiness = customer.internalIdForBusiness + numberOfInternalIdForBusiness;
     customer.save();
 
