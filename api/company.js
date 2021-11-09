@@ -54,7 +54,13 @@ router.post("/:relationType", activityLog, async (req, res, next) => {
       relationType: req.params.relationType,
     });
 
-    const numberOfInternalIdForBusiness = digitize(customer.id, 6);
+    // find the total no. of comapanies/vendors created
+    let where = { relationType: req.params.relationType }
+    const response = await Company.findAndCountAll({
+      where
+    })
+
+    const numberOfInternalIdForBusiness = digitize(response.count, 6);
     customer.internalIdForBusiness = customer.internalIdForBusiness + numberOfInternalIdForBusiness;
     customer.save();
 
