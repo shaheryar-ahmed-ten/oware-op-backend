@@ -40,6 +40,7 @@ const BulkAddValidation = Joi.object({
       shipmentDate: Joi.required(),
       referenceId: Joi.required(),
       quantity: Joi.required(),
+      orderMemo: Joi.optional(),
     })
   ),
 });
@@ -603,6 +604,7 @@ router.get("/bulk-template", async (req, res, next) => {
     "Reference ID",
     "Product Name",
     "Quantity",
+    "Order Memo",
   ]);
 
   worksheet.addRows(
@@ -617,6 +619,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE ZERO",
         quantity: 35,
+        orderMemo: "Lorem ipsum(Optional)"
       },
       {
         orderNo: 1,
@@ -628,6 +631,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE",
         quantity: 150,
+        orderMemo: "Lorem ipsum odor(Optional)"
       },
       {
         orderNo: 2,
@@ -639,6 +643,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-0031",
         productName: "7up",
         quantity: 90,
+        orderMemo: "Lorem ipsum order ipsum(Optional)"
       },
     ].map((el, idx) => [
       el.orderNo,
@@ -650,6 +655,7 @@ router.get("/bulk-template", async (req, res, next) => {
       el.referenceId,
       el.productName,
       el.quantity,
+      el.orderMemo
     ])
   );
 
