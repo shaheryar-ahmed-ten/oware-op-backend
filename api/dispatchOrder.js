@@ -145,6 +145,7 @@ router.get("/export", async (req, res, next) => {
     "CREATOR",
     "CREATED DATE",
     "STATUS",
+    "ORDER MEMO"
   ]);
 
   if (req.query.days) {
@@ -204,6 +205,7 @@ router.get("/export", async (req, res, next) => {
               : order.status == "3"
                 ? "CANCELLED"
                 : "",
+        order.orderMemo || ""
       ]);
     }
   }
