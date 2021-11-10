@@ -40,6 +40,7 @@ const BulkAddValidation = Joi.object({
       shipmentDate: Joi.required(),
       referenceId: Joi.required(),
       quantity: Joi.required(),
+      orderMemo: Joi.optional(),
     })
   ),
 });
@@ -51,11 +52,29 @@ router.get("/", async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
+
   if (req.query.search)
     where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+
   if (req.query.status) where = { status: req.query.status };
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
   const response = await DispatchOrder.findAndCountAll({
     include: [
       {
@@ -126,6 +145,7 @@ router.get("/export", async (req, res, next) => {
     "CREATOR",
     "CREATED DATE",
     "STATUS",
+    "ORDER MEMO"
   ]);
 
   if (req.query.days) {
@@ -185,6 +205,7 @@ router.get("/export", async (req, res, next) => {
               : order.status == "3"
                 ? "CANCELLED"
                 : "",
+        order.orderMemo || "",
       ]);
     }
   }
@@ -475,6 +496,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   if (req.body.hasOwnProperty("receiverName")) dispatchOrder.receiverName = req.body.receiverName;
   if (req.body.hasOwnProperty("receiverPhone")) dispatchOrder.receiverPhone = req.body.receiverPhone;
   if (req.body.hasOwnProperty("referenceId")) dispatchOrder.referenceId = req.body.referenceId;
+  dispatchOrder.orderMemo = req.body.orderMemo;
   try {
     if (req.body.hasOwnProperty("products"))
       await updateDispatchOrderInventories(dispatchOrder, req.body.products, req.userId);
@@ -602,6 +624,7 @@ router.get("/bulk-template", async (req, res, next) => {
     "Reference ID",
     "Product Name",
     "Quantity",
+    "Order Memo",
   ]);
 
   worksheet.addRows(
@@ -616,6 +639,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE ZERO",
         quantity: 35,
+        orderMemo: "Lorem ipsum(Optional)"
       },
       {
         orderNo: 1,
@@ -627,6 +651,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE",
         quantity: 150,
+        orderMemo: "Lorem ipsum odor(Optional)"
       },
       {
         orderNo: 2,
@@ -638,6 +663,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-0031",
         productName: "7up",
         quantity: 90,
+        orderMemo: "Lorem ipsum order ipsum(Optional)"
       },
     ].map((el, idx) => [
       el.orderNo,
@@ -649,6 +675,7 @@ router.get("/bulk-template", async (req, res, next) => {
       el.referenceId,
       el.productName,
       el.quantity,
+      el.orderMemo
     ])
   );
 
