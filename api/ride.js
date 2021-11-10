@@ -433,7 +433,7 @@ router.get("/export", async (req, res, next) => {
 
   if (req.query.status) where["status"] = req.query.status;
 
-  let response = await Dao.Ride.findAll({
+  let response = await Ride.findAll({
     include: [
       {
         model: Company,
@@ -477,6 +477,8 @@ router.get("/export", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
     where,
   });
+
+  console.log(response)
 
   worksheet.columns = getColumnsConfig([
     "RIDE ID",
