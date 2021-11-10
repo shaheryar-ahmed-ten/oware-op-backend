@@ -69,7 +69,12 @@ router.get("/", async (req, res, next) => {
     const previousDate = moment().subtract(req.query.days, "days");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
-    const startDate = moment(req.query.startingDate);
+    const startDate = moment(req.query.startingDate).set({
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
     const endDate = moment(req.query.endingDate).set({
       hour: 23,
       minute: 53,
@@ -126,6 +131,7 @@ router.get("/", async (req, res, next) => {
     limit,
     offset,
     distinct: true,
+    // logging: true
     // subQuery: false
   });
   var acc = [];
