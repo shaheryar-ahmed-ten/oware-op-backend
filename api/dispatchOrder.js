@@ -205,7 +205,7 @@ router.get("/export", async (req, res, next) => {
               : order.status == "3"
                 ? "CANCELLED"
                 : "",
-        order.orderMemo || ""
+        order.orderMemo || "",
       ]);
     }
   }
