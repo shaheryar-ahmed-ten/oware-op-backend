@@ -33,6 +33,10 @@ class CrudServiceDao {
     return await this.model.findAll(_params);
   }
 
+  async findAll() {
+    return await this.model.findAll();
+  }
+
   async create(params) {
     const record = await this.model.create(params);
     return record;
