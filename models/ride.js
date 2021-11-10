@@ -129,11 +129,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       eta: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: true,
       },
       completionTime: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: true,
       },
       currentLocation: {
