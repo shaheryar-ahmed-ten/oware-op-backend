@@ -300,15 +300,15 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await ride.save();
-    console.log("ride.status", ride.status);
-    if (ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
-      if (ride.Customer.phone) {
-        sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).COMPLETED);
-      }
-    } else if (ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
-      console.log("sending whatsapp alert on ride Assigned");
-      sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).ASSIGNED);
-    }
+    // console.log("ride.status", ride.status);
+    // if (ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
+    //   if (ride.Customer.phone) {
+    //     sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).COMPLETED);
+    //   }
+    // } else if (ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
+    //   console.log("sending whatsapp alert on ride Assigned");
+    //   sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).ASSIGNED);
+    // }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
