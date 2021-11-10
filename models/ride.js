@@ -104,7 +104,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       memo: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       cancellationReason: DataTypes.STRING,
