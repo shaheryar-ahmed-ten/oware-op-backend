@@ -69,17 +69,17 @@ router.get("/", async (req, res, next) => {
     const previousDate = moment().subtract(req.query.days, "days");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
-    const startDate = moment(req.query.startingDate).set({
-      hour: 0,
-      minute: 0,
-      second: 0,
-      millisecond: 0,
-    });
-    const endDate = moment(req.query.endingDate).set({
+    const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
       hour: 23,
-      minute: 53,
+      minute: 59,
       second: 59,
-      millisecond: 0,
+      millisecond: 1000,
+    });
+    const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 1000,
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
@@ -162,12 +162,17 @@ router.get("/export", async (req, res, next) => {
     const previousDate = moment().subtract(req.query.days, "days");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
-    const startDate = moment(req.query.startingDate);
-    const endDate = moment(req.query.endingDate).set({
+    const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
       hour: 23,
-      minute: 53,
+      minute: 59,
       second: 59,
-      millisecond: 0,
+      millisecond: 1000,
+    });
+    const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 1000,
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
