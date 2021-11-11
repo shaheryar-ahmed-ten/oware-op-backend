@@ -433,7 +433,7 @@ router.get("/export", async (req, res, next) => {
 
   if (req.query.status) where["status"] = req.query.status;
 
-  let response = await Ride.findAll({
+  let response = await Dao.Ride.findAll({
     include: [
       {
         model: Company,
