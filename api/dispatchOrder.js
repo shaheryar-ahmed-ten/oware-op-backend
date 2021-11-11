@@ -59,6 +59,10 @@ router.get("/", async (req, res, next) => {
     }));
 
   if (req.query.status) where = { status: req.query.status };
+  if (req.query.warehouse)
+    where[Op.or] = ["$Inventory.Warehouse.id$"].map((key) => ({
+      [key]: { [Op.eq]: req.query.warehouse },
+    }));
 
   if (req.query.days) {
     const currentDate = moment();
