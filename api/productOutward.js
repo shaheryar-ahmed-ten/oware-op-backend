@@ -208,10 +208,10 @@ router.get("/export", async (req, res, next) => {
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
-      hour: 23,
-      minute: 59,
-      second: 59,
-      millisecond: 1000,
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
     });
     const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
       hour: 23,
