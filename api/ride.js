@@ -38,7 +38,7 @@ router.get("/", async (req, res, next) => {
       // "pickupAddress",
       // "dropoffAddress",
       // "$Vehicle.Car.CarModel.name$",
-      // "$Vehicle.registrationNumber$",
+      "$Vehicle.registrationNumber$",
       "id",
       "$Customer.name$",
       "$Driver.Vendor.name$",
