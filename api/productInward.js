@@ -80,6 +80,7 @@ router.get("/", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
     where,
     limit,
+    logging: true,
     offset,
   });
   res.json({

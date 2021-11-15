@@ -131,7 +131,7 @@ router.get("/", async (req, res, next) => {
     limit,
     offset,
     distinct: true,
-    // logging: true
+    logging: true
     // subQuery: false
   });
   var acc = [];
