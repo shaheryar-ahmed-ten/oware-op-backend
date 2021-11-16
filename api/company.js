@@ -9,6 +9,7 @@ const RELATION_TYPES = require("../enums/relationTypes");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const { addActivityLog, digitize } = require("../services/common.services");
+const httpStatus = require("http-status");
 
 /* GET customers listing. */
 router.get("/:relationType", async (req, res, next) => {
@@ -22,12 +23,17 @@ router.get("/:relationType", async (req, res, next) => {
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
   const response = await Company.findAndCountAll({
-    include: [{ model: User }, { model: User, as: "Contact", required: true }, { model: User, as: "Employees" }],
+    include: [
+      { model: User },
+      { model: User, as: "Contact", required: true },
+      { model: User, as: "Employees" },
+      { model: User, as: "pocUser" },
+    ],
     order: [["updatedAt", "DESC"]],
     limit,
     offset,
     where,
-    distinct: true
+    distinct: true,
   });
 
   res.json({
@@ -45,25 +51,23 @@ router.post("/:relationType", activityLog, async (req, res, next) => {
   try {
     customer = await Company.create({
       userId: req.userId,
-      internalIdForBusiness: req.body.relationType === 'CUSTOMER' ?
-        initialInternalIdForBusinessForCompany
-        :
-        initialInternalIdForBusinessForVendor
-      ,
+      internalIdForBusiness:
+        req.body.relationType === "CUSTOMER"
+          ? initialInternalIdForBusinessForCompany
+          : initialInternalIdForBusinessForVendor,
       ...req.body,
       relationType: req.params.relationType,
     });
 
     // find the total no. of comapanies/vendors created
-    let where = { relationType: req.params.relationType }
+    let where = { relationType: req.params.relationType };
     const response = await Company.findAndCountAll({
-      where
-    })
+      where,
+    });
 
     const numberOfInternalIdForBusiness = digitize(response.count, 6);
     customer.internalIdForBusiness = customer.internalIdForBusiness + numberOfInternalIdForBusiness;
     customer.save();
-
   } catch (err) {
     return res.json({
       success: false,
@@ -95,6 +99,7 @@ router.put("/:relationType/:id", activityLog, async (req, res, next) => {
   customer.isActive = req.body.isActive;
   customer.logoId = req.body.logoId;
   customer.phone = req.body.phone;
+  customer.pocUserId = req.body.pocUserId;
   try {
     const response = await customer.save();
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
@@ -125,6 +130,21 @@ router.delete("/:relationType/:id", activityLog, async (req, res, next) => {
     });
 });
 
+router.get("/:relationType/relations/:id", async (req, res, next) => {
+  let where = { isActive: true };
+  where["$Role.allowedApps$"] = PORTALS.OPERATIONS;
+  const users = await User.findAll({ where, include: [Role] });
+  const customerTypes = config.customerTypes;
+  const relationTypes = RELATION_TYPES;
+  res.json({
+    success: true,
+    message: "respond with a resource",
+    users,
+    customerTypes,
+    relationTypes,
+  });
+});
+
 router.get("/:relationType/relations", async (req, res, next) => {
   let where = { isActive: true };
   where["$Role.allowedApps$"] = PORTALS.OPERATIONS;
@@ -138,6 +158,19 @@ router.get("/:relationType/relations", async (req, res, next) => {
     customerTypes,
     relationTypes,
   });
+});
+
+router.get("/poc-users/:company", async (req, res, next) => {
+  try {
+    const company = await Dao.Company.findOne({ where: { id: req.params.company }, include: ["Employees"] });
+    if (company) {
+      res.sendJson(company.Employees, "company user found", true);
+    } else {
+      res.sendError(httpStatus.NOT_FOUND, null, "Failed to find company user");
+    }
+  } catch (err) {
+    res.sendError(httpStatus.CONFLICT, err, "Failed to find company user");
+  }
 });
 
 module.exports = router;

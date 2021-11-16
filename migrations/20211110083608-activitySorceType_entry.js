@@ -11,7 +11,7 @@ module.exports = {
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
     let data;
-    const types = await Dao.ActivitySourceType.findAll();
+    const types = await Dao.ActivitySourceType.findAll({});
 
     data = types.find((type) => type.name == "StockAdjustment");
 
