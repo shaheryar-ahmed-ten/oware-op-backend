@@ -99,7 +99,7 @@ router.put("/:relationType/:id", activityLog, async (req, res, next) => {
   customer.isActive = req.body.isActive;
   customer.logoId = req.body.logoId;
   customer.phone = req.body.phone;
-  if (req.body.pocUserId) customer.pocUserId = req.body.pocUserId;
+  customer.pocUserId = req.body.pocUserId;
   try {
     console.log(
       "req.params.relationType",
@@ -176,7 +176,7 @@ router.get("/poc-users/:company", async (req, res, next) => {
   try {
     const company = await Dao.Company.findOne({
       where: { id: req.params.company },
-      include: [{ model: User, as: "Employees", where: { isActive: 1 } }]
+      include: [{ model: User, as: "Employees", where: { isActive: 1 } }],
     });
     if (company) {
       res.sendJson(company.Employees, "company user found", true);
