@@ -174,7 +174,10 @@ router.get("/:relationType/relations", async (req, res, next) => {
 
 router.get("/poc-users/:company", async (req, res, next) => {
   try {
-    const company = await Dao.Company.findOne({ where: { id: req.params.company }, include: ["Employees"] });
+    const company = await Dao.Company.findOne({
+      where: { id: req.params.company },
+      include: [{ model: User, as: "Employees", where: { isActive: 1 } }]
+    });
     if (company) {
       res.sendJson(company.Employees, "company user found", true);
     } else {
