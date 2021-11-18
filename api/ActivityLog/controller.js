@@ -47,7 +47,6 @@ async function getActivityLogs(params) {
       };
     } else return { success: httpStatus.OK, message: "Data not Found", data: [], count: response.count };
   } catch (err) {
-    console.log("ERROR:", err);
     return {
       success: httpStatus.CONFLICT,
       message: err.message,

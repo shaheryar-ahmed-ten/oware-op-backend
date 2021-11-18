@@ -47,7 +47,7 @@ module.exports = {
             zoneId: zoneIdMap[area.zone],
           });
       } catch (err) {
-        console.log(err);
+        console.info(err);
       }
     }
   },

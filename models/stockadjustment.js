@@ -45,17 +45,5 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // StockAdjustment.afterCreate(async (stockadjustment, options) => {
-  //   const numberOfInternalIdForBusiness = digitize(stockadjustment.id, 6);
-  //   stockadjustment.internalIdForBusiness = stockadjustment.internalIdForBusiness + numberOfInternalIdForBusiness;
-  //   const adjustment = await stockadjustment.sequelize.models.ActivityLog.create({
-  //     userId: 12,
-  //     currentPayload: stockadjustment,
-  //     previousPayload: null,
-  //     sourceId: stockadjustment.id,
-  //     sourceType: 1,
-  //   });
-  //   console.log("adjustment", adjustment);
-  // });
   return StockAdjustment;
 };

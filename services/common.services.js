@@ -156,7 +156,6 @@ const checkOrderStatusAndUpdate = async (model, dispatchOrderId, currentOutwardQ
     order.status = orderStatus;
     await order.save({ transaction });
   } catch (err) {
-    console.log("err", err);
     throw new Error(err);
   }
 };
@@ -249,7 +248,6 @@ const addActivityLog = async (id, current, ActivityLog) => {
 
 const addActivityLog2 = async (req, models) => {
   const modelUrl = req.originalUrl.split("/");
-  console.log("modelUrl", modelUrl);
   let myModel = getModel(modelUrl[3]);
   if (modelUrl[4] == "VENDOR") myModel = "Vendor";
   const sourceTypeId = (await models.ActivitySourceType.findOne({ where: { name: myModel } })).id;
@@ -282,7 +280,6 @@ const addActivityLog2 = async (req, models) => {
             attributes: ["businessWarehouseCode"],
           })
         ).businessWarehouseCode;
-        console.log("current", current);
       }
       current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
       if (modelUrl[3] === "dispatch-order" && modelUrl[4] === "bulk") {
@@ -359,7 +356,7 @@ const sendWhatsappAlert = async (receivingNum, text) => {
       from: "whatsapp:+14155238886",
       to: `whatsapp:${receivingNum}`,
     })
-    .then((message) => console.log(message.sid))
+    .then((message) => console.info(message.sid))
     .done();
 };
 

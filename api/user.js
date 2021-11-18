@@ -34,7 +34,6 @@ async function updateUser(req, res, next) {
       data: response,
     });
   } catch (err) {
-    console.log("err", err);
     return res.json({
       success: false,
       message: err.message,

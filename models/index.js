@@ -13,7 +13,6 @@ let sequelize = new Sequelize(config.database, config.username, config.password,
   define: {
     // hooks: {
     //   beforeCreate: async (instance, options) => {
-    //     console.log("instance", instance);
     //     await instance.sequelize.models.ActivityLog.create({
     //       userId: instance.userId,
     //       currentPayload: instance,

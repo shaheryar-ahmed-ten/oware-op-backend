@@ -131,7 +131,7 @@ router.get("/", async (req, res, next) => {
     limit,
     offset,
     distinct: true,
-    logging: true
+    logging: true,
     // subQuery: false
   });
   var acc = [];
@@ -280,7 +280,7 @@ router.get("/export", async (req, res, next) => {
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
 
   await workbook.xlsx.write(res).then(() => res.end());
-})
+});
 
 /* POST create new productOutward. */
 router.post("/", activityLog, async (req, res, next) => {
@@ -388,7 +388,6 @@ router.post("/", activityLog, async (req, res, next) => {
     //   message: 'Cannot dispatch above available inventory quantity'
     // })
   } catch (err) {
-    console.log("err", err);
     res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),

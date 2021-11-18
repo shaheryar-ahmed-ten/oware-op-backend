@@ -135,7 +135,6 @@ router.get("/export", async (req, res, next) => {
 
   let workbook = new ExcelJS.Workbook();
 
-
   worksheet = workbook.addWorksheet("Dispatch Orders");
 
   const getColumnsConfig = (columns) =>
@@ -154,7 +153,7 @@ router.get("/export", async (req, res, next) => {
     "CREATOR",
     "CREATED DATE",
     "STATUS",
-    "ORDER MEMO"
+    "ORDER MEMO",
   ]);
 
   if (req.query.days) {
@@ -213,12 +212,12 @@ router.get("/export", async (req, res, next) => {
         order.status == "0"
           ? "PENDING"
           : order.status == "1"
-            ? "PARTIALLY FULFILLED"
-            : order.status == "2"
-              ? "FULFILLED"
-              : order.status == "3"
-                ? "CANCELLED"
-                : "",
+          ? "PARTIALLY FULFILLED"
+          : order.status == "2"
+          ? "FULFILLED"
+          : order.status == "3"
+          ? "CANCELLED"
+          : "",
         order.orderMemo || "",
       ]);
     }
@@ -230,7 +229,7 @@ router.get("/export", async (req, res, next) => {
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
 
   await workbook.xlsx.write(res).then(() => res.end());
-})
+});
 
 /* POST create new dispatchOrder. */
 router.post("/", activityLog, async (req, res, next) => {
@@ -323,7 +322,6 @@ router.post("/bulk", async (req, res, next) => {
         let row = 1;
         let previousOrderNumber = 1;
         let count = 1;
-        console.log("req.body", req.body);
         for (const order of req.body.orders) {
           ++row;
           if (!INTEGER_REGEX.test(order.quantity)) {
@@ -426,7 +424,6 @@ router.post("/bulk", async (req, res, next) => {
       return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to add outward");
     }
   } catch (err) {
-    console.log("err", err);
     res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
   }
 });
@@ -522,7 +519,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
       data: response,
     });
   } catch (err) {
-    console.log("err:", err);
     return res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),
@@ -653,7 +649,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE ZERO",
         quantity: 35,
-        orderMemo: "Lorem ipsum(Optional)"
+        orderMemo: "Lorem ipsum(Optional)",
       },
       {
         orderNo: 1,
@@ -665,7 +661,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE",
         quantity: 150,
-        orderMemo: "Lorem ipsum odor(Optional)"
+        orderMemo: "Lorem ipsum odor(Optional)",
       },
       {
         orderNo: 2,
@@ -677,7 +673,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-0031",
         productName: "7up",
         quantity: 90,
-        orderMemo: "Lorem ipsum order ipsum(Optional)"
+        orderMemo: "Lorem ipsum order ipsum(Optional)",
       },
     ].map((el, idx) => [
       el.orderNo,
@@ -689,7 +685,7 @@ router.get("/bulk-template", async (req, res, next) => {
       el.referenceId,
       el.productName,
       el.quantity,
-      el.orderMemo
+      el.orderMemo,
     ])
   );
 
@@ -868,7 +864,6 @@ router.get("/:id", async (req, res, next) => {
 
     res.json({ success: true, message: "Data Found", data: DO });
   } catch (err) {
-    console.log("err", err);
     res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),

@@ -101,14 +101,6 @@ router.put("/:relationType/:id", activityLog, async (req, res, next) => {
   customer.phone = req.body.phone;
   customer.pocUserId = req.body.pocUserId;
   try {
-    console.log(
-      "req.params.relationType",
-      req.params.relationType,
-      "req.body.isActive",
-      req.body.isActive,
-      "req.body.pocUserId",
-      req.body.pocUserId
-    );
     if (req.params.relationType === "CUSTOMER" && req.body.isActive === true && !req.body.pocUserId) {
       throw new Error("Please add a POC user");
     }
@@ -120,7 +112,6 @@ router.put("/:relationType/:id", activityLog, async (req, res, next) => {
       data: response,
     });
   } catch (err) {
-    console.log("err", err.message);
     return res.json({
       success: false,
       message: err.message,
