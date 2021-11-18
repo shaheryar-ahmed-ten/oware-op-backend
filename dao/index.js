@@ -20,4 +20,5 @@ module.exports = {
   OutwardGroup: require("./OutwardGroup"),
   Vehicle: require("./Vehicle"),
   Ride: require("./Ride"),
+  ActivitySourceType: require("./ActivitySourceType"),
 };

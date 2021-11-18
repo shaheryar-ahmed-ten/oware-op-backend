@@ -27,6 +27,9 @@ const Dao = require("../dao");
 const { DISPATCH_ORDER } = require("../enums");
 const Joi = require("joi");
 const httpStatus = require("http-status");
+const ExcelJS = require("exceljs");
+const authService = require("../services/auth.service");
+const moment = require("moment-timezone");
 
 const BulkAddValidation = Joi.object({
   dispatchOrderId: Joi.required(),
@@ -49,6 +52,7 @@ router.get("/", async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
+
   if (req.query.search)
     where[Op.or] = [
       "internalIdForBusiness",
@@ -59,6 +63,27 @@ router.get("/", async (req, res, next) => {
     ].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 1000,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
   const response = await ProductOutward.findAndCountAll({
     duplicating: false,
     include: [
@@ -106,6 +131,7 @@ router.get("/", async (req, res, next) => {
     limit,
     offset,
     distinct: true,
+    logging: true,
     // subQuery: false
   });
   var acc = [];
@@ -147,6 +173,113 @@ router.get("/", async (req, res, next) => {
     pages: Math.ceil(response.count / limit),
     count: response.count,
   });
+});
+
+router.get("/export", async (req, res, next) => {
+  let where = {};
+  if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
+
+  let workbook = new ExcelJS.Workbook();
+
+  worksheet = workbook.addWorksheet("Product Outwards");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig([
+    "OUTWARD ID",
+    "CUSTOMER",
+    "PRODUCT",
+    "WAREHOUSE",
+    "UOM",
+    "RECEIVER NAME",
+    "RECEIVER PHONE",
+    "REFERENCE ID",
+    "CREATOR",
+    "Requested Quantity to Dispatch",
+    "Actual Quantity Dispatched",
+    "EXPECTED SHIPMENT DATE",
+    "ACTUAL DISPATCH DATE",
+  ]);
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 1000,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
+  response = await ProductOutward.findAll({
+    include: [
+      {
+        model: DispatchOrder,
+        include: [
+          {
+            model: Inventory,
+            as: "Inventory",
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+          },
+          {
+            model: Inventory,
+            as: "Inventories",
+            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+          },
+        ],
+      },
+      { model: User },
+    ],
+    order: [["updatedAt", "DESC"]],
+    where,
+  });
+
+  const outwardArray = [];
+  for (const outward of response) {
+    for (const inv of outward.DispatchOrder.Inventories) {
+      const OG = await OrderGroup.findOne({
+        where: { inventoryId: inv.id, orderId: outward.DispatchOrder.id },
+      });
+      const OutG = await OutwardGroup.findOne({
+        where: { inventoryId: inv.id, outwardId: outward.id },
+      });
+
+      outwardArray.push([
+        outward.internalIdForBusiness || "",
+        inv.Company.name,
+        inv.Product.name,
+        inv.Warehouse.name,
+        inv.Product.UOM.name,
+        outward.DispatchOrder.receiverName,
+        outward.DispatchOrder.receiverPhone,
+        outward.referenceId || "",
+        `${outward.User.firstName || ""} ${outward.User.lastName || ""}`,
+        OG.quantity || 0,
+        OutG ? OutG.quantity || 0 : "Not available",
+        // OutG.quantity || 0,
+        moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
+        moment(outward.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+      ]);
+    }
+  }
+
+  worksheet.addRows(outwardArray);
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
 });
 
 /* POST create new productOutward. */
@@ -255,7 +388,6 @@ router.post("/", activityLog, async (req, res, next) => {
     //   message: 'Cannot dispatch above available inventory quantity'
     // })
   } catch (err) {
-    console.log("err", err);
     res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),

@@ -15,7 +15,6 @@ exports.getVehicleTypes = async (params) => {
       };
     } else return { success: false, status: httpStatus.OK, message: "Data not Found", data: [], count: response.count };
   } catch (err) {
-    console.log("ERROR:", err);
     return {
       success: false,
       status: httpStatus.CONFLICT,
@@ -38,7 +37,6 @@ exports.getCarRelations = async (params) => {
       data: records,
     };
   } catch (err) {
-    console.log("ERROR:", err);
     return {
       success: false,
       status: httpStatus.CONFLICT,
@@ -54,7 +52,6 @@ exports.getVehicleTypeById = async (params) => {
     if (response) return { success: true, status: httpStatus.OK, message: "Data Found", data: response };
     else return { status: httpStatus.OK, message: "Data not Found", data: [] };
   } catch (err) {
-    console.log("ERROR:", err);
     return {
       success: false,
       message: err.message,
@@ -72,7 +69,6 @@ exports.addVehicleType = async (params, userId) => {
     if (response) return { success: true, status: httpStatus.OK, message: "Data Found", data: response };
     else return { status: httpStatus.OK, message: "Data not Found", data: [] };
   } catch (err) {
-    console.log("ERROR:", err);
     return {
       success: false,
       message: err.message,
@@ -87,7 +83,6 @@ exports.deleteVehicleType = async (params) => {
     if (response) return { success: true, status: httpStatus.OK, message: "Record delete", data: response };
     else return { status: httpStatus.OK, message: "Data not Found", data: [] };
   } catch (err) {
-    console.log("ERROR:", err);
     return {
       success: false,
       message: err.message,
@@ -103,7 +98,6 @@ exports.updateVehicleType = async (params, id, activityLogId) => {
     if (response) return { success: true, status: httpStatus.OK, message: "Vehicle type updated", data: response };
     else return { status: httpStatus.OK, message: "Data not Found", data: [] };
   } catch (err) {
-    console.log("ERROR:", err);
     return {
       success: false,
       message: err.message,

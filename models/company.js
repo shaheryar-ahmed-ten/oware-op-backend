@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "contactId",
         as: "Contact",
       });
+      Company.belongsTo(models.User, {
+        foreignKey: "pocUserId",
+        as: "pocUser",
+      });
       Company.hasMany(models.User, {
         foreignKey: "companyId",
         as: "Employees",
@@ -55,6 +59,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: { notEmpty: { msg: "Please select a contact" } },
       },
+      pocUserId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       name: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -74,7 +82,7 @@ module.exports = (sequelize, DataTypes) => {
       notes: DataTypes.STRING,
       isActive: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true,
+        defaultValue: false,
       },
     },
     {
