@@ -14,45 +14,47 @@ const { number } = require("joi");
 router.get("/", async (req, res, next) => {
   try {
     const limit = req.query.rowsPerPage || config.rowsPerPage;
-  const offset = (req.query.page - 1 || 0) * limit;
-  let where = {
-    // userId: req.userId
-  };
-  if (req.query.search)
-    where[Op.or] = ["registrationNumber", "$Vendor.name$", "$Car.CarMake.name$", "$Car.CarModel.name$"].map((key) => ({
-      [key]: { [Op.like]: "%" + req.query.search + "%" },
-    }));
+    const offset = (req.query.page - 1 || 0) * limit;
+    let where = {
+      // userId: req.userId
+    };
+    if (req.query.search)
+      where[Op.or] = ["registrationNumber", "$Vendor.name$", "$Car.CarMake.name$", "$Car.CarModel.name$"].map(
+        (key) => ({
+          [key]: { [Op.like]: "%" + req.query.search + "%" },
+        })
+      );
     // number(req.query.carId)
     // number(req.query.companyId)
-    if(req.query.carId)
-      where[Op.and]  = [{carId:Number(req.query.carId)}]
+    if (req.query.carId) where[Op.and] = [{ carId: Number(req.query.carId) }];
 
-    if(req.query.companyId)
-      where[Op.and].push({companyId:Number(req.query.companyId)})
+    if (req.query.companyId) where[Op.and].push({ companyId: Number(req.query.companyId) });
 
-
-  const response = await Vehicle.findAndCountAll({
-    include: [
-      Driver,
-      { model: File, as: "RoutePermit" },
-      { model: File, as: "RunningPaper" },
-      { model: Car, include: [CarMake, CarModel] },
-      { model: Company, as: "Vendor" },
-    ],
-    order: [["updatedAt", "DESC"]],
-    where,
-    limit,
-    offset,
-  });
-  res.json({
-    success: true,
-    message: "respond with a resource",
-    data: response.rows,
-    pages: Math.ceil(response.count / limit),
-    where: where
-  });
+    const response = await Vehicle.findAndCountAll({
+      include: [
+        Driver,
+        { model: File, as: "RoutePermit" },
+        { model: File, as: "RunningPaper" },
+        { model: Car, include: [CarMake, CarModel] },
+        { model: Company, as: "Vendor" },
+      ],
+      order: [["updatedAt", "DESC"]],
+      where,
+      limit,
+      offset,
+    });
+    res.json({
+      success: true,
+      message: "respond with a resource",
+      data: response.rows,
+      pages: Math.ceil(response.count / limit),
+      where: where,
+    });
   } catch (error) {
-    console.log("APi Error", error);
+    return res.json({
+      success: false,
+      message: err.errors.pop().message,
+    });
   }
 });
 

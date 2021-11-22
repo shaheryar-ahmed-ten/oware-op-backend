@@ -38,7 +38,7 @@ router.get("/", async (req, res, next) => {
       // "pickupAddress",
       // "dropoffAddress",
       // "$Vehicle.Car.CarModel.name$",
-      // "$Vehicle.registrationNumber$",
+      "$Vehicle.registrationNumber$",
       "id",
       "$Customer.name$",
       "$Driver.Vendor.name$",
@@ -224,7 +224,6 @@ router.post("/", activityLog, async (req, res, next) => {
     ride.internalIdForBusiness = digitize(ride.id, 6);
     ride.save();
   } catch (err) {
-    console.log("err", err);
     return res.json({
       success: false,
       message: err.message,
@@ -255,6 +254,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
       message: "No ride found!",
     });
   ride.vehicleId = req.body.vehicleId;
+  ride.customerId = req.body.customerId;
   ride.driverId = req.body.driverId;
   ride.pickupDate = req.body.pickupDate;
   ride.dropoffDate = req.body.dropoffDate;
@@ -299,15 +299,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
 
   try {
     const response = await ride.save();
-    // console.log("ride.status", ride.status);
-    // if (ride.status == RIDE_STATUS.COMPLETED && initialRideStatus !== RIDE_STATUS.COMPLETED) {
-    //   if (ride.Customer.phone) {
-    //     sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).COMPLETED);
-    //   }
-    // } else if (ride.status == RIDE_STATUS.ASSIGNED && initialRideStatus !== RIDE_STATUS.ASSIGNED) {
-    //   console.log("sending whatsapp alert on ride Assigned");
-    //   sendWhatsappAlert(ride.Customer.phone.replace(/0/, "+92"), RIDE_WHATSAPP_ALERT(ride).ASSIGNED);
-    // }
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
@@ -315,7 +306,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
       data: response,
     });
   } catch (err) {
-    console.log("err", err);
     return res.json({
       success: false,
       message: err.message,
@@ -495,6 +485,8 @@ router.get("/export", async (req, res, next) => {
     "DROPOFF CITY",
     "DROPOFF ADDRESS",
     "DROPOFF DATE",
+    "CREATED DATE",
+    "UPDATED DATE",
     "POC NAME",
     "POC NUMBER",
     "ETA(MINUTES)",
@@ -523,6 +515,8 @@ router.get("/export", async (req, res, next) => {
       row.dropoffCity.name,
       row.dropoffAddress,
       moment(row.dropoffDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
+      moment(row.createdAt).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
+      moment(row.updatedAt).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
       row.pocName,
       row.pocNumber,
       row.eta !== null && row.eta !== 0 ? row.eta / 60 : 0,

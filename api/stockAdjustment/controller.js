@@ -16,7 +16,6 @@ async function getWastages(params) {
       };
     else return { success: httpStatus.OK, message: "Data not Found", data: [], count: response.count };
   } catch (err) {
-    console.log("ERROR:", err);
     return {
       success: httpStatus.CONFLICT,
       message: err.message,
@@ -57,7 +56,6 @@ async function addWastages(params, adminId) {
     // });
     return { success: httpStatus.OK, message: "Stock Adjustment added", data: adjustment };
   } catch (err) {
-    console.log("ERROR:", err);
     return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to add Wastages" };
   }
 }
@@ -68,7 +66,6 @@ async function getWastageById(params) {
     if (response) return { status: httpStatus.OK, message: "Data Found", data: response };
     else return { status: httpStatus.OK, message: "Data not Found", data: [] };
   } catch (err) {
-    console.log("ERROR:", err);
     return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to get data" };
   }
 }
@@ -108,7 +105,6 @@ async function updateWastage(params, req_body, activityLogId) {
       return { status: httpStatus.OK, message: "Data Updated", data: stockAdjustment };
     } else return { status: httpStatus.OK, message: "Data not Found", data: null };
   } catch (err) {
-    console.log("err", err);
     return { status: httpStatus.CONFLICT, message: err.message, code: "Failed to update data" };
   }
 }
@@ -123,7 +119,6 @@ async function deleteWastage(id) {
       return { success: httpStatus.OK, message: "Adjustment doesn't exist", data: null };
     }
   } catch (err) {
-    console.log("ERROR:", err);
     return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to delete" };
   }
 }
@@ -136,7 +131,6 @@ async function getRelations(params) {
     const records = { company, warehouse, product };
     return { success: httpStatus.OK, message: "data found", data: records };
   } catch (err) {
-    console.log("err", err);
     return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to found data" };
   }
 }
@@ -146,7 +140,6 @@ async function getWastagesType(params) {
     const WastagesType = await Dao.WastagesType.findAll(params);
     return { success: httpStatus.OK, message: "wastages type found", data: WastagesType };
   } catch (err) {
-    console.log("err", err);
     return { success: httpStatus.CONFLICT, message: err.message, code: "Failed to found data" };
   }
 }

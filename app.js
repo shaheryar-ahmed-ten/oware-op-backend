@@ -36,16 +36,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-// app.use((req, res, next) => {
-//   console.log("req.body", req.body);
-//   res.on("finish", () => {
-//     console.log("res.body", res.body);
-//     console.log("res.data", res.data);
-//     console.log("__morgan_body_response:", JSON.stringify(res.__morgan_body_response).data);
-//   });
-//   next();
-// });
-
 app.use("/api/v1/", apiRouter);
 
 // Serve static files for frontend

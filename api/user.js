@@ -22,7 +22,7 @@ async function updateUser(req, res, next) {
   if (req.body.hasOwnProperty("lastName")) user.lastName = req.body.lastName;
   if (req.body.hasOwnProperty("roleId")) user.roleId = Number(req.body.roleId);
   if (req.body.hasOwnProperty("phone")) user.phone = req.body.phone;
-  if (req.body.hasOwnProperty("companyId") && req.body.companyId.length) user.companyId = Number(req.body.companyId);
+  if (req.body.hasOwnProperty("companyId")) user.companyId = Number(req.body.companyId);
   if (req.body.hasOwnProperty("password") && req.body.password.length > 0) user.password = req.body.password;
   if (req.body.hasOwnProperty("isActive")) user.isActive = req.body.isActive;
   try {
@@ -34,7 +34,6 @@ async function updateUser(req, res, next) {
       data: response,
     });
   } catch (err) {
-    console.log("err", err);
     return res.json({
       success: false,
       message: err.message,

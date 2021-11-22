@@ -40,6 +40,7 @@ const BulkAddValidation = Joi.object({
       shipmentDate: Joi.required(),
       referenceId: Joi.required(),
       quantity: Joi.required(),
+      orderMemo: Joi.optional(),
     })
   ),
 });
@@ -51,11 +52,38 @@ router.get("/", async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
+
   if (req.query.search)
     where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
+
   if (req.query.status) where = { status: req.query.status };
+  if (req.query.warehouse)
+    where[Op.or] = ["$Inventory.Warehouse.id$"].map((key) => ({
+      [key]: { [Op.eq]: req.query.warehouse },
+    }));
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 1000,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
   const response = await DispatchOrder.findAndCountAll({
     include: [
       {
@@ -99,6 +127,108 @@ router.get("/", async (req, res, next) => {
     data: response.rows,
     pages: Math.ceil(response.count / limit),
   });
+});
+
+router.get("/export", async (req, res, next) => {
+  let where = {};
+  if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
+
+  let workbook = new ExcelJS.Workbook();
+
+  worksheet = workbook.addWorksheet("Dispatch Orders");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  worksheet.columns = getColumnsConfig([
+    "DISPATCH ORDER ID",
+    "CUSTOMER",
+    "PRODUCT",
+    "WAREHOUSE",
+    "UOM",
+    "RECEIVER NAME",
+    "RECEIVER PHONE",
+    "REQUESTED QUANTITY",
+    "REFERENCE ID",
+    "CREATOR",
+    "CREATED DATE",
+    "STATUS",
+    "ORDER MEMO",
+  ]);
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 1000,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
+  response = await DispatchOrder.findAll({
+    include: [
+      {
+        model: Inventory,
+        as: "Inventory",
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+      },
+      {
+        model: Inventory,
+        as: "Inventories",
+        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+      },
+      { model: User },
+    ],
+    order: [["updatedAt", "DESC"]],
+    where,
+  });
+
+  const orderArray = [];
+  for (const order of response) {
+    for (const inv of order.Inventories) {
+      orderArray.push([
+        order.internalIdForBusiness || "",
+        order.Inventory.Company.name,
+        inv.Product.name,
+        order.Inventory.Warehouse.name,
+        inv.Product.UOM.name,
+        order.receiverName,
+        order.receiverPhone,
+        inv.OrderGroup.quantity,
+        order.referenceId || "",
+        `${order.User.firstName || ""} ${order.User.lastName || ""}`,
+        moment(order.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+        order.status == "0"
+          ? "PENDING"
+          : order.status == "1"
+          ? "PARTIALLY FULFILLED"
+          : order.status == "2"
+          ? "FULFILLED"
+          : order.status == "3"
+          ? "CANCELLED"
+          : "",
+        order.orderMemo || "",
+      ]);
+    }
+  }
+
+  worksheet.addRows(orderArray);
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
 });
 
 /* POST create new dispatchOrder. */
@@ -192,7 +322,6 @@ router.post("/bulk", async (req, res, next) => {
         let row = 1;
         let previousOrderNumber = 1;
         let count = 1;
-        console.log("req.body", req.body);
         for (const order of req.body.orders) {
           ++row;
           if (!INTEGER_REGEX.test(order.quantity)) {
@@ -295,7 +424,6 @@ router.post("/bulk", async (req, res, next) => {
       return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to add outward");
     }
   } catch (err) {
-    console.log("err", err);
     res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
   }
 });
@@ -379,6 +507,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
   if (req.body.hasOwnProperty("receiverName")) dispatchOrder.receiverName = req.body.receiverName;
   if (req.body.hasOwnProperty("receiverPhone")) dispatchOrder.receiverPhone = req.body.receiverPhone;
   if (req.body.hasOwnProperty("referenceId")) dispatchOrder.referenceId = req.body.referenceId;
+  dispatchOrder.orderMemo = req.body.orderMemo;
   try {
     if (req.body.hasOwnProperty("products"))
       await updateDispatchOrderInventories(dispatchOrder, req.body.products, req.userId);
@@ -390,7 +519,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
       data: response,
     });
   } catch (err) {
-    console.log("err:", err);
     return res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),
@@ -506,6 +634,7 @@ router.get("/bulk-template", async (req, res, next) => {
     "Reference ID",
     "Product Name",
     "Quantity",
+    "Order Memo",
   ]);
 
   worksheet.addRows(
@@ -520,6 +649,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE ZERO",
         quantity: 35,
+        orderMemo: "Lorem ipsum(Optional)",
       },
       {
         orderNo: 1,
@@ -531,6 +661,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-2031",
         productName: "COKE",
         quantity: 150,
+        orderMemo: "Lorem ipsum odor(Optional)",
       },
       {
         orderNo: 2,
@@ -542,6 +673,7 @@ router.get("/bulk-template", async (req, res, next) => {
         referenceId: "ref-0031",
         productName: "7up",
         quantity: 90,
+        orderMemo: "Lorem ipsum order ipsum(Optional)",
       },
     ].map((el, idx) => [
       el.orderNo,
@@ -553,6 +685,7 @@ router.get("/bulk-template", async (req, res, next) => {
       el.referenceId,
       el.productName,
       el.quantity,
+      el.orderMemo,
     ])
   );
 
@@ -731,7 +864,6 @@ router.get("/:id", async (req, res, next) => {
 
     res.json({ success: true, message: "Data Found", data: DO });
   } catch (err) {
-    console.log("err", err);
     res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),
