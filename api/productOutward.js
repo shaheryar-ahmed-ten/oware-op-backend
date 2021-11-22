@@ -229,18 +229,19 @@ router.get("/export", async (req, res, next) => {
         include: [
           {
             model: Inventory,
-            as: "Inventory",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
-          },
-          {
-            model: Inventory,
             as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+            include: [
+              { model: Product, include: [{ model: UOM, attributes: ["name"] }], attributes: ["name"] },
+              { model: Company, attributes: ["name"] },
+              { model: Warehouse, attributes: ["name"] },
+            ],
           },
         ],
+        attributes: ["receiverName", "receiverPhone", "shipmentDate"],
       },
-      { model: User },
+      { model: User, attributes: ["firstName", "lastName"] },
     ],
+    attributes: ["id", "internalIdForBusiness", "referenceId", "createdAt"],
     order: [["updatedAt", "DESC"]],
     where,
   });
@@ -248,9 +249,6 @@ router.get("/export", async (req, res, next) => {
   const outwardArray = [];
   for (const outward of response) {
     for (const inv of outward.DispatchOrder.Inventories) {
-      const OG = await OrderGroup.findOne({
-        where: { inventoryId: inv.id, orderId: outward.DispatchOrder.id },
-      });
       const OutG = await OutwardGroup.findOne({
         where: { inventoryId: inv.id, outwardId: outward.id },
       });
@@ -265,7 +263,7 @@ router.get("/export", async (req, res, next) => {
         outward.DispatchOrder.receiverPhone,
         outward.referenceId || "",
         `${outward.User.firstName || ""} ${outward.User.lastName || ""}`,
-        OG.quantity || 0,
+        inv.OrderGroup.quantity || 0,
         OutG ? OutG.quantity || 0 : "Not available",
         // OutG.quantity || 0,
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
