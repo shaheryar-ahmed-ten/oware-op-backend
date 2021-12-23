@@ -247,31 +247,18 @@ router.get("/export", async (req, res, next) => {
             as: "Inventories",
             include: [
               { model: Product, include: [{ model: UOM, attributes: ["name"] }], attributes: ["name"] },
-<<<<<<< HEAD
-              { model: Company, attributes: ["name"],required:true },
-              { model: Warehouse, attributes: ["name"],required:true },
+              { model: Company, attributes: ["name"], required: true },
+              { model: Warehouse, attributes: ["name"], required: true },
             ],
-            required:true,
+            required: true,
           },
         ],
         attributes: ["receiverName", "receiverPhone", "shipmentDate"],
-        required:true
+        required: true,
       },
       { model: User, attributes: ["firstName", "lastName"] },
     ],
-    attributes: ["id", "internalIdForBusiness", "referenceId", "createdAt","externalVehicle"],
-=======
-              { model: Company, attributes: ["name"] },
-              { model: Warehouse, attributes: ["name"] },
-            ],
-          },
-        ],
-        attributes: ["receiverName", "receiverPhone", "shipmentDate"],
-      },
-      { model: User, attributes: ["firstName", "lastName"] },
-    ],
-    attributes: ["id", "internalIdForBusiness", "referenceId", "createdAt"],
->>>>>>> b2233be4e6ccbb052c0ef939fe16a962ba6553c3
+    attributes: ["id", "internalIdForBusiness", "referenceId", "createdAt", "externalVehicle"],
     order: [["updatedAt", "DESC"]],
     where,
   });
@@ -298,7 +285,7 @@ router.get("/export", async (req, res, next) => {
         // OutG.quantity || 0,
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
         moment(outward.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
-        outward.externalVehicle ? "Customer Provided":"Oware Provided",
+        outward.externalVehicle ? "Customer Provided" : "Oware Provided",
       ]);
     }
   }
@@ -506,7 +493,15 @@ router.get("/relations", async (req, res, next) => {
       },
     ],
     where: { status: { [Op.notIn]: [DISPATCH_ORDER.STATUS.FULFILLED, DISPATCH_ORDER.STATUS.CANCELLED] } },
-    attributes: ["id", "internalIdForBusiness", "referenceId", "shipmentDate", "receiverName", "receiverPhone", "createdAt"],
+    attributes: [
+      "id",
+      "internalIdForBusiness",
+      "referenceId",
+      "shipmentDate",
+      "receiverName",
+      "receiverPhone",
+      "createdAt",
+    ],
     order: [["updatedAt", "DESC"]],
   });
 
