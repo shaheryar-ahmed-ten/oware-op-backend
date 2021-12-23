@@ -14,6 +14,7 @@ module.exports = {
   UOM: require("./UOM"),
   Brand: require("./Brand"),
   Category: require("./Category"),
+  ProductInward: require("./ProductInward"),
   DispatchOrder: require("./DispatchOrder"),
   ProductOutward: require("./ProductOutward"),
   OrderGroup: require("./OrderGroup"),
@@ -21,4 +22,8 @@ module.exports = {
   Vehicle: require("./Vehicle"),
   Ride: require("./Ride"),
   ActivitySourceType: require("./ActivitySourceType"),
+  RideCancellationReason: require("./RideCancellationReason"),
+  RideProduct: require("./RideProduct"),
+  RideDropoff: require("./RideDropoff"),
+  DropoffProducts: require("./DropoffProducts.js"),
 };

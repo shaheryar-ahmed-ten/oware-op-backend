@@ -34,7 +34,9 @@ const moment = require("moment-timezone");
 const BulkAddValidation = Joi.object({
   dispatchOrderId: Joi.required(),
   referenceId: Joi.required(),
-  vehicleId: Joi.required(),
+  vehicleId: Joi.optional(),
+  externalVehicle: Joi.optional(),
+  // isInternal: Joi.optional(),
   inventories: Joi.array().items(
     Joi.object({
       quantity: Joi.number().integer().min(1).required(),
@@ -131,9 +133,10 @@ router.get("/", async (req, res, next) => {
     limit,
     offset,
     distinct: true,
-    logging: true,
+    // logging: true,
     // subQuery: false
   });
+
   var acc = [];
   response.rows.forEach((productOutward) => {
     var sum = [];
@@ -200,7 +203,19 @@ router.get("/export", async (req, res, next) => {
     "Actual Quantity Dispatched",
     "EXPECTED SHIPMENT DATE",
     "ACTUAL DISPATCH DATE",
+    "TRANSPORTATION TYPE",
   ]);
+
+  if (req.query.search)
+    where[Op.or] = [
+      "internalIdForBusiness",
+      "$DispatchOrder.Inventories.Company.name$",
+      "$DispatchOrder.Inventories.Warehouse.name$",
+      "$DispatchOrder.internalIdForBusiness$",
+      // "$Inventories->Product.name$"
+    ].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
+    }));
 
   if (req.query.days) {
     const currentDate = moment();
@@ -232,6 +247,20 @@ router.get("/export", async (req, res, next) => {
             as: "Inventories",
             include: [
               { model: Product, include: [{ model: UOM, attributes: ["name"] }], attributes: ["name"] },
+<<<<<<< HEAD
+              { model: Company, attributes: ["name"],required:true },
+              { model: Warehouse, attributes: ["name"],required:true },
+            ],
+            required:true,
+          },
+        ],
+        attributes: ["receiverName", "receiverPhone", "shipmentDate"],
+        required:true
+      },
+      { model: User, attributes: ["firstName", "lastName"] },
+    ],
+    attributes: ["id", "internalIdForBusiness", "referenceId", "createdAt","externalVehicle"],
+=======
               { model: Company, attributes: ["name"] },
               { model: Warehouse, attributes: ["name"] },
             ],
@@ -242,6 +271,7 @@ router.get("/export", async (req, res, next) => {
       { model: User, attributes: ["firstName", "lastName"] },
     ],
     attributes: ["id", "internalIdForBusiness", "referenceId", "createdAt"],
+>>>>>>> b2233be4e6ccbb052c0ef939fe16a962ba6553c3
     order: [["updatedAt", "DESC"]],
     where,
   });
@@ -268,6 +298,7 @@ router.get("/export", async (req, res, next) => {
         // OutG.quantity || 0,
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
         moment(outward.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+        outward.externalVehicle ? "Customer Provided":"Oware Provided",
       ]);
     }
   }
@@ -475,7 +506,7 @@ router.get("/relations", async (req, res, next) => {
       },
     ],
     where: { status: { [Op.notIn]: [DISPATCH_ORDER.STATUS.FULFILLED, DISPATCH_ORDER.STATUS.CANCELLED] } },
-    attributes: ["id", "internalIdForBusiness", "referenceId", "shipmentDate", "receiverName", "receiverPhone"],
+    attributes: ["id", "internalIdForBusiness", "referenceId", "shipmentDate", "receiverName", "receiverPhone", "createdAt"],
     order: [["updatedAt", "DESC"]],
   });
 

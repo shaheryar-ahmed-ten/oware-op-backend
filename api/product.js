@@ -10,6 +10,8 @@ const { BULK_PRODUCT_LIMIT, SPECIAL_CHARACTERS } = require("../enums");
 const { addActivityLog } = require("../services/common.services");
 const ActivityLog = require("../dao/ActivityLog");
 const ExcelJS = require("exceljs");
+const moment = require("moment-timezone");
+const { digitize } = require("../services/common.services");
 
 /* GET products listing. */
 router.get("/", async (req, res, next) => {
@@ -18,6 +20,20 @@ router.get("/", async (req, res, next) => {
   let where = {
     // userId: req.userId
   };
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
   if (req.query.search) where[Op.or] = ["name"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
   const response = await Product.findAndCountAll({
     include: [{ model: User }, { model: UOM }, { model: Category }, { model: Brand }],
@@ -267,6 +283,69 @@ router.get("/relations", async (req, res, next) => {
     uoms,
     categories,
   });
+});
+
+router.get("/export", activityLog, async (req, res, next) => {
+  
+  let workbook = new ExcelJS.Workbook();
+
+  worksheet = workbook.addWorksheet("Products");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+    worksheet.columns = getColumnsConfig([
+      "PRODUCT ID",
+      "NAME",
+      "DESCRIPTION",
+      "DIMENSIONS CBM",
+      "WEIGHT",
+      "CATEGORY",
+      "UOM",
+      "STATUS",
+    ]);
+
+  where = {};
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate);
+    const endDate = moment(req.query.endingDate).set({
+      hour: 23,
+      minute: 53,
+      second: 59,
+      millisecond: 0,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+  if (req.query.search) where[Op.or] = ["name"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+
+  response = await Product.findAll({
+    include: [{ model: UOM }, { model: Category }, { model: Brand }],
+    order: [["updatedAt", "DESC"]],
+    where,
+  });
+
+  worksheet.addRows(
+    response.map((row) => [
+      digitize(row.id || 0, 6),
+      row.name,
+      row.description,
+      row.dimensionsCBM,
+      row.weight,
+      row.Category.name,
+      row.UOM.name,
+      row.isActive ? "Active" : "In-Active",
+    ])
+  );
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
 });
 
 module.exports = router;

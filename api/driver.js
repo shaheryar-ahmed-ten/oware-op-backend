@@ -16,6 +16,8 @@ router.get("/", async (req, res, next) => {
   };
   if (req.query.search)
     where[Op.or] = ["name", "$Vendor.name$"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+  // console.log("driver companyId",req.query.companyId)
+  if (req.query.companyId) where[Op.and] = [{ companyId: Number(req.query.companyId) }];
   const response = await Driver.findAndCountAll({
     include: [
       {

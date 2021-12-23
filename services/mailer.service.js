@@ -9,7 +9,7 @@ const Mailclient = nodemailer.createTransport({
   authentication: "OAuth",
   auth: {
     user: process.env.MAILER_EMAIL,
-    pass: process.env.MAILER_PASSWORD,
+    pass: `${process.env.MAILER_PASSWORD}`,
   },
 });
 
@@ -23,13 +23,18 @@ async function sendMail(payload) {
   };
   let response = null;
   try {
-    response = await Mailclient.sendMail(mailOptions, (error, info) => {
-      if (error) console.info(error.message);
-    });
+    response = await Mailclient.sendMail(mailOptions);
+    return {
+      success: true,
+      data: response
+    }
   } catch (err) {
-    console.info(err);
+    console.log(err)
+    return {
+      success: false,
+      data: err.message
+    }
   }
-  return response;
 }
 
 function sendCustomerInquiryEmail(customerInquiry) {
@@ -57,4 +62,31 @@ function sendGeneralEmailToCompanies(customerEmails, data, subject, senderName) 
   });
 }
 
-module.exports = { sendCustomerInquiryEmail, sendGeneralEmailToCompanies };
+async function sendDailyScheduledEmail(recipientEmails, data, subject, senderName) {
+  let generalTemplate = fs.readFileSync("templates/daily-email.html", { encoding: "utf-8" });
+  let html = ejs.render(generalTemplate, data);
+  return sendMail({
+    to: recipientEmails,
+    from: process.env.MAILER_EMAIL,
+    senderName,
+    subject,
+    html,
+    // text: `${data}`
+  });
+}
+
+async function sendCurrentScheduledEmail(recipientEmails, data, subject, senderName) {
+  let generalTemplate = fs.readFileSync("templates/current-email.html", { encoding: "utf-8" });
+  let html = ejs.render(generalTemplate, data);
+  return sendMail({
+    to: recipientEmails,
+    from: process.env.MAILER_EMAIL,
+    senderName,
+    subject,
+    html,
+    // text: `${data}`
+  });
+}
+
+
+module.exports = { sendCustomerInquiryEmail, sendGeneralEmailToCompanies, sendDailyScheduledEmail, sendCurrentScheduledEmail };

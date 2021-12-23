@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily-Digest-Email</title>
+
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: flex;align-items: center;justify-content: space-between;">
+        <h1>Daily Email Summary Internal</h1>
+        <!-- <h4>Date : <input type="text" id="currentDate" disabled></h4> -->
+    </div>
+
+    <table>
+        <tr>
+            <th>Total Inwards</th>
+            <th>Total Orders</th>
+            <th>Total Outwards</th>
+            <th>Total Rides (Completed)</th>
+        </tr>
+        <tr>
+            <td>
+                <%=productInwardsCount%>
+            </td>
+            <td>
+                <%=dispatchOrdersCount%>
+            </td>
+            <td>
+                <%=productOutwardsCount%>
+            </td>
+            <td>
+                <%=ridesCompletedCount%>
+            </td>
+        </tr>
+    </table>
+
+    <h2>Dispatch Order Statuses</h2>
+    <table>
+        <tr>
+            <th>Total Fullfilled</th>
+            <th>Total Partially Fullfilled</th>
+            <th>Total Pending</th>
+            <th>Total Cancelled</th>
+        </tr>
+        <tr>
+            <td>
+                <%=dispatchOrdersFullfilledCount%>
+            </td>
+            <td>
+                <%=dispatchOrdersPartiallyFullfilledCount%>
+            </td>
+            <td>
+                <%=dispatchOrdersPendingCount%>
+            </td>
+            <td>
+                <%=dispatchOrdersCancelledCount%>
+            </td>
+        </tr>
+    </table>
+
+    <h2>Trip Statuses</h2>
+    <table>
+        <tr>
+            <th>Total Not Assigned</th>
+            <th>Total Scheduled</th>
+            <th>Total On The Way</th>
+            <th>Total Arrived</th>
+            <th>Total Loading In Progress</th>
+            <th>Total Load In Transit</th>
+            <th>Total Waiting For Offloading</th>
+            <th>Total Offloading In Progress</th>
+            <th>Total Load Delivered</th>
+            <th>Total Cancelled</th>
+        </tr>
+        <tr>
+            <td>
+                <%=ridesUnassignedCount%>
+            </td>
+            <td>
+                <%=ridesScheduledCount%>
+            </td>
+            <td>
+                <%=ridesOnTheWayCount%>
+            </td>
+            <td>
+                <%=ridesArrivedCount%>
+            </td>
+            <td>
+                <%=ridesLoadingInProgressCount%>
+            </td>
+            <td>
+                <%=ridesLoadingInTransitCount%>
+            </td>
+            <td>
+                <%=reached%>
+            </td>
+            <td>
+                <%=ridesOffloadingInProgressCount%>
+            </td>
+            <td>
+                <%=ridesLoadDeliveredCount%>
+            </td>
+            <td>
+                <%=ridesLoadCancelledCount%>
+            </td>
+        </tr>
+    </table>
+
+
+    <script>
+        var today = new Date();
+        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        document.getElementById("currentDate").value = date;
+    </script>
+
+</body>
+
+</html>

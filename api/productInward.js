@@ -80,7 +80,7 @@ router.get("/", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
     where,
     limit,
-    logging: true,
+    // logging: true,
     offset,
   });
   res.json({
@@ -113,6 +113,11 @@ router.get("/export", async (req, res, next) => {
     "CREATOR",
     "INWARD DATE",
   ]);
+
+  if (req.query.search)
+    where[Op.or] = ["internalIdForBusiness", "$Company.name$", "$Warehouse.name$"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
+    }));
 
   if (req.query.days) {
     const currentDate = moment();

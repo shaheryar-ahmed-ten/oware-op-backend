@@ -12,10 +12,14 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Warehouse.belongsTo(models.User, {
-        foreignKey: "userId"
+        foreignKey: "userId",
+      });
+      Warehouse.belongsTo(models.User, {
+        foreignKey: "managerId",
+        as: "Manager",
       });
       Warehouse.hasMany(models.Inventory, {
-        foreignKey: "warehouseId"
+        foreignKey: "warehouseId",
       });
     }
   }
@@ -24,30 +28,38 @@ module.exports = (sequelize, DataTypes) => {
       userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        validate: { notEmpty: true }
+        validate: { notEmpty: true },
+      },
+      managerId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: true },
       },
       name: {
         type: DataTypes.STRING,
         unique: {
           msg: "Warehouse with this name already exist",
-          fields: ["name"]
-        }
+          fields: ["name"],
+        },
       },
       businessWarehouseCode: {
         type: DataTypes.STRING,
-        allowNull: true
+        allowNull: true,
       },
       address: DataTypes.STRING,
       city: DataTypes.STRING,
       isActive: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
-      }
+        defaultValue: true,
+      },
+      memo: DataTypes.TEXT,
+      capacity: DataTypes.FLOAT,
+      locationLatlng: DataTypes.JSON,
     },
     {
       sequelize,
       paranoid: true,
-      modelName: "Warehouse"
+      modelName: "Warehouse",
     }
   );
 

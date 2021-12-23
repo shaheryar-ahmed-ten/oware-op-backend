@@ -54,7 +54,7 @@ module.exports = {
       status: {
         allowNull: false,
         type: Sequelize.STRING,
-        defaultValue: RIDE_STATUS.UNASSIGNED,
+        defaultValue: RIDE_STATUS.NOT_ASSIGNED,
       },
       vehicleId: {
         type: Sequelize.INTEGER,

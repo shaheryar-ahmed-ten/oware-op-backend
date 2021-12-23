@@ -1,7 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
-const { User, Role, PermissionAccess, Permission, Company } = require("../models");
+const { User, Role, PermissionAccess, Permission, Company, sequelize } = require("../models");
 const config = require("../config");
 const { isLoggedIn, checkPermission, isSuperAdmin } = require("../services/auth.service");
 const { Op } = require("sequelize");

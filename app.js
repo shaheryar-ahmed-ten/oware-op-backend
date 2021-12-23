@@ -8,6 +8,10 @@ const fs = require("fs");
 const morganBody = require("morgan-body");
 const app = express();
 var bodyParser = require("body-parser");
+const dailyEmailTask = require("./cron/dailyScheduledEmail")
+const currentEmailTask = require("./cron/currentScheduledEmail")
+const dailySlackTask = require("./cron/dailyScheduledSlackMsg")
+const currentSlackTask = require("./cron/currentScheduledSlackMsg")
 
 //success and error response formatter
 app.use(require("./middlewares/response"));
@@ -74,5 +78,11 @@ app.use(function (err, req, res, next) {
 app.use(bodyParser.json({ limit: "500mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true, parameterLimit: 50000 }));
 app.use(express.json());
+
+currentEmailTask.start();
+currentSlackTask.start();
+
+dailyEmailTask.start();
+dailySlackTask.start();
 
 module.exports = app;

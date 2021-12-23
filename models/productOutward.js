@@ -28,6 +28,9 @@ module.exports = (sequelize, DataTypes) => {
       ProductOutward.hasMany(models.OutwardGroup, {
         foreignKey: "outwardId",
       });
+      ProductOutward.hasOne(models.RideDropoff, {
+        foreignKey: "outwardId",
+      });
     }
   }
   ProductOutward.init(
@@ -58,9 +61,17 @@ module.exports = (sequelize, DataTypes) => {
       },
       vehicleId: {
         type: DataTypes.INTEGER,
-        allowNull: false,
-        validate: { notEmpty: { msg: "Dispatch order cannot be empty" } },
+        allowNull: true,
+        // validate: { notEmpty: { msg: "Dispatch order cannot be empty" } },
       },
+      externalVehicle: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      // isInternal:{
+      //   type: DataTypes.INTEGER,
+      //   allowNull: true,
+      // },
     },
     {
       sequelize,

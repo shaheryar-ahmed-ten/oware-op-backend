@@ -9,6 +9,7 @@ const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const { addActivityLog } = require("../services/common.services");
 const { number } = require("joi");
+// const { ConfigurationServicePlaceholders } = require("aws-sdk/lib/config_service_placeholders");
 
 /* GET vehicles listing. */
 router.get("/", async (req, res, next) => {
@@ -26,9 +27,16 @@ router.get("/", async (req, res, next) => {
       );
     // number(req.query.carId)
     // number(req.query.companyId)
-    if (req.query.carId) where[Op.and] = [{ carId: Number(req.query.carId) }];
+    where[Op.and] = []
+    if (req.query.carId) where[Op.and].push({ carId: Number(req.query.carId) });
+
+    if (req.query.driverId) where[Op.and].push({ driverId: Number(req.query.driverId) });
+
+    if (req.query.registrationNumber) where[Op.and].push({ registrationNumber: req.query.registrationNumber });
 
     if (req.query.companyId) where[Op.and].push({ companyId: Number(req.query.companyId) });
+    // console.log("carID",req.query.carId)
+    // console.log("venodr/companyID",req.query.companyId)
 
     const response = await Vehicle.findAndCountAll({
       include: [
@@ -42,6 +50,7 @@ router.get("/", async (req, res, next) => {
       where,
       limit,
       offset,
+      // logging:true,
     });
     res.json({
       success: true,

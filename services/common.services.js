@@ -13,10 +13,17 @@ const models = require("../models");
 const {
   DISPATCH_ORDER: { STATUS },
 } = require("../enums");
+
+const moment = require("moment");
+const axios = require("axios");
+// const https = require('https');
+const request = require('request');
+
 const digitize = (value, places) => {
   let strValue = value + "";
   return new Array(places - strValue.length).fill("0").join("") + strValue;
 };
+
 
 const sanitizeFilters = (whereClause, transform = {}) => {
   for (let item in whereClause) {
@@ -360,6 +367,55 @@ const sendWhatsappAlert = async (receivingNum, text) => {
     .done();
 };
 
+const sendSMS = async(destinationNumber,notificationMessage)=>{
+
+  // For Disabling SSL Cerificate Validation
+  // const agent = new https.Agent({  
+  //   rejectUnauthorized: false
+  // });
+  const loginId = process.env.LOGIN_ID;
+  const loginPassword = process.env.LOGIN_PASSWORD;
+  const smsMask = process.env.SMS_MASK;
+  const zongAPI = "https://cbs.zong.com.pk/reachrestapi/home/SendQuickSMS";
+  const a = await request.post(
+    zongAPI,
+    { json: 
+      { 
+        loginId:loginId,
+        loginPassword:loginPassword,
+        Destination:destinationNumber,
+        Mask:smsMask,
+        Message:notificationMessage,
+        UniCode:"0",
+        ShortCodePrefered:"n",
+      },
+      rejectUnauthorized: false,
+    },
+    function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            console.log(body);
+            // return body;
+        }
+    }
+);
+// console.log("a",a)
+};
+
+const isValidDate = (date) => {
+  return date && new Date(date) instanceof Date && isFinite(new Date(date)) ? true : false;
+};
+
+const convertToUTC = (date) => {
+  return new Date(moment(date).tz("Africa/Abidjan"));
+};
+
+const removeItemFromArrayIfExistInAnotherArray = (removeFromThisArray, anotherArray) => {
+  for (const item of anotherArray) {
+    removeFromThisArray = removeFromThisArray.filter((i) => i.id !== item.id);
+  }
+  return removeFromThisArray;
+};
+
 module.exports = {
   addActivityLog,
   getModel,
@@ -368,4 +424,8 @@ module.exports = {
   getMaxValueFromJson,
   addActivityLog2,
   sendWhatsappAlert,
+  sendSMS,
+  isValidDate,
+  convertToUTC,
+  removeItemFromArrayIfExistInAnotherArray,
 };

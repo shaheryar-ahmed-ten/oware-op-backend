@@ -7,6 +7,8 @@ const authService = require("../services/auth.service");
 const { PORTALS, initialInternalIdForBusinessForCompany, initialInternalIdForBusinessForVendor } = require("../enums");
 const RELATION_TYPES = require("../enums/relationTypes");
 const activityLog = require("../middlewares/activityLog");
+const ExcelJS = require("exceljs");
+const moment = require("moment-timezone");
 const Dao = require("../dao");
 const { addActivityLog, digitize } = require("../services/common.services");
 const httpStatus = require("http-status");
@@ -17,9 +19,34 @@ router.get("/:relationType", async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
   let where = { relationType };
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  }
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 1000,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
   if (req.query.search)
-    where[Op.or] = ["name", "$Contact.email$", "$Contact.firstName$", "$Contact.lastName$"].map((key) => ({
+    where[Op.or] = ["internalIdForBusiness","type","name", "$Contact.email$", "$Contact.firstName$", "$Contact.lastName$"].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
   const response = await Company.findAndCountAll({
@@ -179,4 +206,86 @@ router.get("/poc-users/:company", async (req, res, next) => {
   }
 });
 
+
+router.get("/:relationType/export", async (req, res, next) => {
+  // let where = { };
+  let relationType = req.params.relationType.toUpperCase();
+  let where = {relationType };
+  // where["$Role.allowedApps$"] = PORTALS.OPERATIONS;
+  // const users = await User.findAll({ where, include: [Role] });
+  // const customerTypes = config.customerTypes;
+  // const relationTypes = RELATION_TYPES;
+//   let where = {};
+//   if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
+
+  let workbook = new ExcelJS.Workbook();
+
+  let worksheet = workbook.addWorksheet(relationType == "CUSTOMER" ? "Companies": "Vendors");
+
+  const getColumnsConfig = (columns) =>
+    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+
+  if (req.query.days) {
+    const currentDate = moment();
+    const previousDate = moment().subtract(req.query.days, "days");
+    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  } else if (req.query.startingDate && req.query.endingDate) {
+    const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
+      hour: 0,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const endDate = moment(req.query.endingDate).utcOffset("+05:00").set({
+      hour: 23,
+      minute: 59,
+      second: 59,
+      millisecond: 1000,
+    });
+    where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  }
+
+  if (req.query.search)
+  where[Op.or] = ["internalIdForBusiness","type","name", "$Contact.email$", "$Contact.firstName$", "$Contact.lastName$"].map((key) => ({
+    [key]: { [Op.like]: "%" + req.query.search + "%" },
+  }));
+
+  if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
+  response = await Company.findAll({
+    include: [
+      { model: User, as: "Contact" }
+  ],
+    order: [["updatedAt", "DESC"]],
+    where,
+  });
+
+  worksheet.columns = getColumnsConfig([
+    "COMPANY ID",
+    "COMPANY NAME",
+    "COMPANY TYPE",
+    "CONTACT NAME",
+    "CONTACT EMAIL",
+    "CONTACT PHONE",
+    "NOTES",
+    "STATUS",
+  ]);
+
+  worksheet.addRows(
+    response.map((row) => [
+      row.internalIdForBusiness || "",
+      row.name,
+      row.type,
+      row.Contact.firstName + " " + row.Contact.lastName,
+      row.Contact.email,
+      row.Contact.phone,
+      row.notes,
+      row.isActive ? "Active" : "In-Active",
+    ])
+  );
+
+  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+
+  await workbook.xlsx.write(res).then(() => res.end());
+});
 module.exports = router;

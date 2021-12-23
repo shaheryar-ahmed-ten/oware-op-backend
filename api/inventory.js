@@ -103,6 +103,11 @@ router.get("/export", async (req, res, next) => {
   //   where["createdAt"] = { [Op.between]: [startDate, endDate] };
   // }
 
+  if (req.query.search)
+    where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
+    }));
+
   let response = await Inventory.findAll({
     include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
     order: [["updatedAt", "DESC"]],
@@ -121,123 +126,123 @@ router.get("/export", async (req, res, next) => {
     ])
   );
 
-  worksheet = workbook.addWorksheet("Products");
+  // worksheet = workbook.addWorksheet("Products");
 
-  worksheet.columns = getColumnsConfig([
-    "PRODUCT ID",
-    "NAME",
-    "DESCRIPTION",
-    "DIMENSIONS CBM",
-    "WEIGHT",
-    "UOM",
-    "CATEGORY",
-    "STATUS",
-  ]);
+  // worksheet.columns = getColumnsConfig([
+  //   "PRODUCT ID",
+  //   "NAME",
+  //   "DESCRIPTION",
+  //   "DIMENSIONS CBM",
+  //   "WEIGHT",
+  //   "UOM",
+  //   "CATEGORY",
+  //   "STATUS",
+  // ]);
 
-  where = {};
+  // where = {};
 
-  if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
-    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
-  } else if (req.query.startingDate && req.query.endingDate) {
-    const startDate = moment(req.query.startingDate);
-    const endDate = moment(req.query.endingDate).set({
-      hour: 23,
-      minute: 53,
-      second: 59,
-      millisecond: 0,
-    });
-    where["createdAt"] = { [Op.between]: [startDate, endDate] };
-  }
+  // if (req.query.days) {
+  //   const currentDate = moment();
+  //   const previousDate = moment().subtract(req.query.days, "days");
+  //   where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  // } else if (req.query.startingDate && req.query.endingDate) {
+  //   const startDate = moment(req.query.startingDate);
+  //   const endDate = moment(req.query.endingDate).set({
+  //     hour: 23,
+  //     minute: 53,
+  //     second: 59,
+  //     millisecond: 0,
+  //   });
+  //   where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  // }
 
-  response = await Product.findAll({
-    include: [{ model: UOM }, { model: Category }, { model: Brand }],
-    order: [["updatedAt", "DESC"]],
-    where,
-  });
+  // response = await Product.findAll({
+  //   include: [{ model: UOM }, { model: Category }, { model: Brand }],
+  //   order: [["updatedAt", "DESC"]],
+  //   where,
+  // });
 
-  worksheet.addRows(
-    response.map((row) => [
-      digitize(row.id || 0, 6),
-      row.name,
-      row.description,
-      row.dimensionsCBM,
-      row.weight,
-      row.Category.name,
-      row.UOM.name,
-      row.isActive ? "Active" : "In-Active",
-    ])
-  );
+  // worksheet.addRows(
+  //   response.map((row) => [
+  //     digitize(row.id || 0, 6),
+  //     row.name,
+  //     row.description,
+  //     row.dimensionsCBM,
+  //     row.weight,
+  //     row.Category.name,
+  //     row.UOM.name,
+  //     row.isActive ? "Active" : "In-Active",
+  //   ])
+  // );
 
-  worksheet = workbook.addWorksheet("Companies");
+  // worksheet = workbook.addWorksheet("Companies");
 
-  worksheet.columns = getColumnsConfig([
-    "ID",
-    "COMPANY NAME",
-    "CUSTOMER TYPE",
-    "CONTACT NAME",
-    "CONTACT EMAIL",
-    "CONTACT PHONE",
-    "NOTES",
-    "STATUS",
-  ]);
+  // worksheet.columns = getColumnsConfig([
+  //   "ID",
+  //   "COMPANY NAME",
+  //   "CUSTOMER TYPE",
+  //   "CONTACT NAME",
+  //   "CONTACT EMAIL",
+  //   "CONTACT PHONE",
+  //   "NOTES",
+  //   "STATUS",
+  // ]);
 
-  if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  response = await Company.findAll({
-    include: [{ model: User, as: "Contact" }],
-    order: [["updatedAt", "DESC"]],
-    where,
-  });
+  // if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
+  // response = await Company.findAll({
+  //   include: [{ model: User, as: "Contact" }],
+  //   order: [["updatedAt", "DESC"]],
+  //   where,
+  // });
 
-  worksheet.addRows(
-    response.map((row) => [
-      row.internalIdForBusiness || "",
-      row.name,
-      row.type,
-      row.Contact.firstName + " " + row.Contact.lastName,
-      row.Contact.email,
-      row.Contact.phone,
-      row.notes,
-      row.isActive ? "Active" : "In-Active",
-    ])
-  );
+  // worksheet.addRows(
+  //   response.map((row) => [
+  //     row.internalIdForBusiness || "",
+  //     row.name,
+  //     row.type,
+  //     row.Contact.firstName + " " + row.Contact.lastName,
+  //     row.Contact.email,
+  //     row.Contact.phone,
+  //     row.notes,
+  //     row.isActive ? "Active" : "In-Active",
+  //   ])
+  // );
 
-  worksheet = workbook.addWorksheet("Warehouses");
+  // worksheet = workbook.addWorksheet("Warehouses");
 
-  worksheet.columns = getColumnsConfig(["NAME", "BUSINESS WAREHOUSE CODE", "ADDRESS", "CITY", "STATUS"]);
+  // worksheet.columns = getColumnsConfig(["NAME", "BUSINESS WAREHOUSE CODE", "ADDRESS", "CITY", "STATUS"]);
 
-  where = {};
+  // where = {};
 
-  if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
-    where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
-  } else if (req.query.startingDate && req.query.endingDate) {
-    const startDate = moment(req.query.startingDate);
-    const endDate = moment(req.query.endingDate).set({
-      hour: 23,
-      minute: 53,
-      second: 59,
-      millisecond: 0,
-    });
-    where["createdAt"] = { [Op.between]: [startDate, endDate] };
-  }
+  // if (req.query.days) {
+  //   const currentDate = moment();
+  //   const previousDate = moment().subtract(req.query.days, "days");
+  //   where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
+  // } else if (req.query.startingDate && req.query.endingDate) {
+  //   const startDate = moment(req.query.startingDate);
+  //   const endDate = moment(req.query.endingDate).set({
+  //     hour: 23,
+  //     minute: 53,
+  //     second: 59,
+  //     millisecond: 0,
+  //   });
+  //   where["createdAt"] = { [Op.between]: [startDate, endDate] };
+  // }
 
-  response = await Warehouse.findAll({
-    order: [["updatedAt", "DESC"]],
-    where,
-  });
+  // response = await Warehouse.findAll({
+  //   order: [["updatedAt", "DESC"]],
+  //   where,
+  // });
 
-  worksheet.addRows(
-    response.map((row) => [
-      row.name,
-      row.businessWarehouseCode,
-      row.address,
-      row.city,
-      row.isActive ? "Active" : "In-Active",
-    ])
-  );
+  // worksheet.addRows(
+  //   response.map((row) => [
+  //     row.name,
+  //     row.businessWarehouseCode,
+  //     row.address,
+  //     row.city,
+  //     row.isActive ? "Active" : "In-Active",
+  //   ])
+  // );
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");

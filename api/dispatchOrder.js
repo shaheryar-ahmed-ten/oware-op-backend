@@ -59,6 +59,9 @@ router.get("/", async (req, res, next) => {
     }));
 
   if (req.query.status) where = { status: req.query.status };
+
+  if (req.query.currentstatus) where = { status: req.query.currentstatus };
+
   if (req.query.warehouse)
     where[Op.or] = ["$Inventory.Warehouse.id$"].map((key) => ({
       [key]: { [Op.eq]: req.query.warehouse },
@@ -129,6 +132,30 @@ router.get("/", async (req, res, next) => {
   });
 });
 
+router.get("/stats", async (req, res) => {
+  const stats = [
+    {
+      key: "ALL",
+      label: "All",
+      value: await DispatchOrder.aggregate("id", "count"),
+    },
+  ];
+  let statusList = { ...DISPATCH_ORDER }.STATUS;
+  for (let index in statusList) {
+    let status = statusList[index];
+    stats.push({
+      key: status,
+      label: Object.keys({ ...DISPATCH_ORDER }.STATUS)[status],
+      value: await DispatchOrder.aggregate("id", "count", { where: { status: status } }),
+    });
+  }
+  return res.json({
+    success: true,
+    stats,
+  });
+});
+
+
 router.get("/export", async (req, res, next) => {
   let where = {};
   if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
@@ -152,9 +179,23 @@ router.get("/export", async (req, res, next) => {
     "REFERENCE ID",
     "CREATOR",
     "CREATED DATE",
+    "SHIPMENT DATE",
     "STATUS",
     "ORDER MEMO",
   ]);
+
+  if (req.query.search)
+    where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
+    }));
+
+  // if (req.query.status) where = { status: req.query.status };
+  if (req.query.currentstatus) where = { status: req.query.currentstatus };
+
+  if (req.query.warehouse)
+    where[Op.or] = ["$Inventory.Warehouse.id$"].map((key) => ({
+      [key]: { [Op.eq]: req.query.warehouse },
+    }));
 
   if (req.query.days) {
     const currentDate = moment();
@@ -209,15 +250,16 @@ router.get("/export", async (req, res, next) => {
         order.referenceId || "",
         `${order.User.firstName || ""} ${order.User.lastName || ""}`,
         moment(order.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+        moment(order.shipmentDate).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
         order.status == "0"
           ? "PENDING"
           : order.status == "1"
-          ? "PARTIALLY FULFILLED"
-          : order.status == "2"
-          ? "FULFILLED"
-          : order.status == "3"
-          ? "CANCELLED"
-          : "",
+            ? "PARTIALLY FULFILLED"
+            : order.status == "2"
+              ? "FULFILLED"
+              : order.status == "3"
+                ? "CANCELLED"
+                : "",
         order.orderMemo || "",
       ]);
     }

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Current-Digest-Email</title>
+
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+
+<body>
+    <div style="display: flex;align-items: center;justify-content: space-between;">
+        <h1>Current Email Summary Internal</h1>
+        <!-- <h4>Date : <input type="text" id="currentDate" disabled></h4> -->
+    </div>
+
+
+    <h2>Current Statuses</h2>
+    <table>
+        <tr>
+            <th>Inwards Created</th>
+            <th>Orders Created</th>
+            <th>Orders Cancelled </th>
+            <th>Outwards Created</th>
+            <th>Rides Created</th>
+            <th>Rides Cancelled</th>
+        </tr>
+        <tr>
+            <td>
+                <%=productInwardsCount%>
+            </td>
+            <td>
+                <%=dispatchOrdersCount%>
+            </td>
+            <td>
+                <%=dispatchOrdersCancelledCount%>
+            </td>
+            <td>
+                <%=productOutwardsCount%>
+            </td>
+            <td>
+                <%=ridesCount%>
+            </td>
+            <td>
+                <%=ridesLoadCancelledCount%>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        var today = new Date();
+        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        document.getElementById("currentDate").value = date;
+    </script>
+
+</body>
+
+</html>
