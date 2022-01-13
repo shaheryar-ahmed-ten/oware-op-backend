@@ -1,19 +1,22 @@
 var cron = require("node-cron");
-const { ProductOutward, ProductInward, DispatchOrder, Ride } = require("../models");
+const {
+  ProductOutward,
+  ProductInward,
+  DispatchOrder,
+  Ride,
+} = require("../models");
 const moment = require("moment-timezone");
 const { Op } = require("sequelize");
 const {
-  LOAD_DELIVERED,
   SCHEDULED,
   ON_THE_WAY,
   ARRIVED,
   LOADING_IN_PROGRESS,
   LOADING_COMPLETE,
-  LOAD_IN_TRANSIT,
-  REACHED,
-  OFFLOADING_IN_PROGRESS,
   CANCELLED,
   NOT_ASSIGNED,
+  COMPLETED,
+  JOURNEY_IN_PROGRESS,
 } = require("../enums/rideStatus");
 const { sendDailyScheduledEmail } = require("../services/mailer.service");
 
@@ -22,7 +25,7 @@ const getActivityData = async () => {
   let where = {};
   try {
     // PI count
-    where["updatedAt"] = { [Op.gte]: moment().subtract(1, "days").toDate() };
+    where["createdAt"] = { [Op.gte]: moment().subtract(1, "days").toDate() };
     let productInwardsCount = await ProductInward.count({
       where,
     });
@@ -55,7 +58,7 @@ const getActivityData = async () => {
       where,
     });
     // completed rides count
-    where["status"] = LOAD_DELIVERED;
+    where["status"] = COMPLETED;
     let ridesCompletedCount = await Ride.count({
       where,
     });
@@ -89,26 +92,12 @@ const getActivityData = async () => {
     let ridesLoadingCompleteCount = await Ride.count({
       where,
     });
-    // LOAD_IN_TRANSIT rides count
-    where["status"] = LOAD_IN_TRANSIT;
-    let ridesLoadingInTransitCount = await Ride.count({
+    // JOURNEY_IN_PROGRESS rides count
+    where["status"] = JOURNEY_IN_PROGRESS;
+    let ridesJourneyInProgress = await Ride.count({
       where,
     });
-    // REACHED rides count
-    where["status"] = REACHED || ""; // TODO: Fix the undefined issue
-    let reached = await Ride.count({
-      where,
-    });
-    // OFFLOADING_IN_PROGRESS rides count
-    where["status"] = OFFLOADING_IN_PROGRESS;
-    let ridesOffloadingInProgressCount = await Ride.count({
-      where,
-    });
-    // LOAD_DELIVERED rides count
-    where["status"] = LOAD_DELIVERED;
-    let ridesLoadDeliveredCount = await Ride.count({
-      where,
-    });
+
     // CANCELLED rides count
     where["status"] = CANCELLED;
     let ridesLoadCancelledCount = await Ride.count({
@@ -129,11 +118,8 @@ const getActivityData = async () => {
       ridesArrivedCount,
       ridesLoadingInProgressCount,
       ridesLoadingCompleteCount,
-      ridesLoadingInTransitCount,
-      reached,
-      ridesOffloadingInProgressCount,
-      ridesLoadDeliveredCount,
       ridesLoadCancelledCount,
+      ridesJourneyInProgress,
     };
   } catch (err) {
     // console.log(err);
@@ -150,7 +136,7 @@ const sendScheduledEmailData = async () => {
 
     return await sendDailyScheduledEmail(emails, data, subject, sentFrom);
   } catch (err) {
-    // console.log(err);
+    console.log(err);
     return err.message;
   }
 };

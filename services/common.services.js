@@ -17,13 +17,12 @@ const {
 const moment = require("moment");
 const axios = require("axios");
 // const https = require('https');
-const request = require('request');
+const request = require("request");
 
 const digitize = (value, places) => {
   let strValue = value + "";
   return new Array(places - strValue.length).fill("0").join("") + strValue;
 };
-
 
 const sanitizeFilters = (whereClause, transform = {}) => {
   for (let item in whereClause) {
@@ -46,7 +45,8 @@ const sanitizeFilters = (whereClause, transform = {}) => {
 const getMaxValueFromJson = (arr, prop) => {
   var max;
   for (var i = 0; i < arr.length; i++) {
-    if (max == null || parseInt(arr[i][prop]) > parseInt(max[prop])) max = arr[i];
+    if (max == null || parseInt(arr[i][prop]) > parseInt(max[prop]))
+      max = arr[i];
   }
   return max;
 };
@@ -136,7 +136,12 @@ const removeChildModelFilters = (where) => {
   return where;
 };
 
-const checkOrderStatusAndUpdate = async (model, dispatchOrderId, currentOutwardQty, transaction) => {
+const checkOrderStatusAndUpdate = async (
+  model,
+  dispatchOrderId,
+  currentOutwardQty,
+  transaction
+) => {
   try {
     const order = await model.DispatchOrder.findOne({
       where: { id: dispatchOrderId },
@@ -157,8 +162,12 @@ const checkOrderStatusAndUpdate = async (model, dispatchOrderId, currentOutwardQ
       totalOutwardQty += outwardQty;
     }
 
-    if (Number(order.dataValues.orderQty) === Number(totalOutwardQty)) orderStatus = STATUS.FULFILLED;
-    else if (Number(order.dataValues.orderQty) > Number(totalOutwardQty) && Number(totalOutwardQty) > 0)
+    if (Number(order.dataValues.orderQty) === Number(totalOutwardQty))
+      orderStatus = STATUS.FULFILLED;
+    else if (
+      Number(order.dataValues.orderQty) > Number(totalOutwardQty) &&
+      Number(totalOutwardQty) > 0
+    )
       orderStatus = STATUS.PARTIALLY_FULFILLED;
     order.status = orderStatus;
     await order.save({ transaction });
@@ -257,7 +266,9 @@ const addActivityLog2 = async (req, models) => {
   const modelUrl = req.originalUrl.split("/");
   let myModel = getModel(modelUrl[3]);
   if (modelUrl[4] == "VENDOR") myModel = "Vendor";
-  const sourceTypeId = (await models.ActivitySourceType.findOne({ where: { name: myModel } })).id;
+  const sourceTypeId = (
+    await models.ActivitySourceType.findOne({ where: { name: myModel } })
+  ).id;
   if (req.method == "POST") {
     if (myModel == "Vendor") models[myModel] = "Company";
     const current = { ...req.body };
@@ -278,7 +289,11 @@ const addActivityLog2 = async (req, models) => {
       });
     }
     source = source ? source.id + 1 : 1;
-    if (myModel == "DispatchOrder" || myModel == "ProductOutward" || myModel == "ProductInward") {
+    if (
+      myModel == "DispatchOrder" ||
+      myModel == "ProductOutward" ||
+      myModel == "ProductInward"
+    ) {
       const numberOfInternalIdForBusiness = digitize(source, 6);
       if (!current.internalIdForBusiness) {
         current.internalIdForBusiness = (
@@ -288,13 +303,16 @@ const addActivityLog2 = async (req, models) => {
           })
         ).businessWarehouseCode;
       }
-      current.internalIdForBusiness = current.internalIdForBusiness + numberOfInternalIdForBusiness;
+      current.internalIdForBusiness =
+        current.internalIdForBusiness + numberOfInternalIdForBusiness;
       if (modelUrl[3] === "dispatch-order" && modelUrl[4] === "bulk") {
         current.internalIdForBusiness = "";
       }
     } else if (myModel == "StockAdjustment") {
       const numberOfInternalIdForBusiness = digitize(source, 6);
-      current.internalIdForBusiness = initialInternalIdForBusinessForAdjustment + numberOfInternalIdForBusiness;
+      current.internalIdForBusiness =
+        initialInternalIdForBusinessForAdjustment +
+        numberOfInternalIdForBusiness;
     } else if (myModel == "Ride") {
       current.internalIdForBusiness = digitize(source, 6);
     } else if (myModel == "User") {
@@ -312,7 +330,9 @@ const addActivityLog2 = async (req, models) => {
     if (myModel == "Vendor") models[myModel] = "Company";
     let source;
     if (myModel == "Vendor") {
-      source = await models["Company"].findOne({ where: { id: req.params.id } });
+      source = await models["Company"].findOne({
+        where: { id: req.params.id },
+      });
     } else {
       source = await models[myModel].findOne({ where: { id: req.params.id } });
     }
@@ -328,7 +348,9 @@ const addActivityLog2 = async (req, models) => {
   } else if (req.method == "DELETE") {
     let source;
     if (myModel == "Vendor") {
-      source = await models["Company"].findOne({ where: { id: req.params.id } });
+      source = await models["Company"].findOne({
+        where: { id: req.params.id },
+      });
     } else {
       source = await models[myModel].findOne({ where: { id: req.params.id } });
     }
@@ -341,7 +363,9 @@ const addActivityLog2 = async (req, models) => {
       activityType: "DELETE",
     });
   } else if (req.method == "PATCH") {
-    const source = await models[myModel].findOne({ where: { id: req.params.id } });
+    const source = await models[myModel].findOne({
+      where: { id: req.params.id },
+    });
     const log = await models.ActivityLog.create({
       userId: req.userId,
       currentPayload: {},
@@ -367,10 +391,9 @@ const sendWhatsappAlert = async (receivingNum, text) => {
     .done();
 };
 
-const sendSMS = async(destinationNumber,notificationMessage)=>{
-
+const sendSMS = async (destinationNumber, notificationMessage) => {
   // For Disabling SSL Cerificate Validation
-  // const agent = new https.Agent({  
+  // const agent = new https.Agent({
   //   rejectUnauthorized: false
   // });
   const loginId = process.env.LOGIN_ID;
@@ -379,41 +402,52 @@ const sendSMS = async(destinationNumber,notificationMessage)=>{
   const zongAPI = "https://cbs.zong.com.pk/reachrestapi/home/SendQuickSMS";
   const a = await request.post(
     zongAPI,
-    { json: 
-      { 
-        loginId:loginId,
-        loginPassword:loginPassword,
-        Destination:destinationNumber,
-        Mask:smsMask,
-        Message:notificationMessage,
-        UniCode:"0",
-        ShortCodePrefered:"n",
+    {
+      json: {
+        loginId: loginId,
+        loginPassword: loginPassword,
+        Destination: destinationNumber,
+        Mask: smsMask,
+        Message: notificationMessage,
+        UniCode: "0",
+        ShortCodePrefered: "n",
       },
       rejectUnauthorized: false,
     },
     function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            console.log(body);
-            // return body;
-        }
+      if (!error && response.statusCode == 200) {
+        // return body;
+      }
     }
-);
-// console.log("a",a)
+  );
+  // console.log("a",a)
 };
 
 const isValidDate = (date) => {
-  return date && new Date(date) instanceof Date && isFinite(new Date(date)) ? true : false;
+  return date && new Date(date) instanceof Date && isFinite(new Date(date))
+    ? true
+    : false;
 };
 
 const convertToUTC = (date) => {
   return new Date(moment(date).tz("Africa/Abidjan"));
 };
 
-const removeItemFromArrayIfExistInAnotherArray = (removeFromThisArray, anotherArray) => {
+const removeItemFromArrayIfExistInAnotherArray = (
+  removeFromThisArray,
+  anotherArray
+) => {
   for (const item of anotherArray) {
     removeFromThisArray = removeFromThisArray.filter((i) => i.id !== item.id);
   }
   return removeFromThisArray;
+};
+
+const checkForMatchInArray = (array, propertyToMatch, valueToMatch) => {
+  for (var i = 0; i < array.length; i++) {
+    if (array[i][propertyToMatch] == valueToMatch) return true;
+  }
+  return false;
 };
 
 module.exports = {
@@ -428,4 +462,5 @@ module.exports = {
   isValidDate,
   convertToUTC,
   removeItemFromArrayIfExistInAnotherArray,
+  checkForMatchInArray,
 };

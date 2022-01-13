@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { Warehouse, User } = require("../models");
+const { Warehouse, User, City } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const { errorHandler } = require("../services/error.service");
@@ -33,7 +33,10 @@ router.get("/", async (req, res, next) => {
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
-  if (req.query.search) where[Op.or] = ["name"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+  if (req.query.search)
+    where[Op.or] = ["name"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
+    }));
   const response = await Warehouse.findAndCountAll({
     include: [{ model: User }, { model: User, as: "Manager" }],
     order: [["updatedAt", "DESC"]],
@@ -54,19 +57,22 @@ router.get("/relations", async (req, res, next) => {
   const offset = (req.query.page - 1 || 0) * limit;
   let where = {
     // userId: req.userId
-    isActive: 1
+    isActive: 1,
   };
   const response = await Warehouse.findAndCountAll({
     include: [{ model: User }],
     order: [["updatedAt", "DESC"]],
-    where,  
+    where,
     // limit,
     offset,
   });
+  const cities = await City.findAll({ where });
+
   res.json({
     success: true,
     message: "respond with a resource",
     data: response.rows,
+    cities,
     // pages: Math.ceil(response.count / limit),
   });
 });
@@ -104,7 +110,9 @@ router.put("/:id", activityLog, async (req, res, next) => {
       message: "No warehouse found!",
     });
   try {
-    const response = await Warehouse.update(req.body, { where: { id: req.params.id } });
+    const response = await Warehouse.update(req.body, {
+      where: { id: req.params.id },
+    });
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
@@ -140,7 +148,11 @@ router.get("/export", activityLog, async (req, res, next) => {
   worksheet = workbook.addWorksheet("Warehouses");
 
   const getColumnsConfig = (columns) =>
-    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+    columns.map((column) => ({
+      header: column,
+      width: Math.ceil(column.length * 1.5),
+      outlineLevel: 1,
+    }));
 
   worksheet.columns = getColumnsConfig([
     "WAREHOUSE NAME",
@@ -170,7 +182,10 @@ router.get("/export", activityLog, async (req, res, next) => {
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
-  if (req.query.search) where[Op.or] = ["name"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+  if (req.query.search)
+    where[Op.or] = ["name"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
+    }));
 
   response = await Warehouse.findAll({
     include: [{ model: User, as: "Manager" }],
@@ -180,7 +195,8 @@ router.get("/export", activityLog, async (req, res, next) => {
 
   for (const row of response) {
     if (row.locationLatlng) {
-      row.mapAddress = (await reverseGeocoding(row.locationLatlng)).formattedAddress || "";
+      row.mapAddress =
+        (await reverseGeocoding(row.locationLatlng)).formattedAddress || "";
     } else {
       row.mapAddress = "";
     }
@@ -200,8 +216,14 @@ router.get("/export", activityLog, async (req, res, next) => {
     ])
   );
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=" + "Inventory.xlsx"
+  );
 
   await workbook.xlsx.write(res).then(() => res.end());
 });

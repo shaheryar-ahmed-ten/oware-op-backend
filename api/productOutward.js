@@ -18,10 +18,15 @@ const {
   UOM,
   sequelize,
   User,
+  InventoryDetail,
+  OutwardGroupBatch,
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
-const { digitize, checkOrderStatusAndUpdate } = require("../services/common.services");
+const {
+  digitize,
+  checkOrderStatusAndUpdate,
+} = require("../services/common.services");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
 const { DISPATCH_ORDER } = require("../enums");
@@ -30,6 +35,8 @@ const httpStatus = require("http-status");
 const ExcelJS = require("exceljs");
 const authService = require("../services/auth.service");
 const moment = require("moment-timezone");
+const { findAll } = require("../dao/AdjustmentInventory");
+const inventory = require("../models/inventory");
 
 const BulkAddValidation = Joi.object({
   dispatchOrderId: Joi.required(),
@@ -42,6 +49,13 @@ const BulkAddValidation = Joi.object({
       quantity: Joi.number().integer().min(1).required(),
       id: Joi.number().integer().min(1).required(),
       availableQuantity: Joi.number().integer().min(1).required(),
+      batches: Joi.array().items(
+        Joi.object({
+          inventoryDetailId: Joi.number().integer().required(),
+          quantity: Joi.number().integer().required(),
+          availableQuantity: Joi.number().integer().required(),
+        })
+      ),
     })
   ),
   internalIdForBusiness: Joi.required(),
@@ -108,7 +122,11 @@ router.get("/", async (req, res, next) => {
             model: Inventory,
             required: true,
             as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+            include: [
+              { model: Product, include: [{ model: UOM }] },
+              { model: Company },
+              { model: Warehouse },
+            ],
           },
         ],
       },
@@ -169,6 +187,23 @@ router.get("/", async (req, res, next) => {
     response.rows[index].quantity = comittedAcc[index];
   }
 
+  for (const outward of response.rows) {
+    for (const inv of outward.Inventories) {
+      const detail = await InventoryDetail.findAll({
+        include: [
+          {
+            model: OutwardGroup,
+            as: "OutwardGroup",
+            through: OutwardGroupBatch,
+          },
+        ],
+        where: { "$OutwardGroup.id$": { [Op.eq]: inv.OutwardGroup.id } },
+        logging: true,
+      });
+      inv.OutwardGroup.dataValues.InventoryDetail = detail;
+    }
+  }
+
   res.json({
     success: true,
     message: "respond with a resource",
@@ -187,7 +222,11 @@ router.get("/export", async (req, res, next) => {
   worksheet = workbook.addWorksheet("Product Outwards");
 
   const getColumnsConfig = (columns) =>
-    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+    columns.map((column) => ({
+      header: column,
+      width: Math.ceil(column.length * 1.5),
+      outlineLevel: 1,
+    }));
 
   worksheet.columns = getColumnsConfig([
     "OUTWARD ID",
@@ -244,21 +283,27 @@ router.get("/export", async (req, res, next) => {
         include: [
           {
             model: Inventory,
+            as: "Inventory",
+            include: [
+              { model: Product, include: [{ model: UOM }] },
+              { model: Company },
+              { model: Warehouse },
+            ],
+          },
+          {
+            model: Inventory,
             as: "Inventories",
             include: [
-              { model: Product, include: [{ model: UOM, attributes: ["name"] }], attributes: ["name"] },
-              { model: Company, attributes: ["name"], required: true },
-              { model: Warehouse, attributes: ["name"], required: true },
+              { model: Product, include: [{ model: UOM }] },
+              { model: Company },
+              { model: Warehouse },
             ],
             required: true,
           },
         ],
-        attributes: ["receiverName", "receiverPhone", "shipmentDate"],
-        required: true,
       },
-      { model: User, attributes: ["firstName", "lastName"] },
+      { model: User },
     ],
-    attributes: ["id", "internalIdForBusiness", "referenceId", "createdAt", "externalVehicle"],
     order: [["updatedAt", "DESC"]],
     where,
   });
@@ -266,6 +311,9 @@ router.get("/export", async (req, res, next) => {
   const outwardArray = [];
   for (const outward of response) {
     for (const inv of outward.DispatchOrder.Inventories) {
+      const OG = await OrderGroup.findOne({
+        where: { inventoryId: inv.id, orderId: outward.DispatchOrder.id },
+      });
       const OutG = await OutwardGroup.findOne({
         where: { inventoryId: inv.id, outwardId: outward.id },
       });
@@ -280,11 +328,13 @@ router.get("/export", async (req, res, next) => {
         outward.DispatchOrder.receiverPhone,
         outward.referenceId || "",
         `${outward.User.firstName || ""} ${outward.User.lastName || ""}`,
-        inv.OrderGroup.quantity || 0,
+        OG.quantity || 0,
         OutG ? OutG.quantity || 0 : "Not available",
         // OutG.quantity || 0,
         moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
-        moment(outward.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+        moment(outward.createdAt)
+          .tz(req.query.client_Tz)
+          .format("DD/MM/yy HH:mm"),
         outward.externalVehicle ? "Customer Provided" : "Oware Provided",
       ]);
     }
@@ -292,8 +342,14 @@ router.get("/export", async (req, res, next) => {
 
   worksheet.addRows(outwardArray);
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=" + "Inventory.xlsx"
+  );
 
   await workbook.xlsx.write(res).then(() => res.end());
 });
@@ -301,7 +357,9 @@ router.get("/export", async (req, res, next) => {
 /* POST create new productOutward. */
 router.post("/", activityLog, async (req, res, next) => {
   let message = "New productOutward registered";
-  let dispatchOrder = await DispatchOrder.findByPk(req.body.dispatchOrderId, { include: [ProductOutward] });
+  let dispatchOrder = await DispatchOrder.findByPk(req.body.dispatchOrderId, {
+    include: [ProductOutward],
+  });
   if (!dispatchOrder)
     return res.json({
       success: false,
@@ -312,11 +370,15 @@ router.post("/", activityLog, async (req, res, next) => {
       success: false,
       message: "Dispatch Order already fulfilled",
     });
-  req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
+  req.body.inventories = req.body.inventories || [
+    { id: req.body.inventoryId, quantity: req.body.quantity },
+  ];
 
   try {
     const isValid = await BulkAddValidation.validateAsync(req.body);
     if (isValid) {
+      let productOutward;
+      const outwardGroupBatch = [];
       await sequelize.transaction(async (transaction) => {
         productOutward = await ProductOutward.create(
           {
@@ -326,7 +388,8 @@ router.post("/", activityLog, async (req, res, next) => {
           { transaction }
         );
         const numberOfInternalIdForBusiness = digitize(productOutward.id, 6);
-        productOutward.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+        productOutward.internalIdForBusiness =
+          req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
         let sumOfOutwards = [];
         let outwardAcc;
         // await req.body.inventories.forEach(async (Inventory) => {
@@ -344,7 +407,10 @@ router.post("/", activityLog, async (req, res, next) => {
             );
           }
           if (Inventory.quantity > OG.quantity) {
-            return res.sendError(httpStatus.CONFLICT, "Outward quantity cant be greater than dispatch order quantity");
+            return res.sendError(
+              httpStatus.CONFLICT,
+              "Outward quantity cant be greater than dispatch order quantity"
+            );
           }
           let quantity = parseInt(Inventory.quantity);
           sumOfOutwards.push(quantity);
@@ -355,7 +421,7 @@ router.post("/", activityLog, async (req, res, next) => {
         productOutward.quantity = outwardAcc;
         await productOutward.save({ transaction });
 
-        await OutwardGroup.bulkCreate(
+        const outwardGroups = await OutwardGroup.bulkCreate(
           req.body.inventories.map((inventory) => ({
             userId: req.userId,
             outwardId: productOutward.id,
@@ -363,28 +429,76 @@ router.post("/", activityLog, async (req, res, next) => {
             quantity: inventory.quantity,
             availableQuantity: inventory.availableQuantity,
           })),
-          { transaction }
+          { transaction, logging: console.log }
         );
 
-        await checkOrderStatusAndUpdate(model, req.body.dispatchOrderId, productOutward.quantity, transaction);
+        await checkOrderStatusAndUpdate(
+          model,
+          req.body.dispatchOrderId,
+          productOutward.quantity,
+          transaction
+        );
 
         return Promise.all(
           req.body.inventories.map((_inventory) => {
-            return Inventory.findByPk(_inventory.id, { transaction }).then((inventory) => {
-              if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
-              if (_inventory.quantity > inventory.committedQuantity)
-                throw new Error("Cannot create orders above available quantity");
-              try {
-                inventory.dispatchedQuantity += +_inventory.quantity;
-                inventory.committedQuantity -= +_inventory.quantity;
-                return inventory.save({ transaction });
-              } catch (err) {
-                throw new Error(err.errors.pop().message);
+            return Inventory.findByPk(_inventory.id, { transaction }).then(
+              (inventory) => {
+                if (!inventory && !_inventory.id)
+                  throw new Error("Inventory is not available");
+                if (_inventory.quantity > inventory.committedQuantity)
+                  throw new Error(
+                    "Cannot create orders above available quantity"
+                  );
+                try {
+                  _inventory.batches.map(async (_batch) => {
+                    InventoryDetail.findOne(
+                      {
+                        where: {
+                          id: _batch.inventoryDetailId,
+                        },
+                      },
+
+                      { transaction }
+                    ).then((batch) => {
+                      batch.outwardQuantity =
+                        batch.outwardQuantity + _batch.quantity;
+                      batch.availableQuantity =
+                        batch.availableQuantity - _batch.quantity;
+                      batch.save({ transaction });
+                    });
+                  });
+                  inventory.dispatchedQuantity += +_inventory.quantity;
+                  inventory.committedQuantity -= +_inventory.quantity;
+                  return inventory.save({ transaction });
+                } catch (err) {
+                  console.log("err", err);
+                  transaction.rollback();
+                  throw new Error(err.errors.pop().message);
+                }
               }
-            });
+            );
           })
         );
       });
+
+      let group;
+      console.log("productOutward", productOutward.id);
+      for (const inv of req.body.inventories) {
+        group = await OutwardGroup.findOne({
+          where: {
+            inventoryId: inv.id,
+            outwardId: productOutward.id,
+          },
+        });
+        for (const b of inv.batches) {
+          await OutwardGroupBatch.create({
+            outwardGroupId: group.id,
+            inventoryDetailId: b.inventoryDetailId,
+            quantity: b.quantity,
+          });
+        }
+      }
+
       return res.json({
         success: true,
         message,
@@ -404,16 +518,36 @@ router.post("/", activityLog, async (req, res, next) => {
     //   message: 'Cannot dispatch above available inventory quantity'
     // })
   } catch (err) {
-    res.json({
+    console.log("err", err);
+    return res.json({
       success: false,
       message: err.toString().replace("Error: ", ""),
     });
   }
-  res.json({
+  return res.json({
     success: true,
     message,
     data: productOutward,
   });
+});
+
+router.post("/test", async (req, res, next) => {
+  productOutward = await ProductOutward.create({
+    userId: req.userId,
+    ...req.body,
+  });
+
+  const outwardGroups = await OutwardGroup.bulkCreate(
+    req.body.inventories.map((inventory) => ({
+      userId: req.userId,
+      outwardId: productOutward.id,
+      inventoryId: inventory.id,
+      quantity: inventory.quantity,
+      availableQuantity: inventory.availableQuantity,
+    }))
+  );
+
+  res.sendJson("outwardGroups", outwardGroups);
 });
 
 /* PUT update existing productOutward. */
@@ -468,7 +602,10 @@ router.get("/relations", async (req, res, next) => {
         as: "Inventory",
         include: [
           { model: Company, attributes: ["id", "name"] },
-          { model: Warehouse, attributes: ["id", "name", "businessWarehouseCode"] },
+          {
+            model: Warehouse,
+            attributes: ["id", "name", "businessWarehouseCode"],
+          },
         ],
         attributes: ["id"],
       },
@@ -476,7 +613,11 @@ router.get("/relations", async (req, res, next) => {
         model: Inventory,
         as: "Inventories",
         include: [
-          { model: Product, include: [{ model: UOM, attributes: ["id", "name"] }], attributes: ["id", "name"] },
+          {
+            model: Product,
+            include: [{ model: UOM, attributes: ["id", "name"] }],
+            attributes: ["id", "name", "batchEnabled"],
+          },
         ],
         attributes: ["id"],
       },
@@ -492,7 +633,14 @@ router.get("/relations", async (req, res, next) => {
         attributes: ["id"],
       },
     ],
-    where: { status: { [Op.notIn]: [DISPATCH_ORDER.STATUS.FULFILLED, DISPATCH_ORDER.STATUS.CANCELLED] } },
+    where: {
+      status: {
+        [Op.notIn]: [
+          DISPATCH_ORDER.STATUS.FULFILLED,
+          DISPATCH_ORDER.STATUS.CANCELLED,
+        ],
+      },
+    },
     attributes: [
       "id",
       "internalIdForBusiness",
@@ -505,12 +653,22 @@ router.get("/relations", async (req, res, next) => {
     order: [["updatedAt", "DESC"]],
   });
 
-  const vehicles = await Vehicle.findAll({ where: { isActive: true }, attributes: ["id", "registrationNumber"] });
+  const vehicles = await Vehicle.findAll({
+    where: { isActive: true },
+    attributes: ["id", "registrationNumber"],
+  });
+
+  const batches = await InventoryDetail.findAll({
+    include: [{ model: Inventory, as: "Inventory", attributes: [] }],
+    order: [["expiryDate", "ASC"]],
+  });
+
   res.json({
     success: true,
     message: "respond with a resource",
     dispatchOrders,
     vehicles,
+    batches,
   });
 });
 
@@ -538,7 +696,11 @@ router.get("/:id", async (req, res, next) => {
             model: Inventory,
             required: true,
             as: "Inventories",
-            include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+            include: [
+              { model: Product, include: [{ model: UOM }] },
+              { model: Company },
+              { model: Warehouse },
+            ],
           },
         ],
       },
@@ -559,6 +721,24 @@ router.get("/:id", async (req, res, next) => {
       { model: User },
     ],
   });
+
+  // for (const outward of response.rows) {
+  for (const inv of productOutward.Inventories) {
+    const detail = await InventoryDetail.findAll({
+      include: [
+        {
+          model: OutwardGroup,
+          as: "OutwardGroup",
+          through: OutwardGroupBatch,
+        },
+      ],
+      where: { "$OutwardGroup.id$": { [Op.eq]: inv.OutwardGroup.id } },
+      logging: true,
+    });
+    inv.OutwardGroup.dataValues.InventoryDetail = detail;
+  }
+  // }
+
   // Check if PO exists
   if (!productOutward)
     return res.status(400).json({

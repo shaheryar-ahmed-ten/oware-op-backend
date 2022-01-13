@@ -13,6 +13,7 @@ const {
   DispatchOrder,
   ProductOutward,
   OutwardGroup,
+  InventoryDetail,
 } = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
@@ -31,9 +32,11 @@ router.get("/", async (req, res, next) => {
   let where = {};
   if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
   if (req.query.search)
-    where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map((key) => ({
-      [key]: { [Op.like]: "%" + req.query.search + "%" },
-    }));
+    where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map(
+      (key) => ({
+        [key]: { [Op.like]: "%" + req.query.search + "%" },
+      })
+    );
   // if (req.query.days) {
   //   const currentDate = moment();
   //   const previousDate = moment().subtract(req.query.days, "days");
@@ -51,7 +54,12 @@ router.get("/", async (req, res, next) => {
   // }
 
   const response = await Inventory.findAndCountAll({
-    include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+    include: [
+      { model: Product, include: [{ model: UOM }] },
+      { model: Company },
+      { model: Warehouse },
+      { model: InventoryDetail, as: "InventoryDetail" },
+    ],
     order: [["updatedAt", "DESC"]],
     where,
     limit,
@@ -73,9 +81,12 @@ router.get("/export", async (req, res, next) => {
   let workbook = new ExcelJS.Workbook();
 
   let worksheet = workbook.addWorksheet("Inventory");
-
   const getColumnsConfig = (columns) =>
-    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+    columns.map((column) => ({
+      header: column,
+      width: Math.ceil(column.length * 1.5),
+      outlineLevel: 1,
+    }));
 
   worksheet.columns = getColumnsConfig([
     "PRODUCT NAME",
@@ -85,31 +96,23 @@ router.get("/export", async (req, res, next) => {
     "AVAILABLE QUANTITY",
     "COMMITTED QUANTITY",
     "DISPATCHED QUANTITY",
+    "BATCH ENABLED",
   ]);
 
-  // if (req.query.days) {
-  //   const currentDate = moment();
-  //   const previousDate = moment().subtract(req.query.days, "days");
-  //   where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
-  // }
-  // else if (req.query.startingDate && req.query.endingDate) {
-  //   const startDate = moment(req.query.startingDate);
-  //   const endDate = moment(req.query.endingDate).set({
-  //     hour: 23,
-  //     minute: 53,
-  //     second: 59,
-  //     millisecond: 0
-  //   });
-  //   where["createdAt"] = { [Op.between]: [startDate, endDate] };
-  // }
-
   if (req.query.search)
-    where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map((key) => ({
-      [key]: { [Op.like]: "%" + req.query.search + "%" },
-    }));
+    where[Op.or] = ["$Product.name$", "$Company.name$", "$Warehouse.name$"].map(
+      (key) => ({
+        [key]: { [Op.like]: "%" + req.query.search + "%" },
+      })
+    );
 
-  let response = await Inventory.findAll({
-    include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+  const response = await Inventory.findAll({
+    include: [
+      { model: Product, include: [{ model: UOM }] },
+      { model: Company },
+      { model: Warehouse },
+      { model: InventoryDetail, as: "InventoryDetail" },
+    ],
     order: [["updatedAt", "DESC"]],
     where,
   });
@@ -123,131 +126,71 @@ router.get("/export", async (req, res, next) => {
       row.availableQuantity,
       row.committedQuantity,
       row.dispatchedQuantity,
+      row.Product.batchEnabled,
     ])
   );
 
-  // worksheet = workbook.addWorksheet("Products");
+  worksheet = workbook.addWorksheet("Batch Details");
 
-  // worksheet.columns = getColumnsConfig([
-  //   "PRODUCT ID",
-  //   "NAME",
-  //   "DESCRIPTION",
-  //   "DIMENSIONS CBM",
-  //   "WEIGHT",
-  //   "UOM",
-  //   "CATEGORY",
-  //   "STATUS",
-  // ]);
+  worksheet.columns = getColumnsConfig([
+    "PRODUCT NAME",
+    "QUANTITY",
+    "BATCH NUMBER",
+    "BATCH NAME",
+    "MANUFACTURING DATE",
+    "EXPIRY DATE",
+  ]);
+  response.map((row) => {
+    row.Product.batchEnabled
+      ? worksheet.addRows(
+          row.InventoryDetail.map((invDetail) => [
+            row.Product.name,
+            invDetail.inwardQuantity,
+            invDetail.batchNumber,
+            invDetail.batchName,
+            moment(invDetail.manufacturingDate)
+              .tz(req.query.client_Tz)
+              .format("DD/MM/yy"),
+            moment(invDetail.expiryDate)
+              .tz(req.query.client_Tz)
+              .format("DD/MM/yy"),
+          ])
+        )
+      : "";
+  });
 
-  // where = {};
-
-  // if (req.query.days) {
-  //   const currentDate = moment();
-  //   const previousDate = moment().subtract(req.query.days, "days");
-  //   where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
-  // } else if (req.query.startingDate && req.query.endingDate) {
-  //   const startDate = moment(req.query.startingDate);
-  //   const endDate = moment(req.query.endingDate).set({
-  //     hour: 23,
-  //     minute: 53,
-  //     second: 59,
-  //     millisecond: 0,
-  //   });
-  //   where["createdAt"] = { [Op.between]: [startDate, endDate] };
-  // }
-
-  // response = await Product.findAll({
-  //   include: [{ model: UOM }, { model: Category }, { model: Brand }],
-  //   order: [["updatedAt", "DESC"]],
-  //   where,
-  // });
-
-  // worksheet.addRows(
-  //   response.map((row) => [
-  //     digitize(row.id || 0, 6),
-  //     row.name,
-  //     row.description,
-  //     row.dimensionsCBM,
-  //     row.weight,
-  //     row.Category.name,
-  //     row.UOM.name,
-  //     row.isActive ? "Active" : "In-Active",
-  //   ])
-  // );
-
-  // worksheet = workbook.addWorksheet("Companies");
-
-  // worksheet.columns = getColumnsConfig([
-  //   "ID",
-  //   "COMPANY NAME",
-  //   "CUSTOMER TYPE",
-  //   "CONTACT NAME",
-  //   "CONTACT EMAIL",
-  //   "CONTACT PHONE",
-  //   "NOTES",
-  //   "STATUS",
-  // ]);
-
-  // if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  // response = await Company.findAll({
-  //   include: [{ model: User, as: "Contact" }],
-  //   order: [["updatedAt", "DESC"]],
-  //   where,
-  // });
-
-  // worksheet.addRows(
-  //   response.map((row) => [
-  //     row.internalIdForBusiness || "",
-  //     row.name,
-  //     row.type,
-  //     row.Contact.firstName + " " + row.Contact.lastName,
-  //     row.Contact.email,
-  //     row.Contact.phone,
-  //     row.notes,
-  //     row.isActive ? "Active" : "In-Active",
-  //   ])
-  // );
-
-  // worksheet = workbook.addWorksheet("Warehouses");
-
-  // worksheet.columns = getColumnsConfig(["NAME", "BUSINESS WAREHOUSE CODE", "ADDRESS", "CITY", "STATUS"]);
-
-  // where = {};
-
-  // if (req.query.days) {
-  //   const currentDate = moment();
-  //   const previousDate = moment().subtract(req.query.days, "days");
-  //   where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
-  // } else if (req.query.startingDate && req.query.endingDate) {
-  //   const startDate = moment(req.query.startingDate);
-  //   const endDate = moment(req.query.endingDate).set({
-  //     hour: 23,
-  //     minute: 53,
-  //     second: 59,
-  //     millisecond: 0,
-  //   });
-  //   where["createdAt"] = { [Op.between]: [startDate, endDate] };
-  // }
-
-  // response = await Warehouse.findAll({
-  //   order: [["updatedAt", "DESC"]],
-  //   where,
-  // });
-
-  // worksheet.addRows(
-  //   response.map((row) => [
-  //     row.name,
-  //     row.businessWarehouseCode,
-  //     row.address,
-  //     row.city,
-  //     row.isActive ? "Active" : "In-Active",
-  //   ])
-  // );
-
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=" + "Inventory.xlsx"
+  );
 
   await workbook.xlsx.write(res).then(() => res.end());
+});
+
+/* GET inventory by id. */
+router.get("/:id", async (req, res, next) => {
+  const response = await Inventory.findOne({
+    include: [
+      {
+        model: Product,
+        include: [{ model: UOM }],
+      },
+      { model: Company },
+      { model: Warehouse },
+      { model: InventoryDetail, as: "InventoryDetail" },
+    ],
+    order: [["updatedAt", "DESC"]],
+    where: { id: req.params.id },
+  });
+  res.json({
+    success: true,
+    message: "respond with a resource",
+    data: response,
+  });
 });
 
 module.exports = router;

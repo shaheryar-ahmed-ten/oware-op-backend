@@ -24,7 +24,12 @@ const { Op } = require("sequelize");
 const RIDE_STATUS = require("../enums/rideStatus");
 const DROPOFF_STATUS = require("../enums/dropoffStatus.js");
 const { RELATION_TYPES, RIDE_WHATSAPP_ALERT } = require("../enums");
-const { digitize, addActivityLog, isValidDate, convertToUTC } = require("../services/common.services");
+const {
+  digitize,
+  addActivityLog,
+  isValidDate,
+  convertToUTC,
+} = require("../services/common.services");
 const ExcelJS = require("exceljs");
 const authService = require("../services/auth.service");
 const moment = require("moment-timezone");
@@ -97,8 +102,13 @@ const changeValidation = Joi.object({
   ),
 });
 
-const filterDataForSMS = async (id, status, vehicleId, customerId, internalIdForBusiness) => {
-  // console.log(id,status,vehicleId,customerId,internalIdForBusiness)
+const filterDataForSMS = async (
+  id,
+  status,
+  vehicleId,
+  customerId,
+  internalIdForBusiness
+) => {
   let where = { id: customerId };
   const companyResponse = await Company.findOne({
     include: [{ model: User }, { model: Vehicle, as: "Vehicles" }],
@@ -109,20 +119,19 @@ const filterDataForSMS = async (id, status, vehicleId, customerId, internalIdFor
     where: { id: vehicleResponse.carId },
     include: [{ model: CarMake }, { model: CarModel }],
   });
-  // console.log("companyRespo",companyResponse);
-  // console.log("companyResponseveicle",vehicleResponse,vehicleResponse.registrationNumber)
-  // console.log("carResponse",carResponse)
-  // console.log("carMake Name",carResponse.CarMake.name);
 
   var customerPhone = companyResponse.phone.toString();
   var customerPhone = customerPhone.replace(/0\d+/, function (t) {
     return t.substring(1);
   });
   const formattedNumberPhone = "92" + customerPhone;
-  // console.log("formatted Number", formattedNumberPhone);
-  const vehicleRegistrationNumber = vehicleResponse.registrationNumber ? vehicleResponse.registrationNumber : "";
+  const vehicleRegistrationNumber = vehicleResponse.registrationNumber
+    ? vehicleResponse.registrationNumber
+    : "";
   const carName =
-    carResponse.CarMake && carResponse.CarModel ? `${carResponse.CarMake.name}${carResponse.CarModel.name}` : "-";
+    carResponse.CarMake && carResponse.CarModel
+      ? `${carResponse.CarMake.name}${carResponse.CarModel.name}`
+      : "-";
 
   // const destinationNumber = "923029199786"
   // Testing status
@@ -133,13 +142,7 @@ const filterDataForSMS = async (id, status, vehicleId, customerId, internalIdFor
   const notificationMessageRideCompleted = `Dear Oware customer,  your ride #${internalIdForBusiness} using ${carName} having vehicle registration # ${vehicleRegistrationNumber} has been completed successfully. Thank you for using Oware, your trusted fulfilment partner.`;
   const notificationMessageRideCancelled = `Dear Oware customer,  your Ride ID# ${internalIdForBusiness} has been cancelled.`;
 
-  // if(status === "Not Assigned"){
-  //   // console.log("not assigned if")
-  //   sendSMS(formattedNumberPhone,notificationMessageNotAssigned)
-  // }
-  // else
   if (status === "On the way") {
-    // console.log("On the way if")
     sendSMS(formattedNumberPhone, notificationMessageOnWay);
   } else if (status === "Journey in-progress") {
     sendSMS(formattedNumberPhone, notificationMessageJourneyInProgress);
@@ -356,14 +359,18 @@ router.get("/relations", async (req, res, next) => {
     const vehicles = await Vehicle.findAll({ where, include: [Driver] });
     const drivers = await Driver.findAll({ where });
     const cities = await City.findAll({ where });
-    const companies = await Company.findAll({ where: { ...where, relationType: RELATION_TYPES.CUSTOMER } });
+    const companies = await Company.findAll({
+      where: { ...where, relationType: RELATION_TYPES.CUSTOMER },
+    });
     const productCategories = await Category.findAll({ where });
     const vendors = await Dao.Company.findAll({
       where: { ...where, relationType: RELATION_TYPES.VENDOR },
       include: [
         {
           model: Vehicle,
-          include: [{ model: Car, include: [{ model: CarMake }, { model: CarModel }] }],
+          include: [
+            { model: Car, include: [{ model: CarMake }, { model: CarModel }] },
+          ],
           as: "Vehicles",
         },
         { model: Driver, as: "Drivers" },
@@ -373,7 +380,12 @@ router.get("/relations", async (req, res, next) => {
       where,
       include: [
         { model: Car, include: [{ model: CarMake }, { model: CarModel }] },
-        { model: Company, where: { relationType: RELATION_TYPES.VENDOR }, as: "Vendor", require: true },
+        {
+          model: Company,
+          where: { relationType: RELATION_TYPES.VENDOR },
+          as: "Vendor",
+          require: true,
+        },
       ],
     });
 
@@ -420,7 +432,9 @@ router.get("/stats", async (req, res) => {
     stats.push({
       key: status,
       label: RIDE_STATUS[status],
-      value: await Ride.aggregate("id", "count", { where: { status: RIDE_STATUS[status] } }),
+      value: await Ride.aggregate("id", "count", {
+        where: { status: RIDE_STATUS[status] },
+      }),
     });
   }
   return res.json({
@@ -439,7 +453,11 @@ router.get("/export", async (req, res, next) => {
   let worksheet = workbook.addWorksheet("Loads");
 
   const getColumnsConfig = (columns) =>
-    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+    columns.map((column) => ({
+      header: column,
+      width: Math.ceil(column.length * 1.5),
+      outlineLevel: 1,
+    }));
 
   if (req.query.days) {
     const currentDate = moment();
@@ -538,7 +556,9 @@ router.get("/export", async (req, res, next) => {
       row.cancellationComment ? row.cancellationComment : " ",
       row.Customer && row.Customer.name ? row.Customer.name : " ",
       row.Driver ? row.Driver.Vendor.name : "",
-      row.Vehicle ? row.Vehicle.Car.CarMake.name + " " + row.Vehicle.Car.CarModel.name : " ",
+      row.Vehicle
+        ? row.Vehicle.Car.CarMake.name + " " + row.Vehicle.Car.CarModel.name
+        : " ",
       row.Driver ? row.Driver.name : row.Driver,
       row.Vehicle ? row.Vehicle.registrationNumber : " ",
       row.price ? row.price : " ",
@@ -547,19 +567,33 @@ router.get("/export", async (req, res, next) => {
       row.driverIncentive ? row.driverIncentive : " ",
       row.pickupCity ? row.pickupCity.name : " ",
       row.pickupAddress ? row.pickupAddress : " ",
-      isValidDate(row.pickupDate) ? moment(row.pickupDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A") : " ",
+      isValidDate(row.pickupDate)
+        ? moment(row.pickupDate)
+            .tz(req.query.client_Tz)
+            .format("DD/MM/yy h:mm A")
+        : " ",
       // row.dropoffCity ? row.dropoffCity.name : " ",
       // row.dropoffAddress ? row.dropoffAddress : " ",
       // isValidDate(row.dropoffDate) ? moment(row.dropoffDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A") : " ",
       // moment(row.dropoffDate).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
-      isValidDate(row.createdAt) ? moment(row.createdAt).tz(req.query.client_Tz).format("DD/MM/yy h:mm A") : " ",
+      isValidDate(row.createdAt)
+        ? moment(row.createdAt)
+            .tz(req.query.client_Tz)
+            .format("DD/MM/yy h:mm A")
+        : " ",
       // moment(row.createdAt).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
-      isValidDate(row.updatedAt) ? moment(row.updatedAt).tz(req.query.client_Tz).format("DD/MM/yy h:mm A") : " ",
+      isValidDate(row.updatedAt)
+        ? moment(row.updatedAt)
+            .tz(req.query.client_Tz)
+            .format("DD/MM/yy h:mm A")
+        : " ",
       // moment(row.updatedAt).tz(req.query.client_Tz).format("DD/MM/yy h:mm A"),
       // row.pocName ? row.pocName : " ",
       // row.pocNumber ? row.pocNumber : " ",
       row.eta !== null && row.eta !== 0 ? row.eta / 60 : 0,
-      row.completionTime !== null && row.completionTime !== 0 ? row.completionTime / 60 : 0,
+      row.completionTime !== null && row.completionTime !== 0
+        ? row.completionTime / 60
+        : 0,
       // row.currentLocation ? row.currentLocation : " ",
       row.weightCargo ? row.weightCargo : " ",
       // row.memo ? row.memo : " ",
@@ -579,28 +613,40 @@ router.get("/export", async (req, res, next) => {
     "POC NUMBER",
     "CURRENT LOCATION",
     "MEMO",
+    "STATUS",
   ]);
 
   response.rows.map((row) => {
     worksheet.addRows(
       row.RideDropoff.map((dropoff) => [
         row.id,
-        dropoff.ProductOutward ? dropoff.ProductOutward.internalIdForBusiness : " ",
+        dropoff.ProductOutward
+          ? dropoff.ProductOutward.internalIdForBusiness
+          : " ",
         dropoff.DropoffCity ? dropoff.DropoffCity.name : " ",
         dropoff.address ? dropoff.address : " ",
         isValidDate(dropoff.dateTime)
-          ? moment(dropoff.dateTime).tz(req.query.client_Tz).format("DD/MM/yy h:mm A")
+          ? moment(dropoff.dateTime)
+              .tz(req.query.client_Tz)
+              .format("DD/MM/yy h:mm A")
           : " ",
         dropoff.pocName ? dropoff.pocName : " ",
         dropoff.pocNumber ? dropoff.pocNumber : " ",
         dropoff.currentLocation ? dropoff.currentLocation : " ",
         dropoff.memo ? dropoff.memo : " ",
+        dropoff.status ? dropoff.status : "",
       ])
     );
   });
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=" + "Inventory.xlsx"
+  );
 
   await workbook.xlsx.write(res).then(() => res.end());
 });
@@ -643,7 +689,14 @@ router.get("/:id", async (req, res, next) => {
         model: City,
         as: "pickupCity",
       },
-      { model: RideDropoff, as: "RideDropoff", include: [{ model: City, as: "DropoffCity" },{ model: models.ProductOutward, as: "ProductOutward" }] },
+      {
+        model: RideDropoff,
+        as: "RideDropoff",
+        include: [
+          { model: City, as: "DropoffCity" },
+          { model: models.ProductOutward, as: "ProductOutward" },
+        ],
+      },
     ],
   });
   if (!ride)
@@ -666,12 +719,15 @@ router.post("/", activityLog, async (req, res, next) => {
     const isValid = await AddValidation.validateAsync(req.body);
 
     if (isValid) {
-      console.log("req.body", req.body);
       let products = req.body.products;
       delete req.body.products;
       await sequelize.transaction(async (transaction) => {
-        req.body["pickupDate"] = isValidDate(req.body["pickupDate"]) ? convertToUTC(req.body["pickupDate"]) : null;
-        req.body["dropoffDate"] = isValidDate(req.body["dropoffDate"]) ? convertToUTC(req.body["dropoffDate"]) : null;
+        req.body["pickupDate"] = isValidDate(req.body["pickupDate"])
+          ? convertToUTC(req.body["pickupDate"])
+          : null;
+        req.body["dropoffDate"] = isValidDate(req.body["dropoffDate"])
+          ? convertToUTC(req.body["dropoffDate"])
+          : null;
         ride = await Ride.create(
           {
             userId: req.userId,
@@ -702,10 +758,20 @@ router.post("/", activityLog, async (req, res, next) => {
           })),
           { transaction }
         );
-        filterDataForSMS(ride.id, ride.status, ride.vehicleId, ride.customerId, ride.internalIdForBusiness);
+        filterDataForSMS(
+          ride.id,
+          ride.status,
+          ride.vehicleId,
+          ride.customerId,
+          ride.internalIdForBusiness
+        );
       });
     } else {
-      return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to add ride");
+      return res.sendError(
+        httpStatus.UNPROCESSABLE_ENTITY,
+        isValid,
+        "Unable to add ride"
+      );
     }
   } catch (err) {
     console.log("err", err);
@@ -727,8 +793,6 @@ router.put("/:id", activityLog, async (req, res, next) => {
     const isValid = await AddValidation.validateAsync(req.body);
 
     if (isValid) {
-      console.log("req.body", req.body);
-
       let ride = await Ride.findOne({
         where: { id: req.params.id },
       });
@@ -740,7 +804,11 @@ router.put("/:id", activityLog, async (req, res, next) => {
         });
 
       await sequelize.transaction(async (transaction) => {
-        await Ride.update(req.body, { where: { id: req.params.id } }, { transaction });
+        await Ride.update(
+          req.body,
+          { where: { id: req.params.id } },
+          { transaction }
+        );
 
         let sequenceNumber = 1;
         if (req.body.hasOwnProperty("dropoffs")) {
@@ -771,7 +839,13 @@ router.put("/:id", activityLog, async (req, res, next) => {
           include: ["RideDropoff"],
         });
         // sms Api
-        filterDataForSMS(ride.id, ride.status, ride.vehicleId, ride.customerId, ride.internalIdForBusiness);
+        filterDataForSMS(
+          ride.id,
+          ride.status,
+          ride.vehicleId,
+          ride.customerId,
+          ride.internalIdForBusiness
+        );
 
         await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
         return res.json({
@@ -781,7 +855,11 @@ router.put("/:id", activityLog, async (req, res, next) => {
         });
       });
     } else {
-      return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to update ride");
+      return res.sendError(
+        httpStatus.UNPROCESSABLE_ENTITY,
+        isValid,
+        "Unable to update ride"
+      );
     }
   } catch (err) {
     console.log("err", err);
@@ -852,8 +930,6 @@ router.put("/changeRide/:id", activityLog, async (req, res, next) => {
             })
           )[0].sequenceNumber;
 
-          console.log("seq", seq);
-
           await RideDropoff.bulkCreate(
             anotherRide.map((dropoff) => ({
               rideId: dropoff.rideId,
@@ -892,7 +968,11 @@ router.put("/changeRide/:id", activityLog, async (req, res, next) => {
       });
       // filterDataForSMS(req.body.id,req.body.status,req.body.vehicleId,req.body.customerId);
     } else {
-      return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to update ride");
+      return res.sendError(
+        httpStatus.UNPROCESSABLE_ENTITY,
+        isValid,
+        "Unable to update ride"
+      );
     }
   } catch (err) {
     console.log("err", err);

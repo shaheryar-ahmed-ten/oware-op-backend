@@ -1,6 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const { Product, User, Brand, UOM, Category, sequelize } = require("../models");
+const {
+  Product,
+  User,
+  Brand,
+  UOM,
+  Category,
+  sequelize,
+  Inventory,
+  InventoryDetail,
+} = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const activityLog = require("../middlewares/activityLog");
@@ -12,6 +21,7 @@ const ActivityLog = require("../dao/ActivityLog");
 const ExcelJS = require("exceljs");
 const moment = require("moment-timezone");
 const { digitize } = require("../services/common.services");
+const ProductInward = require("../dao/ProductInward");
 
 /* GET products listing. */
 router.get("/", async (req, res, next) => {
@@ -34,9 +44,17 @@ router.get("/", async (req, res, next) => {
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
-  if (req.query.search) where[Op.or] = ["name"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+  if (req.query.search)
+    where[Op.or] = ["name"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
+    }));
   const response = await Product.findAndCountAll({
-    include: [{ model: User }, { model: UOM }, { model: Category }, { model: Brand }],
+    include: [
+      { model: User },
+      { model: UOM },
+      { model: Category },
+      { model: Brand },
+    ],
     order: [["updatedAt", "DESC"]],
     where,
     limit,
@@ -92,18 +110,30 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       "Category",
       "Brand",
       "Uom",
+      "BatchEnabled",
       "IsActive",
     ];
-    if (totalProducts > BULK_PRODUCT_LIMIT) validationErrors.push(`Cannot add product above ${BULK_PRODUCT_LIMIT}`);
+    if (totalProducts > BULK_PRODUCT_LIMIT)
+      validationErrors.push(`Cannot add product above ${BULK_PRODUCT_LIMIT}`);
     else if (totalProducts === 0)
-      return res.sendError(httpStatus.CONFLICT, "Cannot add empty sheet", `Failed to add Bulk Products`);
+      return res.sendError(
+        httpStatus.CONFLICT,
+        "Cannot add empty sheet",
+        `Failed to add Bulk Products`
+      );
     let row = 2;
     for (const product of req.body.products) {
       Object.keys(product).forEach((item) => {
-        if (!allowedValues.includes(item)) validationErrors.push(`Field ${item} is invalid`);
+        if (!allowedValues.includes(item))
+          validationErrors.push(`Field ${item} is invalid`);
       });
     }
-    if (validationErrors.length) res.sendError(httpStatus.CONFLICT, validationErrors, `Failed to add Bulk Products`);
+    if (validationErrors.length)
+      res.sendError(
+        httpStatus.CONFLICT,
+        validationErrors,
+        `Failed to add Bulk Products`
+      );
     for (const product of req.body.products) {
       product["name"] = product["Name"];
       product["description"] = product["Description"];
@@ -112,42 +142,82 @@ router.post("/bulk", activityLog, async (req, res, next) => {
       product["category"] = product["Category"];
       product["brand"] = product["Brand"];
       product["uom"] = product["Uom"];
+      product["batchEnabled"] = product["BatchEnabled"];
       product["isActive"] = product["IsActive"];
 
-      if (product["name"].length === 0) validationErrors.push(`Row ${row} : product name cannot be empty.`);
-      if (product["description"].length === 0) validationErrors.push(`Row ${row} : description cannot be empty.`);
+      if (product["name"].length === 0)
+        validationErrors.push(`Row ${row} : product name cannot be empty.`);
+      if (product["description"].length === 0)
+        validationErrors.push(`Row ${row} : description cannot be empty.`);
 
       if (SPECIAL_CHARACTERS.test(product["name"]))
-        validationErrors.push(`Row ${row} : product ${product.name} has invalid characters for column Name`);
-      const productAlreadyExist = await Dao.Product.findOne({ where: { name: product.name } });
+        validationErrors.push(
+          `Row ${row} : product ${product.name} has invalid characters for column Name`
+        );
+      const productAlreadyExist = await Dao.Product.findOne({
+        where: { name: product.name },
+      });
       if (productAlreadyExist)
-        validationErrors.push(`Row ${row} : product already exist with name ${productAlreadyExist.name}.`);
+        validationErrors.push(
+          `Row ${row} : product already exist with name ${productAlreadyExist.name}.`
+        );
+
+      if (
+        product["batchEnabled"] !== "TRUE" &&
+        product["batchEnabled"] !== "FALSE"
+      )
+        validationErrors.push(
+          `Row ${row} : ${product.name} has invalid value for column batchEnabled ${product.batchEnabled}`
+        );
 
       if (product["isActive"] !== "TRUE" && product["isActive"] !== "FALSE")
-        validationErrors.push(`Row ${row} : ${product.name} has invalid value for column isActive ${product.isActive}`);
+        validationErrors.push(
+          `Row ${row} : ${product.name} has invalid value for column isActive ${product.isActive}`
+        );
 
       product["userId"] = req.userId;
+      product["batchEnabled"] = product["batchEnabled"] === "TRUE" ? 1 : 0;
       product["isActive"] = product["isActive"] === "TRUE" ? 1 : 0;
       product["dimensionsCBM"] = product["volume"];
       const category = await Dao.Category.findOne({
-        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.category), isActive: 1 },
+        where: {
+          where: sequelize.where(
+            sequelize.fn("BINARY", sequelize.col("name")),
+            product.category
+          ),
+          isActive: 1,
+        },
       });
       if (!category)
         validationErrors.push(
           `Row ${row} : category doesn't exist with name ${product.category} for product ${product.name}.`
         );
       const brand = await Dao.Brand.findOne({
-        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.brand), isActive: 1 },
+        where: {
+          where: sequelize.where(
+            sequelize.fn("BINARY", sequelize.col("name")),
+            product.brand
+          ),
+          isActive: 1,
+        },
       });
       if (!brand)
         validationErrors.push(
           `Row ${row} : brand doesn't exist with name ${product.brand} for product ${product.name}.`
         );
       const uom = await Dao.UOM.findOne({
-        where: { where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), product.uom), isActive: 1 },
+        where: {
+          where: sequelize.where(
+            sequelize.fn("BINARY", sequelize.col("name")),
+            product.uom
+          ),
+          isActive: 1,
+        },
       });
       if (!uom)
-        validationErrors.push(`Row ${row} : uom doesn't exist with name ${product.uom} for product ${product.name}.`);
+        validationErrors.push(
+          `Row ${row} : uom doesn't exist with name ${product.uom} for product ${product.name}.`
+        );
 
       if (category && brand && uom) {
         product["categoryId"] = category.id;
@@ -159,7 +229,11 @@ router.post("/bulk", activityLog, async (req, res, next) => {
     }
 
     if (validationErrors.length)
-      return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk Products");
+      return res.sendError(
+        httpStatus.CONFLICT,
+        validationErrors,
+        "Failed to add bulk Products"
+      );
     products = await Product.bulkCreate(req.body.products);
   } catch (err) {
     return res.json({
@@ -181,7 +255,11 @@ router.get("/bulk-template", async (req, res, next) => {
   let worksheet = workbook.addWorksheet("Products");
 
   const getColumnsConfig = (columns) =>
-    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+    columns.map((column) => ({
+      header: column,
+      width: Math.ceil(column.length * 1.5),
+      outlineLevel: 1,
+    }));
 
   worksheet.columns = getColumnsConfig([
     "Name",
@@ -191,6 +269,7 @@ router.get("/bulk-template", async (req, res, next) => {
     "Category",
     "Brand",
     "Uom",
+    "BatchEnabled",
     "IsActive",
   ]);
 
@@ -204,6 +283,7 @@ router.get("/bulk-template", async (req, res, next) => {
         category: "Drinks",
         brand: "CocoCola",
         uom: "Bottles",
+        batchEnabled: "FALSE",
         isActive: "TRUE",
       },
       {
@@ -214,13 +294,30 @@ router.get("/bulk-template", async (req, res, next) => {
         category: "liquids",
         brand: "CocoCola",
         uom: "PCs",
+        batchEnabled: "TRUE",
         isActive: "FALSE",
       },
-    ].map((el, idx) => [el.name, el.description, el.volume, el.weight, el.category, el.brand, el.uom, el.isActive])
+    ].map((el, idx) => [
+      el.name,
+      el.description,
+      el.volume,
+      el.weight,
+      el.category,
+      el.brand,
+      el.uom,
+      el.batchEnabled,
+      el.isActive,
+    ])
   );
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=" + "Inventory.xlsx"
+  );
 
   await workbook.xlsx.write(res).then(() => res.end());
 });
@@ -233,16 +330,89 @@ router.put("/:id", activityLog, async (req, res, next) => {
       success: false,
       message: "No product found!",
     });
-  product.name = req.body.name;
-  product.description = req.body.description;
-  product.dimensionsCBM = req.body.dimensionsCBM;
-  product.weight = req.body.weight;
-  product.categoryId = req.body.categoryId;
-  product.brandId = req.body.brandId;
-  product.uomId = req.body.uomId;
-  product.isActive = req.body.isActive;
   try {
-    const response = await product.save();
+    const inventories = await Inventory.findAll({
+      where: { productId: product.id },
+      include: ["InventoryDetail"],
+    });
+
+    //check if you can change batch toggle for all the inventories,and send error if there is any
+    for (const inventory of inventories) {
+      if (product.batchEnabled === false && req.body.batchEnabled === true) {
+        if (inventory.totalInwardQuantity > 0) {
+          return res.sendError(
+            httpStatus.CONFLICT,
+            "state of toggle cannot be changed when inward exist!"
+          );
+        }
+      } else if (
+        product.batchEnabled === true &&
+        req.body.batchEnabled === false
+      ) {
+        if (inventory.totalInwardQuantity > 0) {
+          return res.sendError(
+            httpStatus.CONFLICT,
+            "state of toggle cannot be changed when inward exist!"
+          );
+        }
+      }
+    }
+
+    const response = await Product.update(req.body, {
+      where: { id: req.params.id },
+    });
+    await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
+    return res.json({
+      success: true,
+      message: "Product updated",
+      data: product,
+    });
+  } catch (err) {
+    console.log("err", err);
+    return res.json({
+      success: false,
+      message: err.errors.pop().message,
+    });
+  }
+});
+
+/* PUT toggle batch enable on existing product. */
+router.put("/enable/:id", activityLog, async (req, res, next) => {
+  let product = await Product.findOne({ where: { id: req.params.id } });
+  if (!product)
+    return res.status(400).json({
+      success: false,
+      message: "No product found!",
+    });
+  try {
+    const inventory = await Inventory.findOne({
+      where: { productId: product.id },
+      include: ["InventoryDetail"],
+    });
+
+    if (product.batchEnabled === true && req.body.batchEnabled === false) {
+      for (const batch of inventory.InventoryDetail) {
+        if (batch.availableQuantity > 0)
+          return res.sendError(
+            httpStatus.CONFLICT,
+            "cannot toggle off for product having available batches"
+          );
+      }
+    }
+    if (product.batchEnabled === false && req.body.batchEnabled === true) {
+      for (const batch of inventory.InventoryDetail) {
+        if (batch.availableQuantity > 0)
+          return res.sendError(
+            httpStatus.CONFLICT,
+            "cannot toggle on for product having available inventory"
+          );
+      }
+    }
+
+    const response = await Product.update(
+      { batchEnabled: req.body.batchEnabled },
+      { where: { id: req.params.id } }
+    );
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,
@@ -286,24 +456,27 @@ router.get("/relations", async (req, res, next) => {
 });
 
 router.get("/export", activityLog, async (req, res, next) => {
-  
   let workbook = new ExcelJS.Workbook();
 
   worksheet = workbook.addWorksheet("Products");
 
   const getColumnsConfig = (columns) =>
-    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+    columns.map((column) => ({
+      header: column,
+      width: Math.ceil(column.length * 1.5),
+      outlineLevel: 1,
+    }));
 
-    worksheet.columns = getColumnsConfig([
-      "PRODUCT ID",
-      "NAME",
-      "DESCRIPTION",
-      "DIMENSIONS CBM",
-      "WEIGHT",
-      "CATEGORY",
-      "UOM",
-      "STATUS",
-    ]);
+  worksheet.columns = getColumnsConfig([
+    "PRODUCT ID",
+    "NAME",
+    "DESCRIPTION",
+    "DIMENSIONS CBM",
+    "WEIGHT",
+    "CATEGORY",
+    "UOM",
+    "STATUS",
+  ]);
 
   where = {};
 
@@ -321,7 +494,10 @@ router.get("/export", activityLog, async (req, res, next) => {
     });
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
-  if (req.query.search) where[Op.or] = ["name"].map((key) => ({ [key]: { [Op.like]: "%" + req.query.search + "%" } }));
+  if (req.query.search)
+    where[Op.or] = ["name"].map((key) => ({
+      [key]: { [Op.like]: "%" + req.query.search + "%" },
+    }));
 
   response = await Product.findAll({
     include: [{ model: UOM }, { model: Category }, { model: Brand }],
@@ -342,8 +518,14 @@ router.get("/export", activityLog, async (req, res, next) => {
     ])
   );
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=" + "Inventory.xlsx"
+  );
 
   await workbook.xlsx.write(res).then(() => res.end());
 });

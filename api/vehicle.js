@@ -1,6 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const { Vehicle, Driver, Car, CarMake, CarModel, Company, File } = require("../models");
+const {
+  Vehicle,
+  Driver,
+  Car,
+  CarMake,
+  CarModel,
+  Company,
+  File,
+} = require("../models");
 const config = require("../config");
 const { Op } = require("sequelize");
 const VEHICLE_TYPES = require("../enums/vehicleTypes");
@@ -20,23 +28,26 @@ router.get("/", async (req, res, next) => {
       // userId: req.userId
     };
     if (req.query.search)
-      where[Op.or] = ["registrationNumber", "$Vendor.name$", "$Car.CarMake.name$", "$Car.CarModel.name$"].map(
-        (key) => ({
-          [key]: { [Op.like]: "%" + req.query.search + "%" },
-        })
-      );
-    // number(req.query.carId)
-    // number(req.query.companyId)
-    where[Op.and] = []
+      where[Op.or] = [
+        "registrationNumber",
+        "$Vendor.name$",
+        "$Car.CarMake.name$",
+        "$Car.CarModel.name$",
+      ].map((key) => ({
+        [key]: { [Op.like]: "%" + req.query.search + "%" },
+      }));
+
+    where[Op.and] = [];
     if (req.query.carId) where[Op.and].push({ carId: Number(req.query.carId) });
 
-    if (req.query.driverId) where[Op.and].push({ driverId: Number(req.query.driverId) });
+    if (req.query.driverId)
+      where[Op.and].push({ driverId: Number(req.query.driverId) });
 
-    if (req.query.registrationNumber) where[Op.and].push({ registrationNumber: req.query.registrationNumber });
+    if (req.query.registrationNumber)
+      where[Op.and].push({ registrationNumber: req.query.registrationNumber });
 
-    if (req.query.companyId) where[Op.and].push({ companyId: Number(req.query.companyId) });
-    // console.log("carID",req.query.carId)
-    // console.log("venodr/companyID",req.query.companyId)
+    if (req.query.companyId)
+      where[Op.and].push({ companyId: Number(req.query.companyId) });
 
     const response = await Vehicle.findAndCountAll({
       include: [
@@ -141,7 +152,10 @@ router.get("/relations", async (req, res, next) => {
     where,
     include: [
       { model: Company, as: "Vendor" },
-      { model: Vehicle, include: [{ model: Car, include: [CarMake, CarModel] }] },
+      {
+        model: Vehicle,
+        include: [{ model: Car, include: [CarMake, CarModel] }],
+      },
     ],
   });
   const vendors = await Company.findAll({

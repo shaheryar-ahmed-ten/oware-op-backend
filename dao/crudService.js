@@ -74,6 +74,7 @@ class CrudServiceDao {
 
   async destroy(params) {
     const record = await this.model.destroy(params);
+    return record ? record : null
   }
 
   async findByPk(id) {

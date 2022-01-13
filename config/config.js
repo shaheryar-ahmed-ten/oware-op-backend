@@ -24,7 +24,14 @@ module.exports = {
   },
   misc: {
     rowsPerPage: 10,
-    customerTypes: ["Manufacturer", "Distributor", "Importer", "Trader", "Wholesaler", "Retailer"],
+    customerTypes: [
+      "Manufacturer",
+      "Distributor",
+      "Importer",
+      "Trader",
+      "Wholesaler",
+      "Retailer",
+    ],
     bucket: "owaredevuploads",
     maxUploadSize: 2097152,
     dbLogging: false,
