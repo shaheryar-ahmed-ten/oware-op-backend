@@ -136,26 +136,22 @@ router.get("/export", async (req, res, next) => {
     "PRODUCT NAME",
     "QUANTITY",
     "BATCH NUMBER",
-    "BATCH NAME",
+    // "BATCH NAME",
     "MANUFACTURING DATE",
     "EXPIRY DATE",
   ]);
   response.map((row) => {
     row.Product.batchEnabled
       ? worksheet.addRows(
-          row.InventoryDetail.map((invDetail) => [
-            row.Product.name,
-            invDetail.inwardQuantity,
-            invDetail.batchNumber,
-            invDetail.batchName,
-            moment(invDetail.manufacturingDate)
-              .tz(req.query.client_Tz)
-              .format("DD/MM/yy"),
-            moment(invDetail.expiryDate)
-              .tz(req.query.client_Tz)
-              .format("DD/MM/yy"),
-          ])
-        )
+        row.InventoryDetail.map((invDetail) => [
+          row.Product.name,
+          invDetail.inwardQuantity,
+          invDetail.batchNumber,
+          // invDetail.batchName,
+          moment(invDetail.manufacturingDate).tz(req.query.client_Tz).format("DD/MM/yy"),
+          moment(invDetail.expiryDate).tz(req.query.client_Tz).format("DD/MM/yy"),
+        ])
+      )
       : "";
   });
 

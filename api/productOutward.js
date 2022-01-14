@@ -243,6 +243,11 @@ router.get("/export", async (req, res, next) => {
     "EXPECTED SHIPMENT DATE",
     "ACTUAL DISPATCH DATE",
     "TRANSPORTATION TYPE",
+    // "BATCH ENABLED",
+    "BATCH QUANTITY",
+    "BATCH NUMBER",
+    "MANUFACTURING DATE",
+    "EXPIRY DATE",
   ]);
 
   if (req.query.search)
@@ -302,11 +307,76 @@ router.get("/export", async (req, res, next) => {
           },
         ],
       },
+      {
+        model: Vehicle,
+        include: [{ model: Car, include: [CarMake, CarModel] }],
+      },
+      {
+        model: Inventory,
+        as: "Inventories",
+        required: true,
+        include: [
+          { model: Product, as: "Product", include: [{ model: UOM }] },
+          { model: Company },
+          { model: Warehouse },
+        ],
+      },
       { model: User },
     ],
     order: [["updatedAt", "DESC"]],
     where,
   });
+
+  var acc = [];
+  response.forEach((productOutward) => {
+    var sum = [];
+    productOutward.DispatchOrder.Inventories.forEach((Inventory) => {
+      sum.push(Inventory.OrderGroup.quantity);
+    });
+    acc.push(
+      sum.reduce((acc, po) => {
+        return acc + po;
+      })
+    );
+  });
+  for (let index = 0; index < acc.length; index++) {
+    response[index].DispatchOrder.quantity = acc[index];
+  }
+
+  var comittedAcc = [];
+  response.forEach((productOutward) => {
+    var sumOfComitted = [];
+    productOutward.Inventories.forEach((Inventory) => {
+      sumOfComitted.push(Inventory.OutwardGroup.quantity);
+    });
+    comittedAcc.push(
+      sumOfComitted.reduce((acc, po) => {
+        return acc + po;
+      })
+    );
+  });
+  for (let index = 0; index < comittedAcc.length; index++) {
+    response[index].quantity = comittedAcc[index];
+  }
+
+  for (const outward of response) {
+    for (const inv of outward.Inventories) {
+      const detail = await InventoryDetail.findAll({
+        include: [
+          {
+            model: OutwardGroup,
+            as: "OutwardGroup",
+            through: OutwardGroupBatch,
+          },
+        ],
+        where: { "$OutwardGroup.id$": { [Op.eq]: inv.OutwardGroup.id } },
+        logging: true,
+      });
+      inv.OutwardGroup.dataValues.InventoryDetail = detail;
+    }
+  }
+
+
 
   const outwardArray = [];
   for (const outward of response) {
@@ -317,30 +387,127 @@ router.get("/export", async (req, res, next) => {
       const OutG = await OutwardGroup.findOne({
         where: { inventoryId: inv.id, outwardId: outward.id },
       });
+      if (inv.Product.batchEnabled) {
+        var outwardInv = outward.Inventories.find((inv) => inv.id == inv.id)
+        if (!!outwardInv) {
+          for (let invDetail of outwardInv.OutwardGroup.dataValues.InventoryDetail) {
+            var outwardQuantity = invDetail.OutwardGroup.find((outGroup) => outGroup.inventoryId == invDetail.inventoryId).OutwardGroupBatch.quantity || ""
+            outwardArray.push([
+              outward.internalIdForBusiness || "",
+              inv.Company.name,
+              inv.Product.name,
+              inv.Warehouse.name,
+              inv.Product.UOM.name,
+              outward.DispatchOrder.receiverName,
+              outward.DispatchOrder.receiverPhone,
+              outward.referenceId || "",
+              `${outward.User.firstName || ""} ${outward.User.lastName || ""}`,
+              OG.quantity || 0,
+              OutG ? OutG.quantity || 0 : "Not available",
+              // OutG.quantity || 0,
+              moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
+              moment(outward.createdAt)
+                .tz(req.query.client_Tz)
+                .format("DD/MM/yy HH:mm"),
+              outward.externalVehicle ? "Customer Provided" : "Oware Provided",
+              outwardQuantity || "",
+              invDetail.batchNumber || "",
+              invDetail.manufacturingDate ?
+                moment(invDetail.manufacturingDate)
+                  .tz(req.query.client_Tz)
+                  .format("DD/MM/yy")
+                :
+                ""
+              ,
+              invDetail.expiryDate ?
+                moment(invDetail.expiryDate)
+                  .tz(req.query.client_Tz)
+                  .format("DD/MM/yy")
+                :
+                ""
+            ]);
+          }
+        }
 
-      outwardArray.push([
-        outward.internalIdForBusiness || "",
-        inv.Company.name,
-        inv.Product.name,
-        inv.Warehouse.name,
-        inv.Product.UOM.name,
-        outward.DispatchOrder.receiverName,
-        outward.DispatchOrder.receiverPhone,
-        outward.referenceId || "",
-        `${outward.User.firstName || ""} ${outward.User.lastName || ""}`,
-        OG.quantity || 0,
-        OutG ? OutG.quantity || 0 : "Not available",
-        // OutG.quantity || 0,
-        moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
-        moment(outward.createdAt)
-          .tz(req.query.client_Tz)
-          .format("DD/MM/yy HH:mm"),
-        outward.externalVehicle ? "Customer Provided" : "Oware Provided",
-      ]);
+      }
+      else {
+        outwardArray.push([
+          outward.internalIdForBusiness || "",
+          inv.Company.name,
+          inv.Product.name,
+          inv.Warehouse.name,
+          inv.Product.UOM.name,
+          outward.DispatchOrder.receiverName,
+          outward.DispatchOrder.receiverPhone,
+          outward.referenceId || "",
+          `${outward.User.firstName || ""} ${outward.User.lastName || ""}`,
+          OG.quantity || 0,
+          OutG ? OutG.quantity || 0 : "Not available",
+          // OutG.quantity || 0,
+          moment(outward.DispatchOrder.shipmentDate).format("DD/MM/yy HH:mm"),
+          moment(outward.createdAt)
+            .tz(req.query.client_Tz)
+            .format("DD/MM/yy HH:mm"),
+          outward.externalVehicle ? "Customer Provided" : "Oware Provided",
+          "",
+          "",
+          "",
+          ""
+        ]);
+      }
+
     }
   }
 
   worksheet.addRows(outwardArray);
+
+  // worksheet = workbook.addWorksheet("Batch Details");
+
+  // worksheet.columns = getColumnsConfig([
+  //   "OUTWARD ID",
+  //   "PRODUCT NAME",
+  //   "QUANTITY",
+  //   "BATCH NUMBER",
+  //   "MANUFACTURING DATE",
+  //   "EXPIRY DATE",
+  // ]);
+
+  // const invDetailArray = [];
+
+  // for (const outward of response) {
+  //   for (const dispatchOrderInv of outward.DispatchOrder.Inventories) {
+  //     if (dispatchOrderInv.Product.batchEnabled) {
+  //       var outwardInv = outward.Inventories.find((inv) => inv.id == dispatchOrderInv.id)
+  //       if (!!outwardInv) {
+  //         for (let invDetail of outwardInv.OutwardGroup.dataValues.InventoryDetail) {
+  //           var outwardQuantity = invDetail.OutwardGroup.find((outGroup) => outGroup.inventoryId == invDetail.inventoryId).OutwardGroupBatch.quantity || ""
+
+  //           invDetailArray.push([
+  //             outward.internalIdForBusiness || "",
+  //             dispatchOrderInv.Product.name,
+  //             outwardQuantity || "",
+  //             invDetail.batchNumber || "",
+  //             invDetail.manufacturingDate ?
+  //               moment(invDetail.manufacturingDate)
+  //                 .tz(req.query.client_Tz)
+  //                 .format("DD/MM/yy")
+  //               :
+  //               ""
+  //             ,
+  //             invDetail.expiryDate ?
+  //               moment(invDetail.expiryDate)
+  //                 .tz(req.query.client_Tz)
+  //                 .format("DD/MM/yy")
+  //               :
+  //               ""
+  //           ])
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  // worksheet.addRows(invDetailArray);
 
   res.setHeader(
     "Content-Type",
