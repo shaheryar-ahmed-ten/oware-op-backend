@@ -55,9 +55,9 @@ router.get("/", async (req, res, next) => {
 
   const response = await Inventory.findAndCountAll({
     include: [
-      { model: Product, include: [{ model: UOM }] },
-      { model: Company },
-      { model: Warehouse },
+      { model: Product, include: [{ model: UOM }], required: true },
+      { model: Company , required: true},
+      { model: Warehouse , required: true},
       { model: InventoryDetail, as: "InventoryDetail" },
     ],
     order: [["updatedAt", "DESC"]],
@@ -108,9 +108,9 @@ router.get("/export", async (req, res, next) => {
 
   const response = await Inventory.findAll({
     include: [
-      { model: Product, include: [{ model: UOM }] },
-      { model: Company },
-      { model: Warehouse },
+      { model: Product, include: [{ model: UOM }], required: true },
+      { model: Company, required: true },
+      { model: Warehouse , required: true},
       { model: InventoryDetail, as: "InventoryDetail" },
     ],
     order: [["updatedAt", "DESC"]],
