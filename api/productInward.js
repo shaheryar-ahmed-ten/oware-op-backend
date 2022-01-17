@@ -254,6 +254,7 @@ router.get("/export", async (req, res, next) => {
     ],
     order: [["updatedAt", "DESC"]],
     where,
+    limit: 50
   });
 
   const inwardArray = [];
