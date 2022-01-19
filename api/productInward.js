@@ -118,23 +118,18 @@ router.get("/", async (req, res, next) => {
   const response = await ProductInward.findAndCountAll({
     distinct: true,
     include: [
-      {
-        model: Product,
-        as: "Product",
-        include: [{ model: UOM }],
-      },
-      {
-        model: Product,
-        as: "Products",
-        include: [
-          { model: UOM },
-          // {
-          //   model: InwardGroup,
-          //   as: "InwardGroup",
-          //   include: ["InventoryDetail"],
-          // },
-        ],
-      },
+      // {
+      //   model: Product,
+      //   as: "Product",
+      //   include: [{ model: UOM }],
+      // },
+      // {
+      //   model: Product,
+      //   as: "Products",
+      //   include: [
+      //     { model: UOM },
+      //   ],
+      // },
       User,
       {
         model: Company,
@@ -146,7 +141,7 @@ router.get("/", async (req, res, next) => {
         as: "Warehouse",
         required: true,
       },
-      { model: InwardGroup, as: "InwardGroup", include: ["InventoryDetail"] },
+      // { model: InwardGroup, as: "InwardGroup", include: ["InventoryDetail"] },
     ],
     order: [["updatedAt", "DESC"]],
     where,
@@ -154,22 +149,22 @@ router.get("/", async (req, res, next) => {
     offset,
   });
 
-  for (const inward of response.rows) {
-    for (const product of inward.Products) {
-      const detail = await InventoryDetail.findAll({
-        include: [
-          {
-            model: InwardGroup,
-            as: "InwardGroup",
-            through: InwardGroupBatch,
-          },
-        ],
-        where: { "$InwardGroup.id$": { [Op.eq]: product.InwardGroup.id } },
-        logging: true,
-      });
-      product.InwardGroup.dataValues.InventoryDetail = detail;
-    }
-  }
+  // for (const inward of response.rows) {
+  //   for (const product of inward.Products) {
+  //     const detail = await InventoryDetail.findAll({
+  //       include: [
+  //         {
+  //           model: InwardGroup,
+  //           as: "InwardGroup",
+  //           through: InwardGroupBatch,
+  //         },
+  //       ],
+  //       where: { "$InwardGroup.id$": { [Op.eq]: product.InwardGroup.id } },
+  //       logging: true,
+  //     });
+  //     product.InwardGroup.dataValues.InventoryDetail = detail;
+  //   }
+  // }
   res.json({
     success: true,
     message: "respond with a resource",
@@ -798,6 +793,64 @@ router.delete("/:id", activityLog, async (req, res, next) => {
       message: "No productInward found!",
     });
 });
+
+router.get("/:id", async (req, res, next) => {
+  try {
+    let productInward = await ProductInward.findOne({
+      where: { id: req.params.id },
+      include: [
+        {
+          model: Product,
+          as: "Products",
+          include: [{ model: UOM }],
+        },
+        User,
+        {
+          model: Company,
+          as: "Company",
+          required: true,
+        },
+        {
+          model: Warehouse,
+          as: "Warehouse",
+          required: true,
+        },
+      ]
+    });
+    if (!productInward)
+      return res.status(400).json({
+        success: false,
+        message: "No productInward found!",
+      });
+
+    for (const product of productInward.Products) {
+      const detail = await InventoryDetail.findAll({
+        include: [
+          {
+            model: InwardGroup,
+            as: "InwardGroup",
+            through: InwardGroupBatch,
+          },
+        ],
+        where: { "$InwardGroup.id$": { [Op.eq]: product.InwardGroup.id } },
+        logging: true,
+      });
+      product.InwardGroup.dataValues.InventoryDetail = detail;
+    }
+
+    return res.json({
+      success: true,
+      message: "Product Inward Found",
+      data: productInward,
+    });
+  } catch (err) {
+    return res.json({
+      success: false,
+      message: err
+    });
+  }
+
+})
 
 router.get("/relations", async (req, res, next) => {
   let where = { isActive: true };
