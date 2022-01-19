@@ -794,6 +794,29 @@ router.delete("/:id", activityLog, async (req, res, next) => {
     });
 });
 
+
+router.get("/relations", async (req, res, next) => {
+  let where = { isActive: true };
+
+  const warehouses = await Warehouse.findAll({ where });
+  const products = await Product.findAll({ where, include: [{ model: UOM }] });
+
+  if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
+  const customers = await Company.findAll({
+    where: {
+      ...where,
+      relationType: RELATION_TYPES.CUSTOMER,
+    },
+  });
+  res.json({
+    success: true,
+    message: "respond with a resource",
+    customers,
+    warehouses,
+    products,
+  });
+});
+
 router.get("/:id", async (req, res, next) => {
   try {
     let productInward = await ProductInward.findOne({
@@ -851,28 +874,6 @@ router.get("/:id", async (req, res, next) => {
   }
 
 })
-
-router.get("/relations", async (req, res, next) => {
-  let where = { isActive: true };
-
-  const warehouses = await Warehouse.findAll({ where });
-  const products = await Product.findAll({ where, include: [{ model: UOM }] });
-
-  if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
-  const customers = await Company.findAll({
-    where: {
-      ...where,
-      relationType: RELATION_TYPES.CUSTOMER,
-    },
-  });
-  res.json({
-    success: true,
-    message: "respond with a resource",
-    customers,
-    warehouses,
-    products,
-  });
-});
 
 router.post("/bulk", async (req, res, next) => {
   try {
