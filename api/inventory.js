@@ -23,7 +23,7 @@ const moment = require("moment-timezone");
 const activityLog = require("../middlewares/activityLog");
 const dao = require("../dao");
 const OrderGroup = require("../dao/OrderGroup");
-const { digitize } = require("../services/common.services");
+const { digitize, isValidDate } = require("../services/common.services");
 
 /* GET inventory listing. */
 router.get("/", async (req, res, next) => {
@@ -56,8 +56,8 @@ router.get("/", async (req, res, next) => {
   const response = await Inventory.findAndCountAll({
     include: [
       { model: Product, include: [{ model: UOM }], required: true },
-      { model: Company , required: true},
-      { model: Warehouse , required: true},
+      { model: Company, required: true },
+      { model: Warehouse, required: true },
       { model: InventoryDetail, as: "InventoryDetail" },
     ],
     order: [["updatedAt", "DESC"]],
@@ -110,7 +110,7 @@ router.get("/export", async (req, res, next) => {
     include: [
       { model: Product, include: [{ model: UOM }], required: true },
       { model: Company, required: true },
-      { model: Warehouse , required: true},
+      { model: Warehouse, required: true },
       { model: InventoryDetail, as: "InventoryDetail" },
     ],
     order: [["updatedAt", "DESC"]],
@@ -143,15 +143,23 @@ router.get("/export", async (req, res, next) => {
   response.map((row) => {
     row.Product.batchEnabled
       ? worksheet.addRows(
-        row.InventoryDetail.map((invDetail) => [
-          row.Product.name,
-          invDetail.inwardQuantity,
-          invDetail.batchNumber,
-          // invDetail.batchName,
-          moment(invDetail.manufacturingDate).tz(req.query.client_Tz).format("DD/MM/yy"),
-          moment(invDetail.expiryDate).tz(req.query.client_Tz).format("DD/MM/yy"),
-        ])
-      )
+          row.InventoryDetail.map((invDetail) => [
+            row.Product.name,
+            invDetail.inwardQuantity,
+            invDetail.batchNumber,
+            // invDetail.batchName,
+            isValidDate(invDetail.manufacturingDate)
+              ? moment(invDetail.manufacturingDate)
+                  .tz(req.query.client_Tz)
+                  .format("DD/MM/yy")
+              : "-",
+            isValidDate(invDetail.expiryDate)
+              ? moment(invDetail.expiryDate)
+                  .tz(req.query.client_Tz)
+                  .format("DD/MM/yy")
+              : "-",
+          ])
+        )
       : "";
   });
 
