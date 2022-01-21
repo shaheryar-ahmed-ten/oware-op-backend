@@ -83,9 +83,8 @@ const AddValidation = Joi.object({
 router.get("/", async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
-  let where = {
-    // userId: req.userId
-  };
+  let where = {};
+
   if (req.query.search)
     where[Op.or] = [
       "internalIdForBusiness",
@@ -96,9 +95,12 @@ router.get("/", async (req, res, next) => {
     }));
 
   if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
-    where.createdAt = { [Op.between]: [previousDate, currentDate] };
+    const currentDate = moment().endOf("day");
+    const previousDate = moment().subtract(req.query.days, "days").startOf("day");
+
+    where.createdAt = {
+      [Op.between]: [previousDate, currentDate]
+    };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
       hour: 0,
@@ -112,64 +114,45 @@ router.get("/", async (req, res, next) => {
       second: 59,
       millisecond: 1000,
     });
-    where.createdAt = { [Op.between]: [startDate, endDate] };
+
+    where.createdAt = {
+      [Op.between]: [startDate, endDate]
+    };
   }
 
-  const response = await ProductInward.findAndCountAll({
-    distinct: true,
+  const productInwards = await ProductInward.findAndCountAll({
     include: [
-      // {
-      //   model: Product,
-      //   as: "Product",
-      //   include: [{ model: UOM }],
-      // },
-      // {
-      //   model: Product,
-      //   as: "Products",
-      //   include: [
-      //     { model: UOM },
-      //   ],
-      // },
-      User,
+      {
+        model: User,
+        required: true,
+        attributes: ["firstName", "lastName"]
+      },
       {
         model: Company,
         as: "Company",
         required: true,
+        attributes: ["name"]
       },
       {
         model: Warehouse,
         as: "Warehouse",
         required: true,
-      },
-      // { model: InwardGroup, as: "InwardGroup", include: ["InventoryDetail"] },
+        attributes: ["name"]
+      }
     ],
-    order: [["updatedAt", "DESC"]],
+    attributes: ["id", "internalIdForBusiness", "referenceId", "updatedAt", "createdAt"],
     where,
+    order: [["updatedAt", "DESC"]],
     limit,
     offset,
+    distinct: true,
   });
 
-  // for (const inward of response.rows) {
-  //   for (const product of inward.Products) {
-  //     const detail = await InventoryDetail.findAll({
-  //       include: [
-  //         {
-  //           model: InwardGroup,
-  //           as: "InwardGroup",
-  //           through: InwardGroupBatch,
-  //         },
-  //       ],
-  //       where: { "$InwardGroup.id$": { [Op.eq]: product.InwardGroup.id } },
-  //       logging: true,
-  //     });
-  //     product.InwardGroup.dataValues.InventoryDetail = detail;
-  //   }
-  // }
   res.json({
     success: true,
     message: "respond with a resource",
-    data: response.rows,
-    pages: Math.ceil(response.count / limit),
+    data: productInwards.rows,
+    pages: Math.ceil(productInwards.count / limit),
   });
 });
 
@@ -799,7 +782,11 @@ router.get("/relations", async (req, res, next) => {
   let where = { isActive: true };
 
   const warehouses = await Warehouse.findAll({ where });
-  const products = await Product.findAll({ where, include: [{ model: UOM }] });
+  const products = await Product.findAll({
+    where, include: [{
+      model: UOM
+    }]
+  });
 
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
   const customers = await Company.findAll({
@@ -840,6 +827,7 @@ router.get("/:id", async (req, res, next) => {
         },
       ]
     });
+
     if (!productInward)
       return res.status(400).json({
         success: false,
