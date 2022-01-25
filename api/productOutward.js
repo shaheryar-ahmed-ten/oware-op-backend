@@ -216,7 +216,10 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
           po.dispatchOrderId ,
           po.userId,
           po.referenceId ,
+<<<<<<< HEAD
+=======
           po.vehicleId ,
+>>>>>>> dd2a78eee7014d97aa2b52542144fa858e8fd277
           po.externalVehicle,
           count(po.id),
           GROUP_CONCAT(po.id) as outwardList
@@ -227,7 +230,10 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
           po.dispatchOrderId ,
           po.userId,
           po.referenceId ,
+<<<<<<< HEAD
+=======
           po.vehicleId ,
+>>>>>>> dd2a78eee7014d97aa2b52542144fa858e8fd277
           po.externalVehicle
         having count(po.id) > 1
         order by count(po.id)
@@ -240,7 +246,6 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
     //get duplicate OrderGroups of duplicate ProductOutwards
     for (const item of response) {
       const outwards = item.outwardList.split(",");
-      ``;
       let createdTime = await ProductOutward.findOne({
         where: { id: outwards[0] },
         attributes: ["createdAt"],
@@ -284,58 +289,88 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
       for (let i = 0; i < ogList.length; i++) {
         if (i < ogList.length - 1) {
           if (JSON.stringify(ogList[i]) == JSON.stringify(ogList[i + 1])) {
-            duplicateOutwardList.push(outwards[i + 1]);
-            // duplicateOutwardList.push({
-            //   do: item.dispatchOrderId,
-            //   po: outwards[i + 1],
-            // });
+            const out1 = await ProductOutward.findOne({
+              where: { id: outwards[i], deletedAt: null },
+              attributes: ["id"],
+            });
+            const out2 = await ProductOutward.findOne({
+              where: { id: outwards[i + 1], deletedAt: null },
+              attributes: ["id"],
+            });
+            if (out1 && out2) {
+              duplicateOutwardList.push(outwards[i + 1]);
+            }
+            if (
+              ["13514", "13516", "13517"].includes(outwards[i]) ||
+              ["13514", "13516", "13517"].includes(outwards[i + 1])
+            ) {
+              console.log(
+                "outwards[i]",
+                outwards[i],
+                "outwards[i + 1]",
+                outwards[i + 1]
+              );
+            }
           }
         }
       }
+    }
+
+    const revertOutwards = [];
+    const outwards = await ProductOutward.findAll({
+      where: { id: { [Op.in]: duplicateOutwardList } },
+    });
+    console.log("duplicateOutwardList", duplicateOutwardList);
+    console.log("outwards", outwards);
+    for (let i = 0; i < outwards.length; i++) {
+      revertOutward(outwards[i], revertOutwards);
     }
 
     let duplicatedRecords = [];
-    const revertOutwards = [];
-    for (const doId of duplicateOutwardList) {
-      const Do = (
-        await DispatchOrder.findAll({
-          where: { id: doId },
-          include: [{ model: OrderGroup, as: "OrderGroups" }],
-        })
-      )[0];
+    // for (const poId of duplicateOutwardList) {
+    //   const outward = await ProductOutward.findOne({
+    //     where: { id: poId },
+    //     attributes: ["id", "dispatchOrderId"],
+    //   });
+    //   const Do = (
+    //     await DispatchOrder.findAll({
+    //       where: { id: outward.dispatchOrderId },
+    //       include: [{ model: OrderGroup, as: "OrderGroups" }],
+    //     })
+    //   )[0];
 
-      if (Do) {
-        const totalDoQty = Do.OrderGroups.reduce((total, current) => {
-          return total + current.quantity;
-        }, 0);
+    //   if (Do) {
+    //     const totalDoQty = Do.OrderGroups.reduce((total, current) => {
+    //       return total + current.quantity;
+    //     }, 0);
 
-        const outwards = await ProductOutward.findAll({
-          where: { dispatchOrderId: Do.id },
-          include: [{ model: OutwardGroup }],
-        });
+    //     const outwards = await ProductOutward.findAll({
+    //       where: { dispatchOrderId: Do.id },
+    //       include: [{ model: OutwardGroup }],
+    //     });
 
-        let totalPoQty = 0;
-        let count = 0;
-        for (const out of outwards) {
-          totalPoQty = out.OutwardGroups.reduce((total, current) => {
-            return total + current.quantity;
-          }, totalPoQty);
-          if (totalDoQty == totalPoQty) {
-            break;
-          } else if (totalDoQty < totalPoQty) {
-            break;
-          }
-          count++;
-        }
+    //     let totalPoQty = 0;
+    //     let count = 0;
+    //     for (const out of outwards) {
+    //       totalPoQty = out.OutwardGroups.reduce((total, current) => {
+    //         return total + current.quantity;
+    //       }, totalPoQty);
+    //       if (totalDoQty == totalPoQty) {
+    //         break;
+    //       } else if (totalDoQty < totalPoQty) {
+    //         break;
+    //       }
+    //       count++;
+    //     }
 
-        for (let i = count + 1; i < outwards.length; i++) {
-          revertOutward(outwards[i], revertOutwards);
-        }
-      }
-    }
+    //     for (let i = count + 1; i < outwards.length; i++) {
+    //       revertOutward(outwards[i], revertOutwards);
+    //     }
+    //   }
+    // }
 
     console.timeEnd("loop time");
-    res.json({ response });
+    res.json({ revertOutwards });
   } catch (err) {
     console.log("err", err);
 
@@ -374,7 +409,7 @@ router.get("/duplicated-po", async (req, res, next) => {
 
     const duplicateOutwardList = [];
 
-    //get duplicate OrderGroups of duplicat ProductOutwards
+    //get duplicate OrderGroups of duplicate ProductOutwards
     for (const item of response) {
       const outwards = item.outwardList.split(",");
       ``;
