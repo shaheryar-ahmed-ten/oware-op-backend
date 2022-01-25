@@ -1,7 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const { CustomerInquiry, Company, User, ProductOutward, ProductInward, DispatchOrder, Ride } = require("../models");
-const { sendCustomerInquiryEmail, sendGeneralEmailToCompanies } = require("../services/mailer.service");
+const {
+  CustomerInquiry,
+  Company,
+  User,
+  ProductOutward,
+  ProductInward,
+  DispatchOrder,
+  Ride,
+} = require("../models");
+const {
+  sendCustomerInquiryEmail,
+  sendGeneralEmailToCompanies,
+} = require("../services/mailer.service");
 const { customerStatistics } = require("../services/statistics.service");
 const Dao = require("../dao");
 const moment = require("moment-timezone");
@@ -123,7 +134,6 @@ router.post("/scheduled-email", async (req, res, next) => {
     where["status"] = "NOT_ASSIGNED";
     let ridesUnassignedCount = await Ride.count({
       where,
-      logging: true,
     });
     // SCHEDULED rides count
     where["status"] = SCHEDULED;

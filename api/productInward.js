@@ -96,10 +96,12 @@ router.get("/", async (req, res, next) => {
 
   if (req.query.days) {
     const currentDate = moment().endOf("day");
-    const previousDate = moment().subtract(req.query.days, "days").startOf("day");
+    const previousDate = moment()
+      .subtract(req.query.days, "days")
+      .startOf("day");
 
     where.createdAt = {
-      [Op.between]: [previousDate, currentDate]
+      [Op.between]: [previousDate, currentDate],
     };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
@@ -116,7 +118,7 @@ router.get("/", async (req, res, next) => {
     });
 
     where.createdAt = {
-      [Op.between]: [startDate, endDate]
+      [Op.between]: [startDate, endDate],
     };
   }
 
@@ -125,22 +127,28 @@ router.get("/", async (req, res, next) => {
       {
         model: User,
         required: true,
-        attributes: ["firstName", "lastName"]
+        attributes: ["firstName", "lastName"],
       },
       {
         model: Company,
         as: "Company",
         required: true,
-        attributes: ["name"]
+        attributes: ["name"],
       },
       {
         model: Warehouse,
         as: "Warehouse",
         required: true,
-        attributes: ["name"]
-      }
+        attributes: ["name"],
+      },
     ],
-    attributes: ["id", "internalIdForBusiness", "referenceId", "updatedAt", "createdAt"],
+    attributes: [
+      "id",
+      "internalIdForBusiness",
+      "referenceId",
+      "updatedAt",
+      "createdAt",
+    ],
     where,
     order: [["updatedAt", "DESC"]],
     limit,
@@ -228,18 +236,20 @@ router.get("/export", async (req, res, next) => {
       { model: Product, as: "Products", include: [{ model: UOM }] },
       { model: Company },
       { model: Warehouse },
-      { model: InwardGroup, as: "InwardGroup", include: ["InventoryDetail"] }
+      { model: InwardGroup, as: "InwardGroup", include: ["InventoryDetail"] },
     ],
     order: [["updatedAt", "DESC"]],
     where,
-    limit: 50
+    limit: 50,
   });
 
   const inwardArray = [];
   for (const inward of response) {
     for (const Product of inward.Products) {
       if (Product.batchEnabled) {
-        var invGroup = inward.InwardGroup.find((invGroup) => invGroup.id == Product.InwardGroup.id)
+        var invGroup = inward.InwardGroup.find(
+          (invGroup) => invGroup.id == Product.InwardGroup.id
+        );
         for (const invDetail of invGroup.InventoryDetail) {
           inwardArray.push([
             inward.internalIdForBusiness || "",
@@ -258,25 +268,23 @@ router.get("/export", async (req, res, next) => {
             moment(inward.createdAt)
               .tz(req.query.client_Tz)
               .format("DD/MM/yy HH:mm"),
-            invDetail.InwardGroupBatch ? invDetail.InwardGroupBatch.quantity : "",
+            invDetail.InwardGroupBatch
+              ? invDetail.InwardGroupBatch.quantity
+              : "",
             invDetail.batchNumber || "",
-            invDetail.manufacturingDate ?
-              moment(invDetail.manufacturingDate)
-                .tz(req.query.client_Tz)
-                .format("DD/MM/yy")
-              :
-              ""
-            ,
-            invDetail.expiryDate ?
-              moment(invDetail.expiryDate)
-                .tz(req.query.client_Tz)
-                .format("DD/MM/yy")
-              :
-              ""
+            invDetail.manufacturingDate
+              ? moment(invDetail.manufacturingDate)
+                  .tz(req.query.client_Tz)
+                  .format("DD/MM/yy")
+              : "",
+            invDetail.expiryDate
+              ? moment(invDetail.expiryDate)
+                  .tz(req.query.client_Tz)
+                  .format("DD/MM/yy")
+              : "",
           ]);
         }
-      }
-      else {
+      } else {
         inwardArray.push([
           inward.internalIdForBusiness || "",
           inward.Company.name,
@@ -297,7 +305,7 @@ router.get("/export", async (req, res, next) => {
           "",
           "",
           "",
-          ""
+          "",
         ]);
       }
     }
@@ -647,7 +655,7 @@ router.post("/", activityLog, async (req, res, next) => {
                 batch &&
                 batch.expiryDate &&
                 batch.expiryDate.toString().split("T")[0] !=
-                new Date(Prodbatch.expiryDate).toString().split("T")[0]
+                  new Date(Prodbatch.expiryDate).toString().split("T")[0]
               ) {
                 transaction.rollback();
                 return res.sendError(
@@ -777,15 +785,17 @@ router.delete("/:id", activityLog, async (req, res, next) => {
     });
 });
 
-
 router.get("/relations", async (req, res, next) => {
   let where = { isActive: true };
 
   const warehouses = await Warehouse.findAll({ where });
   const products = await Product.findAll({
-    where, include: [{
-      model: UOM
-    }]
+    where,
+    include: [
+      {
+        model: UOM,
+      },
+    ],
   });
 
   if (!authService.isSuperAdmin(req)) where.contactId = req.userId;
@@ -825,7 +835,7 @@ router.get("/:id", async (req, res, next) => {
           as: "Warehouse",
           required: true,
         },
-      ]
+      ],
     });
 
     if (!productInward)
@@ -857,11 +867,10 @@ router.get("/:id", async (req, res, next) => {
   } catch (err) {
     return res.json({
       success: false,
-      message: err
+      message: err,
     });
   }
-
-})
+});
 
 router.post("/bulk", async (req, res, next) => {
   try {

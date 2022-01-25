@@ -450,6 +450,37 @@ const checkForMatchInArray = (array, propertyToMatch, valueToMatch) => {
   return false;
 };
 
+const compareObjects = (obj1, obj2) => {
+  let flag = true;
+  if ((obj1 && !obj2) || (!obj1 && obj2)) {
+    return (flag = false);
+  }
+
+  for (let key in obj1) {
+    if (!(key in obj2)) {
+      flag = false;
+      break;
+    }
+    if (obj1[key] !== obj2[key]) {
+      flag = false;
+      break;
+    }
+  }
+
+  for (let key in obj2) {
+    if (!(key in obj1)) {
+      flag = false;
+      break;
+    }
+    if (obj2[key] !== obj1[key]) {
+      flag = false;
+      break;
+    }
+  }
+
+  return flag;
+};
+
 module.exports = {
   addActivityLog,
   getModel,
@@ -463,4 +494,5 @@ module.exports = {
   convertToUTC,
   removeItemFromArrayIfExistInAnotherArray,
   checkForMatchInArray,
+  compareObjects,
 };
