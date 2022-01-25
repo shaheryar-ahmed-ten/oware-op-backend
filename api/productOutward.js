@@ -531,28 +531,33 @@ router.get("/check-do", async (req, res, next) => {
 
     const revertOutwards = [];
     const duplicatedDos = [];
-    for (const Do of orders) {
-      const totalDoQty = Do.OrderGroups.reduce((total, current) => {
-        return total + current.quantity;
-      }, 0);
-
-      const outwards = await ProductOutward.findAll({
-        where: { dispatchOrderId: Do.id },
-        include: [{ model: OutwardGroup, attributes: ["id", "quantity"] }],
-        attributes: ["id", "createdAt", "deletedAt"],
-      });
-
-      let totalPoQty = 0;
-      for (const out of outwards) {
-        totalPoQty = out.OutwardGroups.reduce((total, current) => {
+    // for (const Do of orders) {
+    await Promise.all(
+      orders.map(async (Do) => {
+        const totalDoQty = Do.OrderGroups.reduce((total, current) => {
           return total + current.quantity;
-        }, totalPoQty);
-      }
+        }, 0);
 
-      if (totalDoQty < totalPoQty) {
-        duplicatedDos.push(Do.id);
-      }
-    }
+        const outwards = await ProductOutward.findAll({
+          where: { dispatchOrderId: Do.id },
+          include: [{ model: OutwardGroup, attributes: ["id", "quantity"] }],
+          attributes: ["id", "createdAt", "deletedAt"],
+        });
+
+        let totalPoQty = 0;
+        for (const out of outwards) {
+          totalPoQty = out.OutwardGroups.reduce((total, current) => {
+            return total + current.quantity;
+          }, totalPoQty);
+        }
+
+        if (totalDoQty < totalPoQty) {
+          duplicatedDos.push(Do.id);
+        }
+      })
+    );
+
+    // }
 
     res.json({ duplicatedDos });
   } catch (err) {
@@ -588,31 +593,36 @@ router.get("/fix-do", async (req, res, next) => {
 
     const revertOutwards = [];
     const duplicatedDos = [];
-    for (const Do of orders) {
-      const totalDoQty = Do.OrderGroups.reduce((total, current) => {
-        return total + current.quantity;
-      }, 0);
-
-      const outwards = await ProductOutward.findAll({
-        where: { dispatchOrderId: Do.id },
-        include: [{ model: OutwardGroup, attributes: ["id", "quantity"] }],
-        attributes: ["id", "createdAt", "deletedAt"],
-      });
-
-      let totalPoQty = 0;
-      for (const out of outwards) {
-        totalPoQty = out.OutwardGroups.reduce((total, current) => {
+    // for (const Do of orders) {
+    await Promise.all(
+      orders.map(async (Do) => {
+        const totalDoQty = Do.OrderGroups.reduce((total, current) => {
           return total + current.quantity;
-        }, totalPoQty);
-        if (totalDoQty < totalPoQty) {
-          revertOutward(out, revertOutwards);
-        }
-      }
+        }, 0);
 
-      if (totalDoQty < totalPoQty) {
-        duplicatedDos.push(Do.id);
-      }
-    }
+        const outwards = await ProductOutward.findAll({
+          where: { dispatchOrderId: Do.id },
+          include: [{ model: OutwardGroup, attributes: ["id", "quantity"] }],
+          attributes: ["id", "createdAt", "deletedAt"],
+        });
+
+        let totalPoQty = 0;
+        for (const out of outwards) {
+          totalPoQty = out.OutwardGroups.reduce((total, current) => {
+            return total + current.quantity;
+          }, totalPoQty);
+          if (totalDoQty < totalPoQty) {
+            revertOutward(out, revertOutwards);
+          }
+        }
+
+        if (totalDoQty < totalPoQty) {
+          duplicatedDos.push(Do.id);
+        }
+      })
+    );
+
+    // }
 
     res.json({ revertOutwards });
   } catch (err) {
