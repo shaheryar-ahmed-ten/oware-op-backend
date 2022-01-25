@@ -216,10 +216,6 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
           po.dispatchOrderId ,
           po.userId,
           po.referenceId ,
-<<<<<<< HEAD
-=======
-          po.vehicleId ,
->>>>>>> dd2a78eee7014d97aa2b52542144fa858e8fd277
           po.externalVehicle,
           count(po.id),
           GROUP_CONCAT(po.id) as outwardList
@@ -230,10 +226,6 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
           po.dispatchOrderId ,
           po.userId,
           po.referenceId ,
-<<<<<<< HEAD
-=======
-          po.vehicleId ,
->>>>>>> dd2a78eee7014d97aa2b52542144fa858e8fd277
           po.externalVehicle
         having count(po.id) > 1
         order by count(po.id)
@@ -299,17 +291,6 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
             });
             if (out1 && out2) {
               duplicateOutwardList.push(outwards[i + 1]);
-            }
-            if (
-              ["13514", "13516", "13517"].includes(outwards[i]) ||
-              ["13514", "13516", "13517"].includes(outwards[i + 1])
-            ) {
-              console.log(
-                "outwards[i]",
-                outwards[i],
-                "outwards[i + 1]",
-                outwards[i + 1]
-              );
             }
           }
         }
