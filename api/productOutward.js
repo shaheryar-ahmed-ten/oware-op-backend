@@ -301,8 +301,7 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
     const outwards = await ProductOutward.findAll({
       where: { id: { [Op.in]: duplicateOutwardList } },
     });
-    console.log("duplicateOutwardList", duplicateOutwardList);
-    console.log("outwards", outwards);
+
     for (let i = 0; i < outwards.length; i++) {
       revertOutward(outwards[i], revertOutwards);
     }
@@ -506,6 +505,123 @@ router.get("/duplicated-po", async (req, res, next) => {
   }
 });
 
+router.get("/check-do", async (req, res, next) => {
+  try {
+    const orders = await DispatchOrder.findAll({
+      include: [
+        {
+          model: OrderGroup,
+          as: "OrderGroups",
+          attributes: ["id", "quantity"],
+        },
+        {
+          model: ProductOutward,
+          include: [
+            {
+              model: OutwardGroup,
+              as: "OutwardGroups",
+              attributes: ["id", "quantity"],
+            },
+          ],
+          attributes: ["id"],
+        },
+      ],
+      attributes: ["id"],
+    });
+
+    const revertOutwards = [];
+    const duplicatedDos = [];
+    for (const Do of orders) {
+      const totalDoQty = Do.OrderGroups.reduce((total, current) => {
+        return total + current.quantity;
+      }, 0);
+
+      const outwards = await ProductOutward.findAll({
+        where: { dispatchOrderId: Do.id },
+        include: [{ model: OutwardGroup, attributes: ["id", "quantity"] }],
+        attributes: ["id", "createdAt", "deletedAt"],
+      });
+
+      let totalPoQty = 0;
+      for (const out of outwards) {
+        totalPoQty = out.OutwardGroups.reduce((total, current) => {
+          return total + current.quantity;
+        }, totalPoQty);
+      }
+
+      if (totalDoQty < totalPoQty) {
+        duplicatedDos.push(Do.id);
+      }
+    }
+
+    res.json({ duplicatedDos });
+  } catch (err) {
+    console.log("err", err);
+
+    res.sendError(httpStatus.CONFLICT, err.message);
+  }
+});
+
+router.get("/fix-do", async (req, res, next) => {
+  try {
+    const orders = await DispatchOrder.findAll({
+      include: [
+        {
+          model: OrderGroup,
+          as: "OrderGroups",
+          attributes: ["id", "quantity"],
+        },
+        {
+          model: ProductOutward,
+          include: [
+            {
+              model: OutwardGroup,
+              as: "OutwardGroups",
+              attributes: ["id", "quantity"],
+            },
+          ],
+          attributes: ["id"],
+        },
+      ],
+      attributes: ["id"],
+    });
+
+    const revertOutwards = [];
+    const duplicatedDos = [];
+    for (const Do of orders) {
+      const totalDoQty = Do.OrderGroups.reduce((total, current) => {
+        return total + current.quantity;
+      }, 0);
+
+      const outwards = await ProductOutward.findAll({
+        where: { dispatchOrderId: Do.id },
+        include: [{ model: OutwardGroup, attributes: ["id", "quantity"] }],
+        attributes: ["id", "createdAt", "deletedAt"],
+      });
+
+      let totalPoQty = 0;
+      for (const out of outwards) {
+        totalPoQty = out.OutwardGroups.reduce((total, current) => {
+          return total + current.quantity;
+        }, totalPoQty);
+        if (totalDoQty < totalPoQty) {
+          revertOutward(out, revertOutwards);
+        }
+      }
+
+      if (totalDoQty < totalPoQty) {
+        duplicatedDos.push(Do.id);
+      }
+    }
+
+    res.json({ revertOutwards });
+  } catch (err) {
+    console.log("err", err);
+
+    res.sendError(httpStatus.CONFLICT, err.message);
+  }
+});
+
 router.get("/doubtful-po", async (req, res, next) => {
   try {
     //get duplicated records in ProductOutwards table
@@ -679,22 +795,11 @@ router.get("/do-status", async (req, res, next) => {
               status: DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED,
             });
         }
-        if (Do.id == 18760) {
-          console.log(
-            "DoId",
-            Do.id,
-            "totalDoQty",
-            totalDoQty,
-            "totalPoQty",
-            totalPoQty
-          );
-        }
         // await Do.save();
       })
     );
     console.timeEnd();
 
-    console.log("DOs", DOs);
     console.time();
     for (const order of DOs) {
       await DispatchOrder.update(
