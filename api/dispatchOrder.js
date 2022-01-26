@@ -49,9 +49,7 @@ const BulkAddValidation = Joi.object({
 router.get("/", async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
-  let where = {
-    // userId: req.userId
-  };
+  let where = {};
 
   if (req.query.search)
     where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
@@ -68,8 +66,8 @@ router.get("/", async (req, res, next) => {
     }));
 
   if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
+    const currentDate = moment().endOf("day");
+    const previousDate = moment().subtract(req.query.days, "days").startOf("day");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
@@ -94,19 +92,25 @@ router.get("/", async (req, res, next) => {
         as: "Inventory",
         required: true,
         include: [
-          { model: Product, include: [{ model: UOM }] },
-          { model: Company, required: true },
-          { model: Warehouse, required: true },
+          {
+            model: Company,
+            required: true,
+            attributes: ["id", "name"]
+          },
+          {
+            model: Warehouse,
+            required: true,
+            attributes: ["id", "name"]
+          },
         ],
+        attributes: ["id"]
       },
       {
-        model: Inventory,
-        as: "Inventories",
-        required: false,
-        include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
+        model: User,
+        attributes: ["id", "firstName", "lastName"]
       },
-      { model: User },
     ],
+    attributes: ["id", "createdAt", "internalIdForBusiness", "orderMemo", "referenceId", "shipmentDate", "status"],
     order: [
       ["createdAt", "DESC"],
       ["id", "DESC"],
@@ -117,13 +121,6 @@ router.get("/", async (req, res, next) => {
     distinct: true,
   });
 
-  for (const { dataValues } of response.rows) {
-    dataValues["ProductOutwards"] = await ProductOutward.findAll({
-      attributes: ["quantity", "referenceId", "internalIdForBusiness"],
-      required: false,
-      where: { dispatchOrderId: dataValues.id },
-    });
-  }
   res.json({
     success: true,
     message: "respond with a resource",
