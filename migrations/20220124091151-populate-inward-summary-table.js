@@ -1,5 +1,5 @@
 'use strict';
-const { ProductInward, InwardSummary, User, Product, Company, Warehouse, InwardGroup, UOM } = require("../models");
+const { ProductInward, InwardSummary, User, Product, Company, Warehouse, InwardGroup, UOM, InventoryDetail } = require("../models");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -20,11 +20,36 @@ module.exports = {
 
         var response = await ProductInward.findAll({
           include: [
-            { model: User },
-            { model: Product, as: "Products", include: [{ model: UOM }] },
-            { model: Company },
-            { model: Warehouse },
-            { model: InwardGroup, as: "InwardGroup", include: ["InventoryDetail"] }
+            {
+              model: User,
+              attributes: ["id", "firstName", "lastName"],
+            },
+            {
+              model: Product, as: "Products", include: [
+                {
+                  model: UOM,
+                  attributes: ["name"],
+                }
+              ]
+            },
+            {
+              model: Company,
+              attributes: ["name"],
+            },
+            {
+              model: Warehouse,
+              attributes: ["name"],
+            },
+            {
+              model: InwardGroup, as: "InwardGroup", include: [
+                {
+                  model: InventoryDetail,
+                  as: "InventoryDetail",
+                  attributes: ["id", "batchNumber", "manufacturingDate", "expiryDate"],
+                }
+              ],
+              attributes: ["id"],
+            }
           ],
           limit,
           offset
