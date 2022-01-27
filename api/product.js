@@ -358,10 +358,19 @@ router.put("/:id", activityLog, async (req, res, next) => {
         }
       }
     }
+    product.name = req.body.name;
+    product.weight = req.body.weight;
+    product.brandId = req.body.brandId;
+    product.categoryId = req.body.categoryId;
+    product.uomId = req.body.uomId;
+    product.description = req.body.description;
+    product.dimensionsCBM = req.body.dimensionsCBM
+    if (product.batchEnabled) {
+      product.batchEnabled = req.body.batchEnabled;
+    }
+    product.isActive = req.body.isActive;
+    const response = product.save()
 
-    const response = await Product.update(req.body, {
-      where: { id: req.params.id },
-    });
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,

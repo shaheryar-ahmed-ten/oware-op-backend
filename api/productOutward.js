@@ -1371,54 +1371,6 @@ router.get("/export", async (req, res, next) => {
 
   worksheet.addRows(outwardArray);
 
-  // worksheet = workbook.addWorksheet("Batch Details");
-
-  // worksheet.columns = getColumnsConfig([
-  //   "OUTWARD ID",
-  //   "PRODUCT NAME",
-  //   "QUANTITY",
-  //   "BATCH NUMBER",
-  //   "MANUFACTURING DATE",
-  //   "EXPIRY DATE",
-  // ]);
-
-  // const invDetailArray = [];
-
-  // for (const outward of response) {
-  //   for (const dispatchOrderInv of outward.DispatchOrder.Inventories) {
-  //     if (dispatchOrderInv.Product.batchEnabled) {
-  //       var outwardInv = outward.Inventories.find((inv) => inv.id == dispatchOrderInv.id)
-  //       if (!!outwardInv) {
-  //         for (let invDetail of outwardInv.OutwardGroup.dataValues.InventoryDetail) {
-  //           var outwardQuantity = invDetail.OutwardGroup.find((outGroup) => outGroup.inventoryId == invDetail.inventoryId).OutwardGroupBatch.quantity || ""
-
-  //           invDetailArray.push([
-  //             outward.internalIdForBusiness || "",
-  //             dispatchOrderInv.Product.name,
-  //             outwardQuantity || "",
-  //             invDetail.batchNumber || "",
-  //             invDetail.manufacturingDate ?
-  //               moment(invDetail.manufacturingDate)
-  //                 .tz(req.query.client_Tz)
-  //                 .format("DD/MM/yy")
-  //               :
-  //               ""
-  //             ,
-  //             invDetail.expiryDate ?
-  //               moment(invDetail.expiryDate)
-  //                 .tz(req.query.client_Tz)
-  //                 .format("DD/MM/yy")
-  //               :
-  //               ""
-  //           ])
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  // worksheet.addRows(invDetailArray);
-
   res.setHeader(
     "Content-Type",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

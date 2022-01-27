@@ -12,6 +12,7 @@ const {
   UOM,
   sequelize,
   InwardGroupBatch,
+  InwardSummary
 } = require("../models");
 const { BULK_PRODUCT_LIMIT, SPECIAL_CHARACTERS } = require("../enums");
 const config = require("../config");
@@ -165,6 +166,7 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/export", async (req, res, next) => {
+
   let where = {};
   if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
 
@@ -203,17 +205,17 @@ router.get("/export", async (req, res, next) => {
 
   if (req.query.search)
     where[Op.or] = [
-      "internalIdForBusiness",
-      "$Company.name$",
-      "$Warehouse.name$",
+      "inwardId",
+      "$customerName$",
+      "$warehouseName$",
     ].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
 
   if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
-    where.createdAt = { [Op.between]: [previousDate, currentDate] };
+    const currentDate = moment().endOf("day");
+    const previousDate = moment().subtract(req.query.days, "days").startOf("day");
+    where.inwardDate = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
       hour: 0,
@@ -227,135 +229,51 @@ router.get("/export", async (req, res, next) => {
       second: 59,
       millisecond: 1000,
     });
-    where.createdAt = { [Op.between]: [startDate, endDate] };
+    where.inwardDate = {
+      [Op.between]: [startDate, endDate]
+    };
   }
 
-  response = await ProductInward.findAll({
-    include: [
-      { model: User },
-      { model: Product, as: "Products", include: [{ model: UOM }] },
-      { model: Company },
-      { model: Warehouse },
-      { model: InwardGroup, as: "InwardGroup", include: ["InventoryDetail"] },
-    ],
-    order: [["updatedAt", "DESC"]],
-    where,
-    limit: 50,
-  });
+  var summaries = await InwardSummary.findAll({
+    where
+  })
 
-  const inwardArray = [];
-  for (const inward of response) {
-    for (const Product of inward.Products) {
-      if (Product.batchEnabled) {
-        var invGroup = inward.InwardGroup.find(
-          (invGroup) => invGroup.id == Product.InwardGroup.id
-        );
-        for (const invDetail of invGroup.InventoryDetail) {
-          inwardArray.push([
-            inward.internalIdForBusiness || "",
-            inward.Company.name,
-            Product.name,
-            inward.Warehouse.name,
-            Product.UOM.name,
-            Product.InwardGroup.quantity,
-            inward.vehicleType || "",
-            inward.vehicleName || "",
-            inward.vehicleNumber || "",
-            inward.driverName || "",
-            inward.memo || "",
-            inward.referenceId || "",
-            `${inward.User.firstName || ""} ${inward.User.lastName || ""}`,
-            moment(inward.createdAt)
-              .tz(req.query.client_Tz)
-              .format("DD/MM/yy HH:mm"),
-            invDetail.InwardGroupBatch
-              ? invDetail.InwardGroupBatch.quantity
-              : "",
-            invDetail.batchNumber || "",
-            invDetail.manufacturingDate
-              ? moment(invDetail.manufacturingDate)
-                  .tz(req.query.client_Tz)
-                  .format("DD/MM/yy")
-              : "",
-            invDetail.expiryDate
-              ? moment(invDetail.expiryDate)
-                  .tz(req.query.client_Tz)
-                  .format("DD/MM/yy")
-              : "",
-          ]);
-        }
-      } else {
-        inwardArray.push([
-          inward.internalIdForBusiness || "",
-          inward.Company.name,
-          Product.name,
-          inward.Warehouse.name,
-          Product.UOM.name,
-          Product.InwardGroup.quantity,
-          inward.vehicleType || "",
-          inward.vehicleName || "",
-          inward.vehicleNumber || "",
-          inward.driverName || "",
-          inward.memo || "",
-          inward.referenceId || "",
-          `${inward.User.firstName || ""} ${inward.User.lastName || ""}`,
-          moment(inward.createdAt)
-            .tz(req.query.client_Tz)
-            .format("DD/MM/yy HH:mm"),
-          "",
-          "",
-          "",
-          "",
-        ]);
-      }
-    }
-  }
+  const inwardArray = summaries.map((summary) => {
+    return ([
+      summary.inwardId || '',
+      summary.customerName || '',
+      summary.productName || '',
+      summary.warehouseName || '',
+      summary.uom || '',
+      summary.inwardQuantity || '',
+      summary.vehicleType || '',
+      summary.vehicleName || '',
+      summary.vehicleNumber || '',
+      summary.driverName || '',
+      summary.memo || '',
+      summary.referenceId || '',
+      summary.creatorName || '',
+      moment(summary.inwardDate)
+        .tz(req.query.client_Tz)
+        .format("DD/MM/yy HH:mm"),
+      summary.batchQuantity || '',
+      summary.batchNumber || '',
+      summary.manufacturingDate ?
+        moment(summary.manufacturingDate)
+          .tz(req.query.client_Tz)
+          .format("DD/MM/yy")
+        :
+        '',
+      summary.expiryDate ?
+        moment(summary.expiryDate)
+          .tz(req.query.client_Tz)
+          .format("DD/MM/yy")
+        :
+        ''
+    ])
+  })
 
   worksheet.addRows(inwardArray);
-
-  // worksheet = workbook.addWorksheet("Batch Details");
-
-  // worksheet.columns = getColumnsConfig([
-  //   "INWARD ID",
-  //   "PRODUCT NAME",
-  //   "QUANTITY",
-  //   "BATCH NUMBER",
-  //   "MANUFACTURING DATE",
-  //   "EXPIRY DATE",
-  // ]);
-
-  // var invDetailArr = []
-  // for (const inward of response) {
-  //   for (const Product of inward.Products) {
-  //     if (Product.batchEnabled) {
-  //       var invGroup = inward.InwardGroup.find((invGroup) => invGroup.id == Product.InwardGroup.id)
-  //       for (const invDetail of invGroup.InventoryDetail) {
-  //         invDetailArr.push([
-  //           inward.internalIdForBusiness || "",
-  //           Product.name || "",
-  //           invDetail.InwardGroupBatch ? invDetail.InwardGroupBatch.quantity : "",
-  //           invDetail.batchNumber || "",
-  //           invDetail.manufacturingDate ?
-  //             moment(invDetail.manufacturingDate)
-  //               .tz(req.query.client_Tz)
-  //               .format("DD/MM/yy")
-  //             :
-  //             ""
-  //           ,
-  //           invDetail.expiryDate ?
-  //             moment(invDetail.expiryDate)
-  //               .tz(req.query.client_Tz)
-  //               .format("DD/MM/yy")
-  //             :
-  //             ""
-  //         ])
-  //       }
-  //     }
-
-  //   }
-  // }
-
-  // worksheet.addRows(invDetailArr);
 
   res.setHeader(
     "Content-Type",
@@ -655,7 +573,7 @@ router.post("/", activityLog, async (req, res, next) => {
                 batch &&
                 batch.expiryDate &&
                 batch.expiryDate.toString().split("T")[0] !=
-                  new Date(Prodbatch.expiryDate).toString().split("T")[0]
+                new Date(Prodbatch.expiryDate).toString().split("T")[0]
               ) {
                 transaction.rollback();
                 return res.sendError(
@@ -723,9 +641,18 @@ router.post("/", activityLog, async (req, res, next) => {
         }
       });
       for (const arr of tempArr) {
-        await sequelize.query(`
-          INSERT INTO InwardGroupBatches (inwardGroupId,inventoryDetailId,quantity) VALUES (${arr.inwardGroupId},${arr.inventoryDetailId},${arr.quantity});
-        `);
+        // await sequelize.query(`
+        //   INSERT INTO InwardGroupBatches 
+        //   (inwardGroupId,inventoryDetailId,quantity)
+        //    VALUES (${arr.inwardGroupId},${arr.inventoryDetailId},${arr.quantity});
+        // `);
+        await InwardGroupBatch.create(
+          {
+            inwardGroupId: arr.inwardGroupId,
+            inventoryDetailId: arr.inventoryDetailId,
+            quantity: arr.quantity
+          },
+        );
       }
       return res.json({
         success: true,
@@ -837,7 +764,6 @@ router.get("/:id", async (req, res, next) => {
         },
       ],
     });
-
     if (!productInward)
       return res.status(400).json({
         success: false,

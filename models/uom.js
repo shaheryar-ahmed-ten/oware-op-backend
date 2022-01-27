@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const { handleHookError } = require('../utility/utility');
 module.exports = (sequelize, DataTypes) => {
   class UOM extends Model {
     /**
@@ -35,5 +36,26 @@ module.exports = (sequelize, DataTypes) => {
     paranoid: true,
     modelName: 'UOM',
   });
+  UOM.addHook('afterUpdate', async (data, options) => {
+    try {
+      const prevUom = data._previousDataValues;
+      const newUom = data.dataValues;
+      let where = {
+        uom: prevUom.name
+      }
+
+      let inwardSummaries = await sequelize.models.InwardSummary.findAll({
+        where
+      })
+
+      // resolve all the db calls at once
+      await Promise.all(inwardSummaries.map(summary => {
+        summary.uom = newUom.name
+        return summary.save()
+      }));
+    } catch (error) {
+      handleHookError(error, "UOM")
+    }
+  })
   return UOM;
 };

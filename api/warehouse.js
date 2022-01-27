@@ -110,9 +110,17 @@ router.put("/:id", activityLog, async (req, res, next) => {
       message: "No warehouse found!",
     });
   try {
-    const response = await Warehouse.update(req.body, {
-      where: { id: req.params.id },
-    });
+    warehouse.name = req.body.name
+    warehouse.businessWarehouseCode = req.body.businessWarehouseCode
+    warehouse.address = req.body.address
+    warehouse.city = req.body.city
+    warehouse.capacity = req.body.capacity
+    warehouse.memo = req.body.memo
+    warehouse.managerId = req.body.managerId
+    warehouse.locationLatlng = req.body.locationLatlng
+    warehouse.isActive = req.body.isActive
+
+    const response = await warehouse.save()
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
       success: true,

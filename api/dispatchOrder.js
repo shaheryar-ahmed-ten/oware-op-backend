@@ -19,7 +19,12 @@ const models = require("../models");
 const config = require("../config");
 const { Op, fn, col } = require("sequelize");
 const authService = require("../services/auth.service");
-const { digitize, addActivityLog, getMaxValueFromJson, addActivityLog2 } = require("../services/common.services");
+const {
+  digitize,
+  addActivityLog,
+  getMaxValueFromJson,
+  addActivityLog2,
+} = require("../services/common.services");
 const { RELATION_TYPES, DISPATCH_ORDER, INTEGER_REGEX } = require("../enums");
 const activityLog = require("../middlewares/activityLog");
 const Dao = require("../dao");
@@ -49,12 +54,14 @@ const BulkAddValidation = Joi.object({
 router.get("/", async (req, res, next) => {
   const limit = req.query.rowsPerPage || config.rowsPerPage;
   const offset = (req.query.page - 1 || 0) * limit;
-  let where = {
-    // userId: req.userId
-  };
+  let where = {};
 
   if (req.query.search)
-    where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
+    where[Op.or] = [
+      "$Inventory.Company.name$",
+      "$Inventory.Warehouse.name$",
+      "internalIdForBusiness",
+    ].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
 
@@ -68,8 +75,10 @@ router.get("/", async (req, res, next) => {
     }));
 
   if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
+    const currentDate = moment().endOf("day");
+    const previousDate = moment()
+      .subtract(req.query.days, "days")
+      .startOf("day");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
@@ -94,18 +103,32 @@ router.get("/", async (req, res, next) => {
         as: "Inventory",
         required: true,
         include: [
-          { model: Product, include: [{ model: UOM }] },
-          { model: Company, required: true },
-          { model: Warehouse, required: true },
+          {
+            model: Company,
+            required: true,
+            attributes: ["id", "name"],
+          },
+          {
+            model: Warehouse,
+            required: true,
+            attributes: ["id", "name"],
+          },
         ],
+        attributes: ["id"],
       },
       {
-        model: Inventory,
-        as: "Inventories",
-        required: false,
-        include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
+        model: User,
+        attributes: ["id", "firstName", "lastName"],
       },
-      { model: User },
+    ],
+    attributes: [
+      "id",
+      "createdAt",
+      "internalIdForBusiness",
+      "orderMemo",
+      "referenceId",
+      "shipmentDate",
+      "status",
     ],
     order: [
       ["createdAt", "DESC"],
@@ -117,13 +140,6 @@ router.get("/", async (req, res, next) => {
     distinct: true,
   });
 
-  for (const { dataValues } of response.rows) {
-    dataValues["ProductOutwards"] = await ProductOutward.findAll({
-      attributes: ["quantity", "referenceId", "internalIdForBusiness"],
-      required: false,
-      where: { dispatchOrderId: dataValues.id },
-    });
-  }
   res.json({
     success: true,
     message: "respond with a resource",
@@ -146,7 +162,9 @@ router.get("/stats", async (req, res) => {
     stats.push({
       key: status,
       label: Object.keys({ ...DISPATCH_ORDER }.STATUS)[status],
-      value: await DispatchOrder.aggregate("id", "count", { where: { status: status } }),
+      value: await DispatchOrder.aggregate("id", "count", {
+        where: { status: status },
+      }),
     });
   }
   return res.json({
@@ -154,7 +172,6 @@ router.get("/stats", async (req, res) => {
     stats,
   });
 });
-
 
 router.get("/export", async (req, res, next) => {
   let where = {};
@@ -165,7 +182,11 @@ router.get("/export", async (req, res, next) => {
   worksheet = workbook.addWorksheet("Dispatch Orders");
 
   const getColumnsConfig = (columns) =>
-    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+    columns.map((column) => ({
+      header: column,
+      width: Math.ceil(column.length * 1.5),
+      outlineLevel: 1,
+    }));
 
   worksheet.columns = getColumnsConfig([
     "DISPATCH ORDER ID",
@@ -185,7 +206,11 @@ router.get("/export", async (req, res, next) => {
   ]);
 
   if (req.query.search)
-    where[Op.or] = ["$Inventory.Company.name$", "$Inventory.Warehouse.name$", "internalIdForBusiness"].map((key) => ({
+    where[Op.or] = [
+      "$Inventory.Company.name$",
+      "$Inventory.Warehouse.name$",
+      "internalIdForBusiness",
+    ].map((key) => ({
       [key]: { [Op.like]: "%" + req.query.search + "%" },
     }));
 
@@ -222,12 +247,20 @@ router.get("/export", async (req, res, next) => {
       {
         model: Inventory,
         as: "Inventory",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+        include: [
+          { model: Product, include: [{ model: UOM }] },
+          { model: Company },
+          { model: Warehouse },
+        ],
       },
       {
         model: Inventory,
         as: "Inventories",
-        include: [{ model: Product, include: [{ model: UOM }] }, { model: Company }, { model: Warehouse }],
+        include: [
+          { model: Product, include: [{ model: UOM }] },
+          { model: Company },
+          { model: Warehouse },
+        ],
       },
       { model: User },
     ],
@@ -249,17 +282,21 @@ router.get("/export", async (req, res, next) => {
         inv.OrderGroup.quantity,
         order.referenceId || "",
         `${order.User.firstName || ""} ${order.User.lastName || ""}`,
-        moment(order.createdAt).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
-        moment(order.shipmentDate).tz(req.query.client_Tz).format("DD/MM/yy HH:mm"),
+        moment(order.createdAt)
+          .tz(req.query.client_Tz)
+          .format("DD/MM/yy HH:mm"),
+        moment(order.shipmentDate)
+          .tz(req.query.client_Tz)
+          .format("DD/MM/yy HH:mm"),
         order.status == "0"
           ? "PENDING"
           : order.status == "1"
-            ? "PARTIALLY FULFILLED"
-            : order.status == "2"
-              ? "FULFILLED"
-              : order.status == "3"
-                ? "CANCELLED"
-                : "",
+          ? "PARTIALLY FULFILLED"
+          : order.status == "2"
+          ? "FULFILLED"
+          : order.status == "3"
+          ? "CANCELLED"
+          : "",
         order.orderMemo || "",
       ]);
     }
@@ -267,8 +304,14 @@ router.get("/export", async (req, res, next) => {
 
   worksheet.addRows(orderArray);
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=" + "Inventory.xlsx"
+  );
 
   await workbook.xlsx.write(res).then(() => res.end());
 });
@@ -277,8 +320,12 @@ router.get("/export", async (req, res, next) => {
 router.post("/", activityLog, async (req, res, next) => {
   let message = "New dispatchOrder registered";
   let dispatchOrder;
-  req.body["shipmentDate"] = new Date(moment(req.body["shipmentDate"]).tz("Africa/Abidjan"));
-  req.body.inventories = req.body.inventories || [{ id: req.body.inventoryId, quantity: req.body.quantity }];
+  req.body["shipmentDate"] = new Date(
+    moment(req.body["shipmentDate"]).tz("Africa/Abidjan")
+  );
+  req.body.inventories = req.body.inventories || [
+    { id: req.body.inventoryId, quantity: req.body.quantity },
+  ];
   req.body.inventories = req.body.inventories.filter((inv) => {
     if (inv.quantity > 0) return inv;
   });
@@ -292,7 +339,8 @@ router.post("/", activityLog, async (req, res, next) => {
         { transaction }
       );
       const numberOfInternalIdForBusiness = digitize(dispatchOrder.id, 6);
-      dispatchOrder.internalIdForBusiness = req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
+      dispatchOrder.internalIdForBusiness =
+        req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
       let sumOfComitted = [];
       let comittedAcc;
       req.body.inventories.forEach((Inventory) => {
@@ -308,7 +356,8 @@ router.post("/", activityLog, async (req, res, next) => {
       inventoryIds = req.body.inventories.map((inventory) => {
         return inventory.id;
       });
-      const toFindDuplicates = (arry) => arry.filter((item, index) => arry.indexOf(item) != index);
+      const toFindDuplicates = (arry) =>
+        arry.filter((item, index) => arry.indexOf(item) != index);
       const duplicateElements = toFindDuplicates(inventoryIds);
       if (duplicateElements.length != 0) {
         throw new Error("Can not add same inventory twice");
@@ -326,18 +375,23 @@ router.post("/", activityLog, async (req, res, next) => {
 
       return Promise.all(
         req.body.inventories.map((_inventory) => {
-          return Inventory.findByPk(_inventory.id, { transaction }).then((inventory) => {
-            if (!inventory && !_inventory.id) throw new Error("Inventory is not available");
-            if (_inventory.quantity > inventory.availableQuantity)
-              throw new Error("Cannot create orders above available quantity");
-            try {
-              inventory.committedQuantity += +_inventory.quantity;
-              inventory.availableQuantity -= +_inventory.quantity;
-              return inventory.save({ transaction });
-            } catch (err) {
-              throw new Error(err.errors.pop().message);
+          return Inventory.findByPk(_inventory.id, { transaction }).then(
+            (inventory) => {
+              if (!inventory && !_inventory.id)
+                throw new Error("Inventory is not available");
+              if (_inventory.quantity > inventory.availableQuantity)
+                throw new Error(
+                  "Cannot create orders above available quantity"
+                );
+              try {
+                inventory.committedQuantity += +_inventory.quantity;
+                inventory.availableQuantity -= +_inventory.quantity;
+                return inventory.save({ transaction });
+              } catch (err) {
+                throw new Error(err.errors.pop().message);
+              }
             }
-          });
+          );
         })
       );
     });
@@ -374,7 +428,10 @@ router.post("/bulk", async (req, res, next) => {
           const [customer, warehouse, product] = await Promise.all([
             Dao.Company.findOne({
               where: {
-                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.company.trim()),
+                where: sequelize.where(
+                  sequelize.fn("BINARY", sequelize.col("name")),
+                  order.company.trim()
+                ),
                 isActive: 1,
               },
               attributes: ["id"],
@@ -382,7 +439,10 @@ router.post("/bulk", async (req, res, next) => {
 
             Dao.Warehouse.findOne({
               where: {
-                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.warehouse.trim()),
+                where: sequelize.where(
+                  sequelize.fn("BINARY", sequelize.col("name")),
+                  order.warehouse.trim()
+                ),
                 isActive: 1,
               },
               attributes: ["id"],
@@ -390,7 +450,10 @@ router.post("/bulk", async (req, res, next) => {
 
             Dao.Product.findOne({
               where: {
-                where: sequelize.where(sequelize.fn("BINARY", sequelize.col("name")), order.product.trim()),
+                where: sequelize.where(
+                  sequelize.fn("BINARY", sequelize.col("name")),
+                  order.product.trim()
+                ),
                 isActive: 1,
               },
               attributes: ["id"],
@@ -399,15 +462,24 @@ router.post("/bulk", async (req, res, next) => {
 
           if (!customer) {
             // Invalid company
-            validationErrors.push({ row, message: `Row ${row} : Invalid company name` });
+            validationErrors.push({
+              row,
+              message: `Row ${row} : Invalid company name`,
+            });
           }
 
           if (!warehouse) {
-            validationErrors.push({ row, message: `Row ${row} : Invalid warehouse name` });
+            validationErrors.push({
+              row,
+              message: `Row ${row} : Invalid warehouse name`,
+            });
           }
 
           if (!product) {
-            validationErrors.push({ row, message: `Row ${row} : Invalid product name` });
+            validationErrors.push({
+              row,
+              message: `Row ${row} : Invalid product name`,
+            });
           }
 
           if (product && customer && warehouse) {
@@ -425,33 +497,54 @@ router.post("/bulk", async (req, res, next) => {
             });
 
             if (!inventory) {
-              validationErrors.push({ row, message: `Row ${row} : Inventory doesn't exist` });
+              validationErrors.push({
+                row,
+                message: `Row ${row} : Inventory doesn't exist`,
+              });
             } else {
               order.inventoryId = inventory.id;
 
               if (inventory.availableQuantity < order.quantity) {
-                validationErrors.push({ row, message: `Row ${row} : Cannot create orders above available quantity` });
+                validationErrors.push({
+                  row,
+                  message: `Row ${row} : Cannot create orders above available quantity`,
+                });
               }
             }
           }
 
           orderNumber = parseInt(order.orderNumber);
 
-          if (orderNumber !== previousOrderNumber && orderNumber !== previousOrderNumber + 1) {
-            validationErrors.push({ row, message: `Row ${row} : Invalid Order Number` });
+          if (
+            orderNumber !== previousOrderNumber &&
+            orderNumber !== previousOrderNumber + 1
+          ) {
+            validationErrors.push({
+              row,
+              message: `Row ${row} : Invalid Order Number`,
+            });
           }
 
           previousOrderNumber = orderNumber;
         }
 
         if (validationErrors.length) {
-          return res.sendError(httpStatus.CONFLICT, validationErrors, "Failed to add bulk dispatch orders");
+          return res.sendError(
+            httpStatus.CONFLICT,
+            validationErrors,
+            "Failed to add bulk dispatch orders"
+          );
         }
 
-        let maxOrderNumber = getMaxValueFromJson(req.body.orders, "orderNumber").orderNumber;
+        let maxOrderNumber = getMaxValueFromJson(
+          req.body.orders,
+          "orderNumber"
+        ).orderNumber;
         const orders = [];
         while (count <= maxOrderNumber) {
-          orders.push(req.body.orders.filter((item) => item.orderNumber == count));
+          orders.push(
+            req.body.orders.filter((item) => item.orderNumber == count)
+          );
           count++;
         }
 
@@ -460,10 +553,18 @@ router.post("/bulk", async (req, res, next) => {
         });
 
         await addActivityLog2(req, models);
-        res.sendJson(httpStatus.OK, `${maxOrderNumber} orders uploaded successfully.`, {});
+        res.sendJson(
+          httpStatus.OK,
+          `${maxOrderNumber} orders uploaded successfully.`,
+          {}
+        );
       });
     } else {
-      return res.sendError(httpStatus.UNPROCESSABLE_ENTITY, isValid, "Unable to add outward");
+      return res.sendError(
+        httpStatus.UNPROCESSABLE_ENTITY,
+        isValid,
+        "Unable to add order"
+      );
     }
   } catch (err) {
     res.sendError(httpStatus.CONFLICT, "Server Error", err.message);
@@ -517,42 +618,59 @@ const createOrder = async (orders, userId, transaction) => {
 
   return Promise.all(
     orders.map((_inventory) => {
-      return Inventory.findByPk(_inventory.inventoryId, { transaction }).then(async (inventory) => {
-        if (!inventory && !_inventory.inventoryId) throw new Error("Inventory is not available");
-        if (_inventory.quantity > inventory.availableQuantity) {
-          const product = await Dao.Product.findOne({ where: { id: inventory.productId }, attributes: ["name"] });
-          throw new Error(
-            `Order Number ${_inventory.orderNumber}: Cannot create orders above available quantity for product:${product.name}`
-          );
+      return Inventory.findByPk(_inventory.inventoryId, { transaction }).then(
+        async (inventory) => {
+          if (!inventory && !_inventory.inventoryId)
+            throw new Error("Inventory is not available");
+          if (_inventory.quantity > inventory.availableQuantity) {
+            const product = await Dao.Product.findOne({
+              where: { id: inventory.productId },
+              attributes: ["name"],
+            });
+            throw new Error(
+              `Order Number ${_inventory.orderNumber}: Cannot create orders above available quantity for product:${product.name}`
+            );
+          }
+          try {
+            inventory.committedQuantity += +_inventory.quantity;
+            inventory.availableQuantity -= +_inventory.quantity;
+            return inventory.save({ transaction });
+          } catch (err) {
+            throw new Error(err.errors.pop().message);
+          }
         }
-        try {
-          inventory.committedQuantity += +_inventory.quantity;
-          inventory.availableQuantity -= +_inventory.quantity;
-          return inventory.save({ transaction });
-        } catch (err) {
-          throw new Error(err.errors.pop().message);
-        }
-      });
+      );
     })
   );
 };
 
 /* PUT update existing dispatchOrder. */
 router.put("/:id", activityLog, async (req, res, next) => {
-  let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
+  let dispatchOrder = await DispatchOrder.findOne({
+    where: { id: req.params.id },
+    include: ["Inventories"],
+  });
   if (!dispatchOrder)
     return res.status(400).json({
       success: false,
       message: "No dispatchOrder found!",
     });
-  if (req.body.hasOwnProperty("shipmentDate")) dispatchOrder.shipmentDate = req.body.shipmentDate;
-  if (req.body.hasOwnProperty("receiverName")) dispatchOrder.receiverName = req.body.receiverName;
-  if (req.body.hasOwnProperty("receiverPhone")) dispatchOrder.receiverPhone = req.body.receiverPhone;
-  if (req.body.hasOwnProperty("referenceId")) dispatchOrder.referenceId = req.body.referenceId;
+  if (req.body.hasOwnProperty("shipmentDate"))
+    dispatchOrder.shipmentDate = req.body.shipmentDate;
+  if (req.body.hasOwnProperty("receiverName"))
+    dispatchOrder.receiverName = req.body.receiverName;
+  if (req.body.hasOwnProperty("receiverPhone"))
+    dispatchOrder.receiverPhone = req.body.receiverPhone;
+  if (req.body.hasOwnProperty("referenceId"))
+    dispatchOrder.referenceId = req.body.referenceId;
   dispatchOrder.orderMemo = req.body.orderMemo;
   try {
     if (req.body.hasOwnProperty("products"))
-      await updateDispatchOrderInventories(dispatchOrder, req.body.products, req.userId);
+      await updateDispatchOrderInventories(
+        dispatchOrder,
+        req.body.products,
+        req.userId
+      );
     const response = await dispatchOrder.save();
     await addActivityLog(req["activityLogId"], response, Dao.ActivityLog);
     return res.json({
@@ -571,17 +689,24 @@ router.put("/:id", activityLog, async (req, res, next) => {
 const updateDispatchOrderInventories = async (DO, products, userId) => {
   DO.status = DISPATCH_ORDER.STATUS.FULFILLED;
   for (const product of products) {
-    const inventory = await Dao.Inventory.findOne({ where: { id: product.inventoryId } });
-    let OG = await Dao.OrderGroup.findOne({ where: { inventoryId: product.inventoryId, orderId: DO.id } });
+    const inventory = await Dao.Inventory.findOne({
+      where: { id: product.inventoryId },
+    });
+    let OG = await Dao.OrderGroup.findOne({
+      where: { inventoryId: product.inventoryId, orderId: DO.id },
+    });
     const PO = await Dao.ProductOutward.findAll({
       where: {
         dispatchOrderId: DO.id,
       },
-      include: [{ model: OutwardGroup, where: { inventoryId: product.inventoryId } }],
+      include: [
+        { model: OutwardGroup, where: { inventoryId: product.inventoryId } },
+      ],
     });
     let outwardQuantity = 0;
     for (const outward of PO) {
-      if (outward.OutwardGroups && outward.OutwardGroups[0]) outwardQuantity += outward.OutwardGroups[0].quantity;
+      if (outward.OutwardGroups && outward.OutwardGroups[0])
+        outwardQuantity += outward.OutwardGroups[0].quantity;
     }
     if (!OG) {
       OG = await Dao.OrderGroup.create({
@@ -593,27 +718,42 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
       if (parseInt(product.quantity) > parseInt(inventory.availableQuantity)) {
         await OG.destroy();
         throw new Error("Cannot add quantity above available quantity");
-      } else if (parseInt(outwardQuantity) > 0 && parseInt(product.quantity) < parseInt(outwardQuantity)) {
+      } else if (
+        parseInt(outwardQuantity) > 0 &&
+        parseInt(product.quantity) < parseInt(outwardQuantity)
+      ) {
         await OG.destroy();
-        throw new Error("Edited Dispatch order quantity cannot be less than total outward quantity");
+        throw new Error(
+          "Edited Dispatch order quantity cannot be less than total outward quantity"
+        );
       }
 
-      inventory.availableQuantity = inventory.availableQuantity - product.quantity;
-      inventory.committedQuantity = inventory.committedQuantity + product.quantity;
+      inventory.availableQuantity =
+        inventory.availableQuantity - product.quantity;
+      inventory.committedQuantity =
+        inventory.committedQuantity + product.quantity;
     } else {
       if (product.quantity > inventory.availableQuantity + OG.quantity)
         throw new Error("Cannot add quantity above available quantity");
       else if (outwardQuantity > 0 && product.quantity < outwardQuantity)
-        throw new Error("Edited Dispatch order quantity cannot be less than total outward quantity");
-      inventory.availableQuantity = inventory.availableQuantity + OG.quantity - product.quantity;
+        throw new Error(
+          "Edited Dispatch order quantity cannot be less than total outward quantity"
+        );
+      inventory.availableQuantity =
+        inventory.availableQuantity + OG.quantity - product.quantity;
       inventory.committedQuantity =
-        inventory.committedQuantity - (OG.quantity - outwardQuantity) + (product.quantity - outwardQuantity); //3-(5-3)+6
+        inventory.committedQuantity -
+        (OG.quantity - outwardQuantity) +
+        (product.quantity - outwardQuantity); //3-(5-3)+6
       OG.quantity = product.quantity > 0 ? product.quantity : OG.quantity;
     }
     if (product.quantity === 0) await OG.destroy();
     else await OG.save();
     await inventory.save();
-    if (DO.status == DISPATCH_ORDER.STATUS.FULFILLED && product.quantity !== outwardQuantity)
+    if (
+      DO.status == DISPATCH_ORDER.STATUS.FULFILLED &&
+      product.quantity !== outwardQuantity
+    )
       DO.status = DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED;
   }
 
@@ -636,20 +776,34 @@ const updateDispatchOrderInventories = async (DO, products, userId) => {
 };
 
 router.patch("/cancel/:id", activityLog, async (req, res, next) => {
-  let dispatchOrder = await DispatchOrder.findOne({ where: { id: req.params.id }, include: ["Inventories"] });
-  if (!dispatchOrder) return res.sendError(httpStatus.CONFLICT, "No Dispatch Order Found");
+  let dispatchOrder = await DispatchOrder.findOne({
+    where: { id: req.params.id },
+    include: ["Inventories"],
+  });
+  if (!dispatchOrder)
+    return res.sendError(httpStatus.CONFLICT, "No Dispatch Order Found");
   if (dispatchOrder.status == DISPATCH_ORDER.STATUS.CANCELLED)
-    return res.sendError(httpStatus.CONFLICT, "Dispatch Order Already Cancelled");
+    return res.sendError(
+      httpStatus.CONFLICT,
+      "Dispatch Order Already Cancelled"
+    );
   if (
     dispatchOrder.status === DISPATCH_ORDER.STATUS.PARTIALLY_FULFILLED ||
     dispatchOrder.status === DISPATCH_ORDER.STATUS.FULFILLED
   )
-    return res.sendError(httpStatus.CONFLICT, "Cannot cancel Dispatch Order having one or more outwards");
+    return res.sendError(
+      httpStatus.CONFLICT,
+      "Cannot cancel Dispatch Order having one or more outwards"
+    );
   dispatchOrder.status = DISPATCH_ORDER.STATUS.CANCELLED;
   await dispatchOrder.save();
-  let OGs = await Dao.OrderGroup.findAll({ where: { orderId: dispatchOrder.id } });
+  let OGs = await Dao.OrderGroup.findAll({
+    where: { orderId: dispatchOrder.id },
+  });
   for (const OG of OGs) {
-    const inventory = await Dao.Inventory.findOne({ where: { id: OG.inventoryId } });
+    const inventory = await Dao.Inventory.findOne({
+      where: { id: OG.inventoryId },
+    });
     inventory.availableQuantity = inventory.availableQuantity + OG.quantity;
     inventory.committedQuantity = inventory.committedQuantity - OG.quantity;
     await inventory.save();
@@ -664,7 +818,11 @@ router.get("/bulk-template", async (req, res, next) => {
   let worksheet = workbook.addWorksheet("Dispatch Orders");
 
   const getColumnsConfig = (columns) =>
-    columns.map((column) => ({ header: column, width: Math.ceil(column.length * 1.5), outlineLevel: 1 }));
+    columns.map((column) => ({
+      header: column,
+      width: Math.ceil(column.length * 1.5),
+      outlineLevel: 1,
+    }));
 
   worksheet.columns = getColumnsConfig([
     "Order Number",
@@ -731,8 +889,14 @@ router.get("/bulk-template", async (req, res, next) => {
     ])
   );
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.setHeader("Content-Disposition", "attachment; filename=" + "Inventory.xlsx");
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=" + "Inventory.xlsx"
+  );
 
   await workbook.xlsx.write(res).then(() => res.end());
 });
@@ -865,7 +1029,11 @@ router.get("/:id", async (req, res, next) => {
           model: Inventory,
           as: "Inventories",
           required: true,
-          include: [{ model: Product, include: [{ model: UOM }] }, Company, Warehouse],
+          include: [
+            { model: Product, include: [{ model: UOM }] },
+            Company,
+            Warehouse,
+          ],
         },
         { model: User },
       ],
@@ -873,7 +1041,9 @@ router.get("/:id", async (req, res, next) => {
     };
     //Include PO in DO's Inventories instead of directly including it
     const DO = await Dao.DispatchOrder.findOne(params);
-    const PO = await Dao.ProductOutward.findAll({ where: { dispatchOrderId: req.params.id } });
+    const PO = await Dao.ProductOutward.findAll({
+      where: { dispatchOrderId: req.params.id },
+    });
     const outwardArr = [];
     for (const outward of PO) {
       outwardArr.push(outward.id);
@@ -895,9 +1065,12 @@ router.get("/:id", async (req, res, next) => {
         });
       }
 
-      inv.dataValues["outwardQty"] = inv.dataValues["outwards"].reduce((acc, item) => {
-        return acc + item.quantity;
-      }, 0);
+      inv.dataValues["outwardQty"] = inv.dataValues["outwards"].reduce(
+        (acc, item) => {
+          return acc + item.quantity;
+        },
+        0
+      );
     }
     // let outwardQty = 0;
     // for (const inv of DO.Inventories) {
