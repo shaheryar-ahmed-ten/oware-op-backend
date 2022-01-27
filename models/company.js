@@ -2,6 +2,7 @@
 const { Model } = require("sequelize");
 const config = require("../config");
 const { PORTALS, RELATION_TYPES } = require("../enums");
+const { handleHookError } = require("../utility/utility");
 
 module.exports = (sequelize, DataTypes) => {
   class Company extends Model {
@@ -91,6 +92,27 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Company",
     }
   );
+  Company.addHook('afterUpdate', async (data, options) => {
+    try {
+      const prevCompany = data._previousDataValues;
+      const newCompany = data.dataValues;
+      let where = {
+        customerName: prevCompany.name
+      }
+
+      let inwardSummaries = await sequelize.models.InwardSummary.findAll({
+        where
+      })
+
+      // resolve all the db calls at once
+      await Promise.all(inwardSummaries.map(summary => {
+        summary.customerName = newCompany.name
+        return summary.save()
+      }));
+    } catch (error) {
+      handleHookError(error, "COMPANY")
+    }
+  })
 
   return Company;
 };

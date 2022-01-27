@@ -1,6 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const bcrypt = require("bcrypt");
+const { handleHookError } = require("../utility/utility");
 
 module.exports = (sequelize, DataTypes) => {
   class Product extends Model {
@@ -87,5 +88,27 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Product",
     }
   );
+
+  Product.addHook('afterUpdate', async (data, options) => {
+    try {
+      const prevProduct = data._previousDataValues;
+      const newProduct = data.dataValues;
+      let where = {
+        productName: prevProduct.name
+      }
+
+      let inwardSummaries = await sequelize.models.InwardSummary.findAll({
+        where
+      })
+
+      // resolve all the db calls at once
+      await Promise.all(inwardSummaries.map(summary => {
+        summary.productName = newProduct.name
+        return summary.save()
+      }));
+    } catch (error) {
+      handleHookError(error, "PRODUCT")
+    }
+  })
   return Product;
 };
