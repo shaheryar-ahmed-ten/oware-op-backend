@@ -1469,7 +1469,6 @@ router.post("/", activityLog, async (req, res, next) => {
           req.body.internalIdForBusiness + numberOfInternalIdForBusiness;
         let sumOfOutwards = [];
         let outwardAcc;
-        // await req.body.inventories.forEach(async (Inventory) => {
         for (const Inventory of req.body.inventories) {
           const OG = await OrderGroup.findOne({
             where: {
@@ -1478,14 +1477,29 @@ router.post("/", activityLog, async (req, res, next) => {
             },
           });
           if (!OG) {
-            return res.sendError(
-              httpStatus.CONFLICT,
+            throw new Error(
               "Cannot create outward having products other than ordered products"
             );
           }
-          if (Inventory.quantity > OG.quantity) {
-            return res.sendError(
-              httpStatus.CONFLICT,
+
+          const outwards = await ProductOutward.findAll({
+            where: {
+              dispatchOrderId: req.body.dispatchOrderId,
+              "$OutwardGroups.inventoryId$": Inventory.id,
+            },
+            include: [{ model: OutwardGroup, attributes: ["id", "quantity"] }],
+            attributes: ["id", "createdAt", "deletedAt"],
+          });
+
+          let totalPoQty = 0;
+          for (const out of outwards) {
+            totalPoQty = out.OutwardGroups.reduce((total, current) => {
+              return total + current.quantity;
+            }, totalPoQty);
+          }
+
+          if (Inventory.quantity > OG.quantity - totalPoQty) {
+            throw new Error(
               "Outward quantity cant be greater than dispatch order quantity"
             );
           }
@@ -1581,18 +1595,12 @@ router.post("/", activityLog, async (req, res, next) => {
         data: productOutward,
       });
     } else {
+      return res.sendError(
+        httpStatus.UNPROCESSABLE_ENTITY,
+        isValid,
+        "Unable to add outward"
+      );
     }
-
-    // TODO: // The following validations needs to be implemented for multi inventory outward
-    // let availableOrderQuantity = dispatchOrder.quantity - dispatchOrder.ProductOutwards.reduce((acc, outward) => acc += outward.quantity, 0);
-    // if (req.body.quantity > availableOrderQuantity) return res.json({
-    //   success: false,
-    //   message: 'Cannot dispatch above ordered quantity'
-    // })
-    // if (req.body.quantity > dispatchOrder.Inventory.committedQuantity) return res.json({
-    //   success: false,
-    //   message: 'Cannot dispatch above available inventory quantity'
-    // })
   } catch (err) {
     console.log("err", err);
     return res.json({
@@ -1600,11 +1608,6 @@ router.post("/", activityLog, async (req, res, next) => {
       message: err.toString().replace("Error: ", ""),
     });
   }
-  return res.json({
-    success: true,
-    message,
-    data: productOutward,
-  });
 });
 
 /* PUT update existing productOutward. */
