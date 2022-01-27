@@ -330,6 +330,7 @@ router.put("/:id", activityLog, async (req, res, next) => {
       success: false,
       message: "No product found!",
     });
+  if (req.body.batchEnabled === "") delete req.body.batchEnabled;
   try {
     const inventories = await Inventory.findAll({
       where: { productId: product.id },
