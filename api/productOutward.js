@@ -1685,18 +1685,25 @@ router.get("/relations", async (req, res, next) => {
     attributes: ["id", "registrationNumber"],
   });
 
-  const batches = await InventoryDetail.findAll({
-    include: [{ model: Inventory, as: "Inventory", attributes: [] }],
-    order: [["expiryDate", "ASC"]],
-  });
-
   res.json({
     success: true,
     message: "respond with a resource",
     dispatchOrders,
     vehicles,
-    batches,
   });
+});
+
+router.get("/batch", async (req, res) => {
+  try {
+    const batches = await InventoryDetail.findAll({
+      include: [{ model: Inventory, as: "Inventory", attributes: [] }],
+      order: [["expiryDate", "ASC"]],
+    });
+
+    res.sendJson(batches, "get batches", httpStatus.OK);
+  } catch (err) {
+    res.sendError(httpStatus.CONFLICT, err.message);
+  }
 });
 
 router.get("/:id", async (req, res, next) => {
