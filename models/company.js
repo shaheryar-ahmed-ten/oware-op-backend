@@ -92,27 +92,45 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Company",
     }
   );
-  Company.addHook('afterUpdate', async (data, options) => {
+  Company.addHook("afterUpdate", async (data, options) => {
     try {
       const prevCompany = data._previousDataValues;
       const newCompany = data.dataValues;
       let where = {
-        customerName: prevCompany.name
-      }
+        customerName: prevCompany.name,
+      };
 
       let inwardSummaries = await sequelize.models.InwardSummary.findAll({
-        where
-      })
+        where,
+      });
 
       // resolve all the db calls at once
-      await Promise.all(inwardSummaries.map(summary => {
-        summary.customerName = newCompany.name
-        return summary.save()
-      }));
+      if (inwardSummaries.length) {
+        await Promise.all(
+          inwardSummaries.map((summary) => {
+            summary.customerName = newCompany.name;
+            return summary.save();
+          })
+        );
+      }
+
+      let dispatchOrderSummaries =
+        await sequelize.models.DispatchOrderSummary.findAll({
+          where,
+        });
+
+      if (dispatchOrderSummaries.length) {
+        await Promise.all(
+          dispatchOrderSummaries.map((summary) => {
+            summary.customerName = newCompany.name;
+            return summary.save();
+          })
+        );
+      }
     } catch (error) {
-      handleHookError(error, "COMPANY")
+      handleHookError(error, "COMPANY");
     }
-  })
+  });
 
   return Company;
 };

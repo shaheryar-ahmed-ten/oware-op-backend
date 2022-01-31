@@ -1,8 +1,6 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
-const { handleHookError } = require('../utility/utility');
+"use strict";
+const { Model } = require("sequelize");
+const { handleHookError } = require("../utility/utility");
 module.exports = (sequelize, DataTypes) => {
   class UOM extends Model {
     /**
@@ -13,49 +11,70 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       UOM.belongsTo(models.User, {
-        foreignKey: 'userId'
+        foreignKey: "userId",
       });
     }
-  };
-  UOM.init({
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { notEmpty: true }
+  }
+  UOM.init(
+    {
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: { notEmpty: true },
+      },
+      name: {
+        type: DataTypes.STRING,
+        unique: true,
+      },
+      isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
     },
-    name: {
-      type: DataTypes.STRING,
-      unique: true
-    },
-    isActive: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true
-    },
-  }, {
-    sequelize,
-    paranoid: true,
-    modelName: 'UOM',
-  });
-  UOM.addHook('afterUpdate', async (data, options) => {
+    {
+      sequelize,
+      paranoid: true,
+      modelName: "UOM",
+    }
+  );
+  UOM.addHook("afterUpdate", async (data, options) => {
     try {
       const prevUom = data._previousDataValues;
       const newUom = data.dataValues;
       let where = {
-        uom: prevUom.name
-      }
+        uom: prevUom.name,
+      };
 
       let inwardSummaries = await sequelize.models.InwardSummary.findAll({
-        where
-      })
+        where,
+      });
 
       // resolve all the db calls at once
-      await Promise.all(inwardSummaries.map(summary => {
-        summary.uom = newUom.name
-        return summary.save()
-      }));
+      if (inwardSummaries.length) {
+        await Promise.all(
+          inwardSummaries.map((summary) => {
+            summary.uom = newUom.name;
+            return summary.save();
+          })
+        );
+      }
+
+      let dispatchOrderSummaries =
+        await sequelize.models.DispatchOrderSummary.findAll({
+          where,
+        });
+
+      if (dispatchOrderSummaries.length) {
+        await Promise.all(
+          dispatchOrderSummaries.map((summary) => {
+            summary.uom = newUom.name;
+            return summary.save();
+          })
+        );
+      }
     } catch (error) {
-      handleHookError(error, "UOM")
+      handleHookError(error, "UOM");
     }
-  })
+  });
   return UOM;
 };

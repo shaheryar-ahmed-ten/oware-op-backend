@@ -1,6 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const bcrypt = require("bcrypt");
+const { handleHookError } = require("../utility/utility");
 
 module.exports = (sequelize, DataTypes) => {
   class InwardGroupBatch extends Model {
@@ -46,38 +47,57 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  InwardGroupBatch.addHook('afterCreate', async (data, options) => {
+  InwardGroupBatch.addHook("afterCreate", async (data, options) => {
     try {
-      const inwardGroupBatch = data.toJSON()
+      const inwardGroupBatch = data.toJSON();
 
       var where = {
-        id: inwardGroupBatch.inventoryDetailId
-      }
+        id: inwardGroupBatch.inventoryDetailId,
+      };
       var inventoryDetails = await sequelize.models.InventoryDetail.findOne({
         where,
-        attributes: ["InventoryId", "batchName", "manufacturingDate", "expiryDate", "batchNumber", "inwardQuantity", "availableQuantity", "outwardQuantity"],
-        raw: true // to get data in json like format
-      })
+        attributes: [
+          "InventoryId",
+          "batchName",
+          "manufacturingDate",
+          "expiryDate",
+          "batchNumber",
+          "inwardQuantity",
+          "availableQuantity",
+          "outwardQuantity",
+        ],
+        raw: true, // to get data in json like format
+      });
 
       where = {
-        id: inwardGroupBatch.inwardGroupId
-      }
+        id: inwardGroupBatch.inwardGroupId,
+      };
       var inwardGroup = await sequelize.models.InwardGroup.findOne({
         where,
-        attributes: ["id", "quantity", "productId", "inwardId", "inventoryDetailId"],
-        include: [{
-          model: sequelize.models.Product,
-          attributes: ["id", "name", "batchEnabled"],
-          include: [{
-            model: sequelize.models.UOM,
-            attributes: ["id", "name"],
-          }]
-        }],
-        raw: true // to get data in json like format
-      })
+        attributes: [
+          "id",
+          "quantity",
+          "productId",
+          "inwardId",
+          "inventoryDetailId",
+        ],
+        include: [
+          {
+            model: sequelize.models.Product,
+            attributes: ["id", "name", "batchEnabled"],
+            include: [
+              {
+                model: sequelize.models.UOM,
+                attributes: ["id", "name"],
+              },
+            ],
+          },
+        ],
+        raw: true, // to get data in json like format
+      });
       where = {
-        id: inwardGroup.inwardId
-      }
+        id: inwardGroup.inwardId,
+      };
       var productInward = await sequelize.models.ProductInward.findOne({
         where,
         include: [
@@ -87,46 +107,69 @@ module.exports = (sequelize, DataTypes) => {
           },
           {
             model: sequelize.models.Warehouse,
-            attributes: ["name"]
+            attributes: ["name"],
           },
           {
             model: sequelize.models.User,
             attributes: ["id", "firstName", "lastName"],
           },
         ],
-        attributes: ["id", "userId", "internalIdForBusiness", "customerId", "referenceId", "warehouseId", "vehicleType", "vehicleName", "vehicleNumber", "driverName", "memo", "createdAt"],
-        raw: true
-      })
+        attributes: [
+          "id",
+          "userId",
+          "internalIdForBusiness",
+          "customerId",
+          "referenceId",
+          "warehouseId",
+          "vehicleType",
+          "vehicleName",
+          "vehicleNumber",
+          "driverName",
+          "memo",
+          "createdAt",
+        ],
+        raw: true,
+      });
       // object to be saved in table
       let newInwardObj = {
-        inwardId: productInward['internalIdForBusiness'],
-        customerName: productInward['Company.name'],
-        productName: inwardGroup['Product.name'],
-        warehouseName: productInward['Warehouse.name'],
-        uom: inwardGroup['Product.UOM.name'],
-        inwardQuantity: inwardGroup['quantity'],
-        vehicleType: productInward['vehicleType'] || null,
-        vehicleName: productInward['vehicleName'] || null,
-        vehicleNumber: productInward['vehicleNumber'] || null,
-        driverName: productInward['driverName'] || null,
-        memo: productInward['memo'] || null,
-        referenceId: productInward['referenceId'] || null,
-        creatorName: `${productInward['User.firstName'] || ''} productInward['User.lastName'] || ''`,
-        userId: productInward['User.id'],
-        inwardDate: productInward['inwardDate'] ? productInward['inwardDate'] : productInward['createdAt'],
-        batchQuantity: inwardGroup['Product.batchEnabled'] ? inventoryDetails['inwardQuantity'] : null,
-        batchNumber: inwardGroup['Product.batchEnabled'] ? inventoryDetails['batchNumber'] || null : null,
-        manufacturingDate: inwardGroup['Product.batchEnabled'] ? inventoryDetails['manufacturingDate'] || null : null,
-        expiryDate: inwardGroup['Product.batchEnabled'] ? inventoryDetails['expiryDate'] : null
-      }
+        inwardId: productInward["internalIdForBusiness"],
+        customerName: productInward["Company.name"],
+        productName: inwardGroup["Product.name"],
+        warehouseName: productInward["Warehouse.name"],
+        uom: inwardGroup["Product.UOM.name"],
+        inwardQuantity: inwardGroup["quantity"],
+        vehicleType: productInward["vehicleType"] || null,
+        vehicleName: productInward["vehicleName"] || null,
+        vehicleNumber: productInward["vehicleNumber"] || null,
+        driverName: productInward["driverName"] || null,
+        memo: productInward["memo"] || null,
+        referenceId: productInward["referenceId"] || null,
+        creatorName: `${
+          productInward["User.firstName"] || ""
+        } productInward['User.lastName'] || ''`,
+        userId: productInward["User.id"],
+        inwardDate: productInward["inwardDate"]
+          ? productInward["inwardDate"]
+          : productInward["createdAt"],
+        batchQuantity: inwardGroup["Product.batchEnabled"]
+          ? inventoryDetails["inwardQuantity"]
+          : null,
+        batchNumber: inwardGroup["Product.batchEnabled"]
+          ? inventoryDetails["batchNumber"] || null
+          : null,
+        manufacturingDate: inwardGroup["Product.batchEnabled"]
+          ? inventoryDetails["manufacturingDate"] || null
+          : null,
+        expiryDate: inwardGroup["Product.batchEnabled"]
+          ? inventoryDetails["expiryDate"]
+          : null,
+      };
       // update the summary table
-      await sequelize.models.InwardSummary.create(newInwardObj)
-      console.log("Summary updated successfully")
-
+      await sequelize.models.InwardSummary.create(newInwardObj);
+      console.log("Summary updated successfully");
     } catch (error) {
-      console.log("Something went wrong", error)
+      handleHookError(error, "InwardGroupBatch");
     }
-
   });
   return InwardGroupBatch;
 };

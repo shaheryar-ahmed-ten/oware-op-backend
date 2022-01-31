@@ -216,6 +216,7 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
           po.dispatchOrderId ,
           po.userId,
           po.referenceId ,
+          po.vehicleId ,
           po.externalVehicle,
           count(po.id),
           GROUP_CONCAT(po.id) as outwardList
@@ -226,6 +227,7 @@ router.get("/revert-duplicate-po2", async (req, res, next) => {
           po.dispatchOrderId ,
           po.userId,
           po.referenceId ,
+          po.vehicleId ,
           po.externalVehicle
         having count(po.id) > 1
         order by count(po.id)
@@ -1608,41 +1610,56 @@ router.delete("/:id", async (req, res, next) => {
 
 router.get("/relations", async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
+    attributes: [
+      "id",
+      "internalIdForBusiness",
+      "referenceId",
+      "shipmentDate",
+      "receiverName",
+      "receiverPhone",
+      "createdAt",
+      [
+        sequelize.fn(
+          "sum",
+          sequelize.literal(
+            "ifnull(`ProductOutwards->Inventories->OutwardGroup`.`quantity`, 0)"
+          )
+        ),
+        "totalDispatchedQuantity",
+      ],
+      [
+        sequelize.fn(
+          "sum",
+          sequelize.literal("`Inventories->OrderGroup`.`quantity`")
+        ),
+        "totalRequestedQuantity",
+      ],
+      [
+        sequelize.literal(
+          "(sum(`Inventories->OrderGroup`.`quantity`) - ifnull(sum(`ProductOutwards->Inventories->OutwardGroup`.`quantity`),0))"
+        ),
+        "remainingQuantities",
+      ],
+    ],
     include: [
       {
-        model: Inventory,
-        as: "Inventory",
-        include: [
-          { model: Company, attributes: ["id", "name"] },
-          {
-            model: Warehouse,
-            attributes: ["id", "name", "businessWarehouseCode"],
-          },
-        ],
         attributes: ["id"],
-      },
-      {
-        model: Inventory,
-        as: "Inventories",
-        include: [
-          {
-            model: Product,
-            include: [{ model: UOM, attributes: ["id", "name"] }],
-            attributes: ["id", "name", "batchEnabled"],
-          },
-        ],
-        attributes: ["id"],
-      },
-      {
         model: ProductOutward,
+        required: false,
         include: [
           {
+            attributes: [],
             model: Inventory,
             as: "Inventories",
-            include: [{ model: Product, attributes: ["id", "name"] }],
+            required: false,
           },
         ],
-        attributes: ["id"],
+      },
+      {
+        attributes: [],
+        model: Inventory,
+        as: "Inventories",
+        required: false,
       },
     ],
     where: {
@@ -1653,16 +1670,14 @@ router.get("/relations", async (req, res, next) => {
         ],
       },
     },
-    attributes: [
-      "id",
-      "internalIdForBusiness",
-      "referenceId",
-      "shipmentDate",
-      "receiverName",
-      "receiverPhone",
-      "createdAt",
-    ],
+    group: ["id"],
     order: [["updatedAt", "DESC"]],
+    having: {
+      remainingQuantities: {
+        [Op.gt]: 0,
+      },
+    },
+    subQuery: false,
   });
 
   const vehicles = await Vehicle.findAll({
@@ -1670,18 +1685,25 @@ router.get("/relations", async (req, res, next) => {
     attributes: ["id", "registrationNumber"],
   });
 
-  const batches = await InventoryDetail.findAll({
-    include: [{ model: Inventory, as: "Inventory", attributes: [] }],
-    order: [["expiryDate", "ASC"]],
-  });
-
   res.json({
     success: true,
     message: "respond with a resource",
     dispatchOrders,
     vehicles,
-    batches,
   });
+});
+
+router.get("/batch", async (req, res) => {
+  try {
+    const batches = await InventoryDetail.findAll({
+      include: [{ model: Inventory, as: "Inventory", attributes: [] }],
+      order: [["expiryDate", "ASC"]],
+    });
+
+    res.sendJson(batches, "get batches", httpStatus.OK);
+  } catch (err) {
+    res.sendError(httpStatus.CONFLICT, err.message);
+  }
 });
 
 router.get("/:id", async (req, res, next) => {
