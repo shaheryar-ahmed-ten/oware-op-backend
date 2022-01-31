@@ -1610,58 +1610,7 @@ router.delete("/:id", async (req, res, next) => {
 
 router.get("/relations", async (req, res, next) => {
   const dispatchOrders = await DispatchOrder.findAll({
-    attributes: [
-      "id",
-      "internalIdForBusiness",
-      "referenceId",
-      "shipmentDate",
-      "receiverName",
-      "receiverPhone",
-      "createdAt",
-      [
-        sequelize.fn(
-          "sum",
-          sequelize.literal(
-            "ifnull(`ProductOutwards->Inventories->OutwardGroup`.`quantity`, 0)"
-          )
-        ),
-        "totalDispatchedQuantity",
-      ],
-      [
-        sequelize.fn(
-          "sum",
-          sequelize.literal("`Inventories->OrderGroup`.`quantity`")
-        ),
-        "totalRequestedQuantity",
-      ],
-      [
-        sequelize.literal(
-          "(sum(`Inventories->OrderGroup`.`quantity`) - ifnull(sum(`ProductOutwards->Inventories->OutwardGroup`.`quantity`),0))"
-        ),
-        "remainingQuantities",
-      ],
-    ],
-    include: [
-      {
-        attributes: ["id"],
-        model: ProductOutward,
-        required: false,
-        include: [
-          {
-            attributes: [],
-            model: Inventory,
-            as: "Inventories",
-            required: false,
-          },
-        ],
-      },
-      {
-        attributes: [],
-        model: Inventory,
-        as: "Inventories",
-        required: false,
-      },
-    ],
+    attributes: ["id", "internalIdForBusiness"],
     where: {
       status: {
         [Op.notIn]: [
@@ -1670,14 +1619,8 @@ router.get("/relations", async (req, res, next) => {
         ],
       },
     },
-    group: ["id"],
+    // group: ["id"],
     order: [["updatedAt", "DESC"]],
-    having: {
-      remainingQuantities: {
-        [Op.gt]: 0,
-      },
-    },
-    subQuery: false,
   });
 
   const vehicles = await Vehicle.findAll({
