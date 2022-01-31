@@ -49,10 +49,24 @@ module.exports = (sequelize, DataTypes) => {
       })
 
       // resolve all the db calls at once
-      await Promise.all(inwardSummaries.map(summary => {
-        summary.uom = newUom.name
-        return summary.save()
-      }));
+      if (inwardSummaries.length) {
+        await Promise.all(inwardSummaries.map(summary => {
+          summary.uom = newUom.name
+          return summary.save()
+        }));
+      }
+
+      let dispatchOrderSummaries = await sequelize.models.DispatchOrderSummary.findAll({
+        where
+      })
+
+      if (dispatchOrderSummaries.length) {
+        await Promise.all(dispatchOrderSummaries.map(summary => {
+          summary.uom = newUom.name
+          return summary.save()
+        }));
+      }
+
     } catch (error) {
       handleHookError(error, "UOM")
     }

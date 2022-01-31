@@ -1,9 +1,9 @@
 const { default: axios } = require("axios");
 
 exports.handleHookError = (error, message = "") => {
-    const hook = `${process.env.INWARD_ERROR_HOOK}`;
+    const hook = `${process.env.ERROR_HOOK}`;
     const slackBody = {
-        text: "Inward After Update",
+        text: "Hooks Alert",
         attachments: [
             {
                 color: "good",

@@ -14,6 +14,7 @@ const {
   OutwardGroup,
   ActivitySourceType,
   User,
+  DispatchOrderSummary,
 } = require("../models");
 const models = require("../models");
 const config = require("../config");
@@ -223,8 +224,8 @@ router.get("/export", async (req, res, next) => {
     }));
 
   if (req.query.days) {
-    const currentDate = moment();
-    const previousDate = moment().subtract(req.query.days, "days");
+    const currentDate = moment().endOf("day");
+    const previousDate = moment().subtract(req.query.days, "days").startOf("day");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
@@ -242,65 +243,40 @@ router.get("/export", async (req, res, next) => {
     where["createdAt"] = { [Op.between]: [startDate, endDate] };
   }
 
-  response = await DispatchOrder.findAll({
-    include: [
-      {
-        model: Inventory,
-        as: "Inventory",
-        include: [
-          { model: Product, include: [{ model: UOM }] },
-          { model: Company },
-          { model: Warehouse },
-        ],
-      },
-      {
-        model: Inventory,
-        as: "Inventories",
-        include: [
-          { model: Product, include: [{ model: UOM }] },
-          { model: Company },
-          { model: Warehouse },
-        ],
-      },
-      { model: User },
-    ],
-    order: [["updatedAt", "DESC"]],
-    where,
-  });
+  let summaries = await DispatchOrderSummary.findAll({
+    where
+  })
 
-  const orderArray = [];
-  for (const order of response) {
-    for (const inv of order.Inventories) {
-      orderArray.push([
-        order.internalIdForBusiness || "",
-        order.Inventory.Company.name,
-        inv.Product.name,
-        order.Inventory.Warehouse.name,
-        inv.Product.UOM.name,
-        order.receiverName,
-        order.receiverPhone,
-        inv.OrderGroup.quantity,
-        order.referenceId || "",
-        `${order.User.firstName || ""} ${order.User.lastName || ""}`,
-        moment(order.createdAt)
-          .tz(req.query.client_Tz)
-          .format("DD/MM/yy HH:mm"),
-        moment(order.shipmentDate)
-          .tz(req.query.client_Tz)
-          .format("DD/MM/yy HH:mm"),
-        order.status == "0"
-          ? "PENDING"
-          : order.status == "1"
+  const orderArray = summaries.map((summary) => {
+    return ([
+      summary.dispatchOrderId || '',
+      summary.customerName || '',
+      summary.productName || '',
+      summary.warehouseName || '',
+      summary.uom || '',
+      summary.receiverName || '',
+      summary.receiverPhone || '',
+      summary.requestedQuantity || '',
+      summary.referenceId || '',
+      summary.creatorName || '',
+      moment(summary.createdAt)
+        .tz(req.query.client_Tz)
+        .format("DD/MM/yy HH:mm"),
+      moment(summary.shipmentDate)
+        .tz(req.query.client_Tz)
+        .format("DD/MM/yy HH:mm"),
+      summary.status == "0"
+        ? "PENDING"
+        : summary.status == "1"
           ? "PARTIALLY FULFILLED"
-          : order.status == "2"
-          ? "FULFILLED"
-          : order.status == "3"
-          ? "CANCELLED"
-          : "",
-        order.orderMemo || "",
-      ]);
-    }
-  }
+          : summary.status == "2"
+            ? "FULFILLED"
+            : summary.status == "3"
+              ? "CANCELLED"
+              : "",
+      summary.orderMemo || "",
+    ])
+  })
 
   worksheet.addRows(orderArray);
 

@@ -1,6 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const bcrypt = require("bcrypt");
+const { handleHookError } = require("../utility/utility");
 
 module.exports = (sequelize, DataTypes) => {
   class InwardGroupBatch extends Model {
@@ -124,7 +125,7 @@ module.exports = (sequelize, DataTypes) => {
       console.log("Summary updated successfully")
 
     } catch (error) {
-      console.log("Something went wrong", error)
+      handleHookError(error, "InwardGroupBatch")
     }
 
   });

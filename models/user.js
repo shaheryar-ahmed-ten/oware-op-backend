@@ -1,6 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const bcrypt = require("bcrypt");
+const { handleHookError } = require("../utility/utility");
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
@@ -89,6 +90,39 @@ module.exports = (sequelize, DataTypes) => {
     const hashedPassword = user.generateHash(user.password);
     user.password = hashedPassword;
   });
+  User.addHook('afterUpdate', async (data, options) => {
+    try {
+      const prevUser = data._previousDataValues;
+      const newUser = data.dataValues;
+      let where = {
+        userId: prevUser.id
+      }
 
+      let inwardSummaries = await sequelize.models.InwardSummary.findAll({
+        where
+      })
+
+      // resolve all the db calls at once
+      if (inwardSummaries.length) {
+        await Promise.all(inwardSummaries.map(summary => {
+          summary.creatorName = `${newUser.firstName || ''} ${newUser.lastName || ''}`
+          return summary.save()
+        }));
+      }
+
+      let dispatchOrderSummaries = await sequelize.models.DispatchOrderSummary.findAll({
+        where
+      })
+
+      if (dispatchOrderSummaries.length) {
+        await Promise.all(dispatchOrderSummaries.map(summary => {
+          summary.creatorName = `${newUser.firstName || ''} ${newUser.lastName || ''}`
+          return summary.save()
+        }));
+      }
+    } catch (error) {
+      handleHookError(error, "User")
+    }
+  })
   return User;
 };

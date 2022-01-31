@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const {
   DISPATCH_ORDER: { STATUS },
 } = require("../enums");
+const { handleHookError } = require("../utility/utility");
 
 module.exports = (sequelize, DataTypes) => {
   class DispatchOrder extends Model {
@@ -96,6 +97,58 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "DispatchOrder",
     }
   );
+  DispatchOrder.addHook('afterUpdate', async (data, options) => {
+    try {
+      let prevDispatchOrder = data._previousDataValues;
+      let newDispatchOrder = data.dataValues;
+      // incase of outward internalIdForBusiness is not available.
+      if (!prevDispatchOrder.internalIdForBusiness) {
+        let where = {
+          id: prevDispatchOrder.id
+        }
+        newDispatchOrder = await sequelize.models.DispatchOrder.findOne(
+          {
+            where,
+            transaction: options.transaction
+          }
+        )
+      }
+
+      let where = {
+        dispatchOrderId: newDispatchOrder.internalIdForBusiness
+      }
+
+      let dispatchOrderSummaries = await sequelize.models.DispatchOrderSummary.findAll({
+        where
+      })
+
+      where = {
+        id: newDispatchOrder.userId
+      }
+      let user = await sequelize.models.User.findOne({
+        where,
+        attribute: ["firstName", "lastName", "id"]
+      })
+
+      if (dispatchOrderSummaries.length) {
+        await Promise.all(dispatchOrderSummaries.map(summary => {
+          summary.receiverName = newDispatchOrder.receiverName
+          summary.receiverPhone = newDispatchOrder.receiverPhone
+          summary.shipmentDate = newDispatchOrder.shipmentDate
+          summary.referenceId = newDispatchOrder.referenceId
+          summary.status = newDispatchOrder.status
+          summary.orderMemo = newDispatchOrder.orderMemo
+          summary.userId = newDispatchOrder.userId
+          summary.creatorName = `${user['firstName']} ${user['lastName']}`
+          return summary.save()
+        }));
+      }
+
+    } catch (error) {
+      handleHookError(error, "DispatchOrder (Update)")
+    }
+  })
+
 
   return DispatchOrder;
 };
