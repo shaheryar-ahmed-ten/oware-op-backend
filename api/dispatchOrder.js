@@ -1026,6 +1026,17 @@ router.get("/:id", async (req, res, next) => {
           ],
         },
         {
+          model: ProductOutward,
+          include: [
+            {
+              model: Inventory,
+              as: "Inventories",
+              include: [{ model: Product, attributes: ["id", "name"] }],
+            },
+          ],
+          attributes: ["id"],
+        },
+        {
           model: Inventory,
           as: "Inventories",
           required: true,

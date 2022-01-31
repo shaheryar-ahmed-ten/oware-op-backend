@@ -12,7 +12,7 @@ const {
   UOM,
   sequelize,
   InwardGroupBatch,
-  InwardSummary
+  InwardSummary,
 } = require("../models");
 const { BULK_PRODUCT_LIMIT, SPECIAL_CHARACTERS } = require("../enums");
 const config = require("../config");
@@ -166,7 +166,6 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get("/export", async (req, res, next) => {
-
   let where = {};
   if (!authService.isSuperAdmin(req)) where["$Company.contactId$"] = req.userId;
 
@@ -204,17 +203,17 @@ router.get("/export", async (req, res, next) => {
   ]);
 
   if (req.query.search)
-    where[Op.or] = [
-      "inwardId",
-      "$customerName$",
-      "$warehouseName$",
-    ].map((key) => ({
-      [key]: { [Op.like]: "%" + req.query.search + "%" },
-    }));
+    where[Op.or] = ["inwardId", "$customerName$", "$warehouseName$"].map(
+      (key) => ({
+        [key]: { [Op.like]: "%" + req.query.search + "%" },
+      })
+    );
 
   if (req.query.days) {
     const currentDate = moment().endOf("day");
-    const previousDate = moment().subtract(req.query.days, "days").startOf("day");
+    const previousDate = moment()
+      .subtract(req.query.days, "days")
+      .startOf("day");
     where.inwardDate = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
@@ -230,48 +229,44 @@ router.get("/export", async (req, res, next) => {
       millisecond: 1000,
     });
     where.inwardDate = {
-      [Op.between]: [startDate, endDate]
+      [Op.between]: [startDate, endDate],
     };
   }
 
   var summaries = await InwardSummary.findAll({
-    where
-  })
+    where,
+  });
 
   const inwardArray = summaries.map((summary) => {
-    return ([
-      summary.inwardId || '',
-      summary.customerName || '',
-      summary.productName || '',
-      summary.warehouseName || '',
-      summary.uom || '',
-      summary.inwardQuantity || '',
-      summary.vehicleType || '',
-      summary.vehicleName || '',
-      summary.vehicleNumber || '',
-      summary.driverName || '',
-      summary.memo || '',
-      summary.referenceId || '',
-      summary.creatorName || '',
+    return [
+      summary.inwardId || "",
+      summary.customerName || "",
+      summary.productName || "",
+      summary.warehouseName || "",
+      summary.uom || "",
+      summary.inwardQuantity || "",
+      summary.vehicleType || "",
+      summary.vehicleName || "",
+      summary.vehicleNumber || "",
+      summary.driverName || "",
+      summary.memo || "",
+      summary.referenceId || "",
+      summary.creatorName || "",
       moment(summary.inwardDate)
         .tz(req.query.client_Tz)
         .format("DD/MM/yy HH:mm"),
-      summary.batchQuantity || '',
-      summary.batchNumber || '',
-      summary.manufacturingDate ?
-        moment(summary.manufacturingDate)
-          .tz(req.query.client_Tz)
-          .format("DD/MM/yy")
-        :
-        '',
-      summary.expiryDate ?
-        moment(summary.expiryDate)
-          .tz(req.query.client_Tz)
-          .format("DD/MM/yy")
-        :
-        ''
-    ])
-  })
+      summary.batchQuantity || "",
+      summary.batchNumber || "",
+      summary.manufacturingDate
+        ? moment(summary.manufacturingDate)
+            .tz(req.query.client_Tz)
+            .format("DD/MM/yy")
+        : "",
+      summary.expiryDate
+        ? moment(summary.expiryDate).tz(req.query.client_Tz).format("DD/MM/yy")
+        : "",
+    ];
+  });
 
   worksheet.addRows(inwardArray);
 
@@ -573,7 +568,7 @@ router.post("/", activityLog, async (req, res, next) => {
                 batch &&
                 batch.expiryDate &&
                 batch.expiryDate.toString().split("T")[0] !=
-                new Date(Prodbatch.expiryDate).toString().split("T")[0]
+                  new Date(Prodbatch.expiryDate).toString().split("T")[0]
               ) {
                 transaction.rollback();
                 return res.sendError(
@@ -642,17 +637,15 @@ router.post("/", activityLog, async (req, res, next) => {
       });
       for (const arr of tempArr) {
         // await sequelize.query(`
-        //   INSERT INTO InwardGroupBatches 
+        //   INSERT INTO InwardGroupBatches
         //   (inwardGroupId,inventoryDetailId,quantity)
         //    VALUES (${arr.inwardGroupId},${arr.inventoryDetailId},${arr.quantity});
         // `);
-        await InwardGroupBatch.create(
-          {
-            inwardGroupId: arr.inwardGroupId,
-            inventoryDetailId: arr.inventoryDetailId,
-            quantity: arr.quantity
-          },
-        );
+        await InwardGroupBatch.create({
+          inwardGroupId: arr.inwardGroupId,
+          inventoryDetailId: arr.inventoryDetailId,
+          quantity: arr.quantity,
+        });
       }
       return res.json({
         success: true,
