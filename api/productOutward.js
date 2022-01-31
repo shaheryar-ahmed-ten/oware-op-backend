@@ -1621,6 +1621,12 @@ router.get("/relations", async (req, res, next) => {
     },
     // group: ["id"],
     order: [["updatedAt", "DESC"]],
+    having: {
+      remainingQuantities: {
+        [Op.gt]: 0,
+      },
+    },
+    subQuery: false,
   });
 
   const vehicles = await Vehicle.findAll({
