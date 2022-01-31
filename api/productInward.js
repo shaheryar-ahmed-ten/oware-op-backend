@@ -757,7 +757,6 @@ router.get("/:id", async (req, res, next) => {
         },
       ],
     });
-
     if (!productInward)
       return res.status(400).json({
         success: false,

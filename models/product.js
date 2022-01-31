@@ -89,39 +89,44 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  Product.addHook('afterUpdate', async (data, options) => {
+  Product.addHook("afterUpdate", async (data, options) => {
     try {
       const prevProduct = data._previousDataValues;
       const newProduct = data.dataValues;
       let where = {
-        productName: prevProduct.name
-      }
+        productName: prevProduct.name,
+      };
 
       let inwardSummaries = await sequelize.models.InwardSummary.findAll({
-        where
-      })
+        where,
+      });
 
       // resolve all the db calls at once
       if (inwardSummaries.length) {
-        await Promise.all(inwardSummaries.map(summary => {
-          summary.productName = newProduct.name
-          return summary.save()
-        }));
+        await Promise.all(
+          inwardSummaries.map((summary) => {
+            summary.productName = newProduct.name;
+            return summary.save();
+          })
+        );
       }
 
-      let dispatchOrderSummaries = await sequelize.models.DispatchOrderSummary.findAll({
-        where
-      })
+      let dispatchOrderSummaries =
+        await sequelize.models.DispatchOrderSummary.findAll({
+          where,
+        });
 
       if (dispatchOrderSummaries.length) {
-        await Promise.all(dispatchOrderSummaries.map(summary => {
-          summary.productName = newProduct.name
-          return summary.save()
-        }));
+        await Promise.all(
+          dispatchOrderSummaries.map((summary) => {
+            summary.productName = newProduct.name;
+            return summary.save();
+          })
+        );
       }
     } catch (error) {
-      handleHookError(error, "PRODUCT")
+      handleHookError(error, "PRODUCT");
     }
-  })
+  });
   return Product;
 };

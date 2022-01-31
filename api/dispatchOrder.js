@@ -225,7 +225,9 @@ router.get("/export", async (req, res, next) => {
 
   if (req.query.days) {
     const currentDate = moment().endOf("day");
-    const previousDate = moment().subtract(req.query.days, "days").startOf("day");
+    const previousDate = moment()
+      .subtract(req.query.days, "days")
+      .startOf("day");
     where["createdAt"] = { [Op.between]: [previousDate, currentDate] };
   } else if (req.query.startingDate && req.query.endingDate) {
     const startDate = moment(req.query.startingDate).utcOffset("+05:00").set({
@@ -244,21 +246,21 @@ router.get("/export", async (req, res, next) => {
   }
 
   let summaries = await DispatchOrderSummary.findAll({
-    where
-  })
+    where,
+  });
 
   const orderArray = summaries.map((summary) => {
-    return ([
-      summary.dispatchOrderId || '',
-      summary.customerName || '',
-      summary.productName || '',
-      summary.warehouseName || '',
-      summary.uom || '',
-      summary.receiverName || '',
-      summary.receiverPhone || '',
-      summary.requestedQuantity || '',
-      summary.referenceId || '',
-      summary.creatorName || '',
+    return [
+      summary.dispatchOrderId || "",
+      summary.customerName || "",
+      summary.productName || "",
+      summary.warehouseName || "",
+      summary.uom || "",
+      summary.receiverName || "",
+      summary.receiverPhone || "",
+      summary.requestedQuantity || "",
+      summary.referenceId || "",
+      summary.creatorName || "",
       moment(summary.createdAt)
         .tz(req.query.client_Tz)
         .format("DD/MM/yy HH:mm"),
@@ -268,15 +270,15 @@ router.get("/export", async (req, res, next) => {
       summary.status == "0"
         ? "PENDING"
         : summary.status == "1"
-          ? "PARTIALLY FULFILLED"
-          : summary.status == "2"
-            ? "FULFILLED"
-            : summary.status == "3"
-              ? "CANCELLED"
-              : "",
+        ? "PARTIALLY FULFILLED"
+        : summary.status == "2"
+        ? "FULFILLED"
+        : summary.status == "3"
+        ? "CANCELLED"
+        : "",
       summary.orderMemo || "",
-    ])
-  })
+    ];
+  });
 
   worksheet.addRows(orderArray);
 

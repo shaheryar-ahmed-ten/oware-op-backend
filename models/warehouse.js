@@ -63,40 +63,44 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Warehouse",
     }
   );
-  Warehouse.addHook('afterUpdate', async (data, options) => {
+  Warehouse.addHook("afterUpdate", async (data, options) => {
     try {
       const prevWarehouse = data._previousDataValues;
       const newWarehouse = data.dataValues;
       let where = {
-        warehouseName: prevWarehouse.name
-      }
+        warehouseName: prevWarehouse.name,
+      };
 
       let inwardSummaries = await sequelize.models.InwardSummary.findAll({
-        where
-      })
+        where,
+      });
 
       // resolve all the db calls at once
       if (inwardSummaries.length) {
-        await Promise.all(inwardSummaries.map(summary => {
-          summary.warehouseName = newWarehouse.name
-          return summary.save()
-        }));
+        await Promise.all(
+          inwardSummaries.map((summary) => {
+            summary.warehouseName = newWarehouse.name;
+            return summary.save();
+          })
+        );
       }
 
-      let dispatchOrderSummaries = await sequelize.models.DispatchOrderSummary.findAll({
-        where
-      })
+      let dispatchOrderSummaries =
+        await sequelize.models.DispatchOrderSummary.findAll({
+          where,
+        });
 
       if (dispatchOrderSummaries.length) {
-        await Promise.all(dispatchOrderSummaries.map(summary => {
-          summary.warehouseName = newWarehouse.name
-          return summary.save()
-        }));
+        await Promise.all(
+          dispatchOrderSummaries.map((summary) => {
+            summary.warehouseName = newWarehouse.name;
+            return summary.save();
+          })
+        );
       }
-
     } catch (error) {
-      handleHookError(error, "WAREHOUSE")
+      handleHookError(error, "WAREHOUSE");
     }
-  })
+  });
   return Warehouse;
 };
